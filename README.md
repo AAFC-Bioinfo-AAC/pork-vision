@@ -77,7 +77,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 
 ## PARAMETERS
 
-To address the extensive number of parameters used in the PorkVision source code, we have created a dedicated `parameters.md` file located in the `docs/` directory. This document serves as a centralized and structured reference for all parameters categorized by their role in the process.
+To address the extensive number of parameters used in the PorkVision source code, there is a dedicated `parameters.md` file located in the `docs/` directory. This document serves as a centralized and structured reference for all parameters categorized by their role in the process.
 
 ### Navigating `parameters.md`
 
@@ -100,7 +100,7 @@ For your convenience, the file includes a **Table of Contents** with direct link
 4. [Results Handling Parameters](../docs/parameters.md#4-results-handling-parameters)  
    Includes parameters for creating structured results, converting measurements, and exporting outputs to CSV files.
 
-Start exploring the parameters documentation [here](../docs/parameters.md).
+Start exploring the parameters documentation [here](/docs/parameters.md).
 
 ---
 
