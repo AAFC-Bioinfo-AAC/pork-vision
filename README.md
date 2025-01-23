@@ -135,13 +135,7 @@ Start exploring the parameters documentation [here](/docs/parameters.md).
     pip install lsq-ellipse
     ```
 
-### Instructions
-1. Ensure everything is contained to it's proper location.
-2. Make sure to have last.pt in this directory.
-3. Run normally.
-4. The results can be found in the runs subdirectory.
-
-### Notes
+**Notes** \
 IF the environment cannot be created using environment.yml. \
 TRY:
 ```
@@ -154,6 +148,12 @@ conda activate yolosam_env
 
 pip install lsq-ellipse
 ```
+
+### Instructions
+1. Ensure everything is contained to it's proper location.
+2. Make sure to have last.pt in this directory.
+3. Run normally.
+4. The results can be found in the runs subdirectory.
 
 ---
 
