@@ -185,20 +185,8 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ---
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
-**Additional Resources**
+**Index**
 - [Index.md](docs/index.md)
-
-**References**
-1.  Pomar,C., Rivest, J., Jean dit Bailleul, P., & Marcoux, M. (2001). Predicting loin-eye area from ultrasound and grading probe measurements of fat and muscle depths in pork carcasses. Canadian Journal of Animal Science. 81(4): 429-434. https://doi.org/10.4141/A00-081
-2.  Ronneberger, O., Fischer, P., & Brox, T. (2015). U-net: Convolutional networks for biomedical image segmentation. In Medical Image Computing and Computer-Assisted Intervention–MICCAI 2015: 18th International Conference, Munich, Germany, October 5-9, 2015, Proceedings, Part III 18 (pp. 234-241). Springer International Publishing
-3.  @article \
-{ \
-    kirillov2023segany, \
-  title={Segment Anything}, \
-  author={Kirillov, Alexander and Mintun, Eric and Ravi, Nikhila and Mao, Hanzi and Rolland, Chloe and Gustafson, Laura and Xiao, Tete and Whitehead, Spencer and Berg, Alexander C. and Lo, Wan-Yen and Doll{\'a}r, Piotr and Girshick, Ross}, \
-  journal={arXiv:2304.02643}, \
-  year={2023} \
-}
 
 **Documentation**
 - [NumPy](https://numpy.org/doc/stable/)
