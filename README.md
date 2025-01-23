@@ -115,12 +115,20 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ```
 
 ### Instructions
-- 
+1. Ensure everything is contained to it's proper location.
+2. Make sure to have last.pt in this directory.
+3. Run normally.
+4. The results can be found in the runs subdirectory.
 
 ### Notes
-IF APPLICABLE: Any information, such as tips, warnings, or alternative ways to run the code.
-
-OTHERWISE: Write N/A
+IF the environment cannot be created using environment.yml. \
+TRY:
+```
+conda create -n yolosam_env python=3.9 -c conda-forge \
+ultralytics segment-anything ipykernel \
+numpy opencv matplotlib pillow \
+shapely scikit-image pandas scipy
+```
 
 ---
 
