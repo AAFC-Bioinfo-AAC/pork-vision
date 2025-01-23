@@ -151,20 +151,21 @@ All files created will be found in the runs directory and it's subdirectories.
 ---
 
 ## KNOWN ISSUES
-IF APPLICABLE: List any known bugs, limitations, or issues with the current version of the code.
-- Include workarounds or references to issues in the issue tracker, if available.
-
-OTHERWISE: Write N/A
+N/A
 
 ---
 
 ## CREDITS
 **Example:**
-"This repository was written by [Your Name/Team Name]."
+"This repository was written by AAFC Bioinformatics."
 "We thank the following people and teams for their assistance in the development of this project:"
-- [Contributor 1]
-- [Contributor 2]
-- [Acknowledged Organizations or Teams]
+- Fatima Davelouis
+- Edward Yakubovich
+- Arun Kommadath
+- Sean Hill
+- Tarik Ibrahim
+- Maaz Ali
+- Special thanks: AAFC Bioinformatics Team
 
 ---
 
