@@ -21,22 +21,22 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ## TABLE OF CONTENTS
 | **Section**                                | **Description**                                                                                           |
 |--------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| [ABOUT](#about)                            | A summary of the project, may include its origin, purpose, and functionality, along with configuration options. |
-| [OVERVIEW](#overview)                      | A summary of the project's processes, supported by a visual representation (e.g., a pipeline diagram).    |
-| [DATA](#data)                          | Details of the data files used in the project. |
-| [PARAMETERS](#parameters)                  | A table describing configurable parameters, their expected values, and their impact on the output.      |
-| [USAGE](#usage)                            | Detailed guidance on how to use the project, including pre-requisites, instructions, and optional notes.   |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Pre-requisites](#pre-requisites) | Dependencies and hardware/software requirements.                                                          |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Instructions](#instructions)    | Step-by-step directions for running the code, including examples and links to related resources.          |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Notes](#notes) | Additional optional details, tips, or alternative methods.                                               |
-| [OUTPUT](#output)                          | Details of the output files generated, which may include formats, locations, and naming conventions. |
-| [KNOWN ISSUES](#known-issues) | A section for documenting known bugs or limitations, along with potential workarounds or references.     |
-| [CREDITS](#credits)                        | Acknowledgment of contributors, teams, and organizations that supported the project.                      |
-| [CONTRIBUTION](#contribution)              | Guidelines for contributing to the repository, with a link to the `CONTRIBUTING.md` file.                 |
-| [COPYRIGHT](#copyright)                    | Ownership details                     |
-| [LICENSE](#license)                        | Information about the license, including a link to the `LICENSE` file.                           |
-| [PUBLICATIONS & ADDITIONAL RESOURCES](#publications--additional-resources) | Links to publications, articles, or other resources related to the project.                             |
-| [CITATION](#citation)                      | Instructions for citing the project, with references to the `CITATION.cff` and `CITATIONS.md` files.      |
+| [ABOUT](#about)                            | An overview of the PorkVision project, including its purpose and process. |
+| [OVERVIEW](#overview)                      | A more detailed step-by-step explanation of the project's processes, supported by a pipeline diagram illustrating the workflow. |
+| [DATA](#data)                              | Information about the dataset used, including its structure, example images, and naming conventions.      |
+| [PARAMETERS](#parameters)                  | A detailed reference to the parameters used throughout the project, categorized by functionality. |
+| [USAGE](#usage)                            | Instructions on setting up and running the project, including pre-requisites, environment setup, and usage examples. |
+| &nbsp;&nbsp;&nbsp;&nbsp;[Pre-requisites](#pre-requisites) | A list of required dependencies, tools, and software to ensure the project runs correctly.                |
+| &nbsp;&nbsp;&nbsp;&nbsp;[Instructions](#instructions)    | Step-by-step directions to execute the code and process data, with examples and troubleshooting tips.     |
+| &nbsp;&nbsp;&nbsp;&nbsp;[Notes](#notes)                     | Optional details, tips, or alternative methods for running the project effectively.                       |
+| [OUTPUT](#output)                          | A description of the files and directories generated, including results such as CSVs and annotated images. |
+| [KNOWN ISSUES](#known-issues)              | A record of known bugs or limitations in the project, with workarounds or references to potential fixes.  |
+| [CREDITS](#credits)                        | Acknowledgment of contributors, organizations, and teams that supported the project.                     |
+| [CONTRIBUTION](#contribution)              | Guidelines for contributing to PorkVision, including links to the `CONTRIBUTING.md` file.                |
+| [COPYRIGHT](#copyright)                    | Ownership details and intellectual property rights related to the project.                               |
+| [LICENSE](#license)                        | Licensing information for PorkVision, including a link to the `LICENSE` file for terms of use.           |
+| [PUBLICATIONS & ADDITIONAL RESOURCES](#publications--additional-resources) | References to related publications, resources, and supplementary materials.                              |
+| [CITATION](#citation)                      | Guidelines for citing PorkVision, with references to the `CITATION.cff` and `CITATIONS.md` files.        |
 
 ---
 
@@ -198,16 +198,15 @@ N/A
 ---
 
 ## CREDITS
-**Example:**
-"This repository was written by AAFC Bioinformatics."
-"We thank the following people and teams for their assistance in the development of this project:"
+This repository was written by members of AAFC-Bioinfo-AAC-brouillon.
+
+We thank the following people and teams for their assistance in the development of this project:
 - Fatima Davelouis
 - Edward Yakubovich
 - Arun Kommadath
 - Sean Hill
 - Tarik Ibrahim
 - Maaz Ali
-- Special thanks: AAFC Bioinformatics Team
 
 ---
 
