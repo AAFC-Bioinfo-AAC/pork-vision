@@ -90,10 +90,31 @@ curl -O https://example.com/path/to/dataset1.tar.gz
 ---
 
 ## PARAMETERS
-| Parameter        | Value                  |
-|------------------|------------------------|
-| parameter_name_1 | Description of what the parameter does and the expected value (e.g., integer, string, file path). |
-| parameter_name_2 | Description of what the parameter does and the expected value (e.g., boolean, list). |
+
+To address the extensive number of parameters used in the PorkVision source code, we have created a dedicated `parameters.md` file located in the `docs/` directory. This document serves as a centralized and structured reference for all parameters categorized by their role in the process.
+
+### Navigating `parameters.md`
+
+For your convenience, the file includes a **Table of Contents** with direct links to each major section. Below is an overview of the main sections, with corresponding links to help you navigate directly to the information you need:
+
+1. [Helper Function Parameters](../docs/parameters.md#1-helper-function-parameters)  
+   - [Calculations](../docs/parameters.md#11-calculations): Covers functions for calculating measurements such as depth, width, and bounding box midpoints.  
+   - [Correctors](../docs/parameters.md#12-correctors): Describes functions for correcting and refining measurements and orientations.  
+   - [Ellipse Fitting and Plotting](../docs/parameters.md#13-ellipse-fitting-and-plotting): Details functions for fitting and visualizing ellipses.  
+   - [Line, Contour, and Image Manipulations](../docs/parameters.md#14-line-contour-and-image-manipulations): Includes functions for extending lines, handling contours, and manipulating masks.  
+   - [Rotation and Orientation](../docs/parameters.md#15-rotation-and-orientation): Explains functions for detecting and adjusting orientations and rotations.  
+   - [Visualizations](../docs/parameters.md#16-visualizations): Documents functions for drawing overlays, bounding boxes, and measurement lines.
+
+2. [Inference Parameters](../docs/parameters.md#2-inference-parameters)  
+   Covers parameters related to running YOLOv8 inference, including model paths, input images, and saving results.
+
+3. [Main Script Parameters](../docs/parameters.md#3-main-script-parameters)  
+   Details the parameters used in the main processing script for managing results, performing transformations, and generating measurements.
+
+4. [Results Handling Parameters](../docs/parameters.md#4-results-handling-parameters)  
+   Includes parameters for creating structured results, converting measurements, and exporting outputs to CSV files.
+
+Start exploring the parameters documentation [here](../docs/parameters.md).
 
 ---
 
