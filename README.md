@@ -128,16 +128,25 @@ conda create -n yolosam_env python=3.9 -c conda-forge \
 ultralytics segment-anything ipykernel \
 numpy opencv matplotlib pillow \
 shapely scikit-image pandas scipy
+
+conda activate yolosam_env
+
+pip install lsq-ellipse
 ```
 
 ---
 
 ## OUTPUT
-Describe the expected outputs of the code. Include:
-- File types (e.g., `.csv`, `.txt`, `.bam`).
-- Location of the files.
-- File naming conventions.
-- Examples of output files or links to them, if applicable.
+**Directories (If absent)**
+- runs: Containing data from the current and previous runs.
+- segment: Containing predict subdirectories. Note that future runs will create a new predict folder labelled predict_ where _ is an increasing integer.
+- predict: Contains JPG images.
+
+**Files created:** \
+All files created will be found in the runs directory and it's subdirectories.
+- results.csv: containing image_id, ld_depth_px, ld_depth_mm, ld_width_mm
+- Annotated JPGs labeled similarly to **724_LDLeanColour_annotated.JPG**: These contain line segments which are used to calculate the measurements of muscle and fat.
+- Prediction JPGs labeled exactly as their raw_image counterparts contained within ./runs/segment/predict: Contain muscle and fat predictions alongside confidence.
 
 ---
 
