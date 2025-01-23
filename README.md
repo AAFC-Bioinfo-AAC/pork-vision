@@ -41,13 +41,13 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ---
 
 ## OVERVIEW
-The steps this code performs can be split into smaller processes. \
-1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. \
-2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. \
+The steps this code performs can be split into smaller processes. 
+1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. 
+2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. 
 3. Image Analysis of Muscle: Using left-, right-, top-, and bottom-most coordinate points on the muscle mask we can calculate the muscle width and depth. \
-If necessary we correct for any tilts and inclinations of the loin carcass. \
+If necessary we correct for any tilts and inclinations of the loin carcass. 
 4. Image Analysis for Fat: Since our Neural-network has not been trained for fat, we use the line segment for muscle depth and extend until we reach the upper boundary of fat. \
-Then we measure the length of the line segment that extends across the fat. \
+Then we measure the length of the line segment that extends across the fat. 
 5. Post-processing: The measurements are saved into a csv file. Since the measurements are in pixels; they are converted to metric units. 
 
 **Example**:
@@ -85,17 +85,37 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 
 ## USAGE
 ### Pre-requisites
-List the dependencies or software required to run the code. Include:
-- Specific programming languages, libraries, or frameworks (e.g., Python 3.9, NumPy).
-- Installation instructions for dependencies (e.g., pip install, conda environments).
-- Hardware requirements, if any (e.g., CPU/GPU specifications, memory, specs used when running with SLURM).
+**Programming Languages, Libraries, and frameworks**
+   - python=3.9
+   - ultralytics
+   - segment-anything
+   - ipykernel
+   - numpy
+   - opencv
+   - matplotlib
+   - pillow
+   - shapely
+   - scikit-image
+   - pandas
+   - scipy
+
+**Installation** \
+    1. Make sure to have conda installed and that you are in the project's repository. \
+    2.
+    ```
+    conda env create -f environment.yml
+    ``` \
+    3.
+    ```
+    conda activate yolosam_env
+    ``` \
+    4. 
+    ```
+    pip install lsq-ellipse
+    ```
 
 ### Instructions
-**DETAILED** Step-by-step guide to running the code. Can include:
-- Command-line examples or scripts to execute.
-- Screenshots, images, or videos illustrating usage.
-- Links to detailed documentation or tutorials.
-- Diagrams showing data flow or system behavior.
+- 
 
 ### Notes
 IF APPLICABLE: Any information, such as tips, warnings, or alternative ways to run the code.
