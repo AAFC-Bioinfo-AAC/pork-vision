@@ -111,7 +111,7 @@ To ensure the repository is functioning as expected:
 ## Additional Documentation Files
 
 ### Project Introduction
-Refer to [This video](https://001gc.sharepoint.com/:v:/r/sites/42732/mmg1/BioinfoConf_Recordings_and_Resources/BioinfoConf2024_recordings/BioinfoConf2024_2.3_EdwardYakubovitch.mp4?csf=1&web=1&e=k5jFn0) for an introduction to the project.
+Refer to [this video](https://001gc.sharepoint.com/:v:/r/sites/42732/mmg1/BioinfoConf_Recordings_and_Resources/BioinfoConf2024_recordings/BioinfoConf2024_2.3_EdwardYakubovitch.mp4?csf=1&web=1&e=k5jFn0) for an introduction to the project.
 
 ### README.md
 Refer to [README.md](/README.md) for an overview of the repository.
@@ -124,4 +124,4 @@ Refer to the [ABCC_RCBA_Guide](https://github.com/AAFC-Bioinformatics/ABCC_RCBA_
 
 ---
 
-For any questions or contributions, please refer to the [CONTRIBUTING.md](.github/CONTRIBUTING.md) file.
+For any questions or contributions, please refer to the [CONTRIBUTING.md](../.github/CONTRIBUTING.md) file.
