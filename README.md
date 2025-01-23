@@ -41,8 +41,6 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ---
 
 ## OVERVIEW
-Provide a summary of the steps or processes the code performs. Include:
-- A high-level description of how the pipeline or software operates.
 The steps this code performs can be split into smaller processes. \
 1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. \
 2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. \
@@ -70,22 +68,10 @@ Then we measure the length of the line segment that extends across the fat. \
 
 ## DATA
 
-A description of the data used in the project. This can include file type, formatting, source, etc.
-
-
-**Example:**
-- **Dataset 1 Filename**: Sequencing reads (FASTQ) from X. Retrieved on 2025-01-01.
-- **Dataset 2 Filename**: Reference genome (FASTA) from Y. Retrieved on 2025-01-01.
-
-For large external datasets, provide links or instructions to download or utilize them. 
-
+The dataset that was used was obtained from a 2019 study of 209 pork loin carcasses. These were used to train the neural network that is used within this project; only 4 out of the 209 images are made available within this project itself, and all are in a JPG format with a resolution of 5184x3456p. The images can be found under the raw_images directory and are named similarly. 
 
 **Example:**
-
-To download the raw data:
-```
-curl -O https://example.com/path/to/dataset1.tar.gz
-```
+- **724_LDLeanColour.JPG**
 
 ---
 
