@@ -43,12 +43,27 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ## OVERVIEW
 Provide a summary of the steps or processes the code performs. Include:
 - A high-level description of how the pipeline or software operates.
-- A diagram or workflow visual that illustrates the main steps or processes.
+The steps this code performs can be split into smaller processes. \
+1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. \
+2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. \
+3. Image Analysis of Muscle: Using left-, right-, top-, and bottom-most coordinate points on the muscle mask we can calculate the muscle width and depth. \
+If necessary we correct for any tilts and inclinations of the loin carcass. \
+4. Image Analysis for Fat: Since our Neural-network has not been trained for fat, we use the line segment for muscle depth and extend until we reach the upper boundary of fat. \
+Then we measure the length of the line segment that extends across the fat. \
+5. Post-processing: The measurements are saved into a csv file. Since the measurements are in pixels; they are converted to metric units. 
 
 **Example**:
 ```mermaid
-    flowchart TD
-        A[Pipeline Input]-->B{Tool}-->C([Intermediate Files])-->D{Tool}-->E((Pipeline Output))
+    flowchart LR;
+       A{Input: Raw Images and Neural Network}-->B[Correct Orientation]
+            B-->C(Extract Muscle Region and Create Mask)
+            C-->D[Correct Tilt and Inclinations]
+            D-->E(Calculate Coordinate Points)
+            E-->F[Calculate Muscle Width and Depth]
+            F-->G(Calculate Fat Depth)
+            G-->H{Output: Processed Images and CSV}
+
+
 ```
 
 ---
