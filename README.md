@@ -158,18 +158,39 @@ pip install lsq-ellipse
 ---
 
 ## OUTPUT
-**Directories (If absent)**
-- runs: Containing data from the current and previous runs.
-- segment: Containing predict subdirectories. Note that future runs will create a new predict folder labelled predict_ where _ is an increasing integer.
-- predict: Contains JPG images.
+```
+|-- README
+|-- last.pt                                 [model trained using YOLOv8 based on training images derived from SAM]
+|-- loin_segmentation_project_report.docx   [Older version report by Fatima]
+|-- raw_images                              [4 test images in different orientations]
+|   |-- 1701_LdLeanColor.JPG
+|   |-- 1704_LdLeanColor.JPG
+|   |-- 2401_LdLeanColor.JPG
+|   `-- 724_LDLeanColour.JPG
+-- runs**                                     [Output folder]
+|   |-- 1701_LdLeanColor_annotated.JPG**
+|   |-- 1704_LdLeanColor_annotated.JPG**
+|   |-- 2401_LdLeanColor_annotated.JPG**
+|   |-- 724_LDLeanColour_annotated.JPG**
+|   |-- results.csv**
+|   `-- segment**
+|       |-- predict**
+|       |   |-- 1701_LdLeanColor.jpg**
+|       |   |-- 1704_LdLeanColor.jpg**
+|       |   |-- 2401_LdLeanColor.jpg**
+|       |   `-- 724_LDLeanColour.jpg**
+|       `-- predict2**
+|           |-- 1701_LdLeanColor.jpg**
+|           |-- 1704_LdLeanColor.jpg**
+|           |-- 2401_LdLeanColor.jpg**
+|           `-- 724_LDLeanColour.jpg**
+|-- test_yolosam_env.yml                    [conda env]
+`-- yolo_testing_1.3_AK_edited.ipynb        [code]
+```
 
-**Files created:** \
-All files created will be found in the runs directory and it's subdirectories.
-- results.csv: containing image_id, ld_depth_px, ld_depth_mm, ld_width_mm
-- Annotated JPGs labeled similarly to **724_LDLeanColour_annotated.JPG**: These contain line segments which are used to calculate the measurements of muscle and fat.
-- Prediction JPGs labeled exactly as their raw_image counterparts contained within ./runs/segment/predict: Contain muscle and fat predictions alongside confidence.
-
----
+4 directories, 9 files \
+NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
+For example another run with the file structure above would create a predict3 folder.
 
 ## KNOWN ISSUES
 N/A
