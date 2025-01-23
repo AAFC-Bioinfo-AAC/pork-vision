@@ -41,36 +41,37 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ---
 
 ## OVERVIEW
-Provide a summary of the steps or processes the code performs. Include:
-- A high-level description of how the pipeline or software operates.
-- A diagram or workflow visual that illustrates the main steps or processes.
+The steps this code performs can be split into smaller processes. 
+1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. 
+2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. 
+3. Image Analysis of Muscle: Using left-, right-, top-, and bottom-most coordinate points on the muscle mask we can calculate the muscle width and depth. \
+If necessary we correct for any tilts and inclinations of the loin carcass. 
+4. Image Analysis for Fat: Since our Neural-network has not been trained for fat, we use the line segment for muscle depth and extend until we reach the upper boundary of fat. \
+Then we measure the length of the line segment that extends across the fat. 
+5. Post-processing: The measurements are saved into a csv file. Since the measurements are in pixels; they are converted to metric units. 
 
 **Example**:
 ```mermaid
-    flowchart TD
-        A[Pipeline Input]-->B{Tool}-->C([Intermediate Files])-->D{Tool}-->E((Pipeline Output))
+    flowchart LR;
+       A{Input: Raw Images and Neural Network}-->B[Correct Orientation]
+            B-->C(Extract Muscle Region and Create Mask)
+            C-->D[Correct Tilt and Inclinations]
+            D-->E(Calculate Coordinate Points)
+            E-->F[Calculate Muscle Width and Depth]
+            F-->G(Calculate Fat Depth)
+            G-->H{Output: Processed Images and CSV}
+
+
 ```
 
 ---
 
 ## DATA
 
-A description of the data used in the project. This can include file type, formatting, source, etc.
-
-
-**Example:**
-- **Dataset 1 Filename**: Sequencing reads (FASTQ) from X. Retrieved on 2025-01-01.
-- **Dataset 2 Filename**: Reference genome (FASTA) from Y. Retrieved on 2025-01-01.
-
-For large external datasets, provide links or instructions to download or utilize them. 
-
+The dataset that was used was obtained from a 2019 study of 209 pork loin carcasses. These were used to train the neural network that is used within this project; only 4 out of the 209 images are made available within this project itself, and all are in a JPG format with a resolution of 5184x3456p. The images can be found under the raw_images directory and are named similarly. 
 
 **Example:**
-
-To download the raw data:
-```
-curl -O https://example.com/path/to/dataset1.tar.gz
-```
+- **724_LDLeanColour.JPG**
 
 ---
 
@@ -84,49 +85,87 @@ curl -O https://example.com/path/to/dataset1.tar.gz
 
 ## USAGE
 ### Pre-requisites
-List the dependencies or software required to run the code. Include:
-- Specific programming languages, libraries, or frameworks (e.g., Python 3.9, NumPy).
-- Installation instructions for dependencies (e.g., pip install, conda environments).
-- Hardware requirements, if any (e.g., CPU/GPU specifications, memory, specs used when running with SLURM).
+**Programming Languages, Libraries, and frameworks**
+   - python=3.9
+   - ultralytics
+   - segment-anything
+   - ipykernel
+   - numpy
+   - opencv
+   - matplotlib
+   - pillow
+   - shapely
+   - scikit-image
+   - pandas
+   - scipy
+
+**Installation** \
+    1. Make sure to have conda installed and that you are in the project's repository. \
+    2.
+    ```
+    conda env create -f environment.yml
+    ``` \
+    3.
+    ```
+    conda activate yolosam_env
+    ``` \
+    4. 
+    ```
+    pip install lsq-ellipse
+    ```
 
 ### Instructions
-**DETAILED** Step-by-step guide to running the code. Can include:
-- Command-line examples or scripts to execute.
-- Screenshots, images, or videos illustrating usage.
-- Links to detailed documentation or tutorials.
-- Diagrams showing data flow or system behavior.
+1. Ensure everything is contained to it's proper location.
+2. Make sure to have last.pt in this directory.
+3. Run normally.
+4. The results can be found in the runs subdirectory.
 
 ### Notes
-IF APPLICABLE: Any information, such as tips, warnings, or alternative ways to run the code.
+IF the environment cannot be created using environment.yml. \
+TRY:
+```
+conda create -n yolosam_env python=3.9 -c conda-forge \
+ultralytics segment-anything ipykernel \
+numpy opencv matplotlib pillow \
+shapely scikit-image pandas scipy
 
-OTHERWISE: Write N/A
+conda activate yolosam_env
+
+pip install lsq-ellipse
+```
 
 ---
 
 ## OUTPUT
-Describe the expected outputs of the code. Include:
-- File types (e.g., `.csv`, `.txt`, `.bam`).
-- Location of the files.
-- File naming conventions.
-- Examples of output files or links to them, if applicable.
+**Directories (If absent)**
+- runs: Containing data from the current and previous runs.
+- segment: Containing predict subdirectories. Note that future runs will create a new predict folder labelled predict_ where _ is an increasing integer.
+- predict: Contains JPG images.
+
+**Files created:** \
+All files created will be found in the runs directory and it's subdirectories.
+- results.csv: containing image_id, ld_depth_px, ld_depth_mm, ld_width_mm
+- Annotated JPGs labeled similarly to **724_LDLeanColour_annotated.JPG**: These contain line segments which are used to calculate the measurements of muscle and fat.
+- Prediction JPGs labeled exactly as their raw_image counterparts contained within ./runs/segment/predict: Contain muscle and fat predictions alongside confidence.
 
 ---
 
 ## KNOWN ISSUES
-IF APPLICABLE: List any known bugs, limitations, or issues with the current version of the code.
-- Include workarounds or references to issues in the issue tracker, if available.
-
-OTHERWISE: Write N/A
+N/A
 
 ---
 
 ## CREDITS
 **Example:**
-"This repository was written by [Your Name/Team Name]."
+"This repository was written by AAFC Bioinformatics."
 "We thank the following people and teams for their assistance in the development of this project:"
-- [Contributor 1]
-- [Contributor 2]
-- [Acknowledged Organizations or Teams]
+- Fatima Davelouis
+- Edward Yakubovich
+- Arun Kommadath
+- Sean Hill
+- Tarik Ibrahim
+- Maaz Ali
+- Special thanks: AAFC Bioinformatics Team
 
 ---
 
@@ -146,12 +185,21 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ---
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
-IF APPLICABLE: Include any publications, articles, or additional resources that are related to the project.
-- [Index.md_link](docs/index.md)
-- Links to related papers or articles.
-- References for bioinformatics tools or methods used in the code.
+**Index**
+- [Index.md](docs/index.md)
 
-OTHERWISE: Write N/A
+**Documentation**
+- [NumPy](https://numpy.org/doc/stable/)
+- [Ultralytics/YOLO](https://docs.ultralytics.com/)
+- [Segment Anything](https://github.com/facebookresearch/segment-anything)
+- [IPyKernel](https://ipykernel.readthedocs.io/en/stable/)
+- [OpenCV](https://docs.opencv.org/4.x/index.html)
+- [matplotlib](https://matplotlib.org/stable/index.html)
+- [Pillow](https://pillow.readthedocs.io/en/stable/)
+- [Shapely](https://shapely.readthedocs.io/en/stable/)
+- [scikit-image](https://scikit-image.org/docs/stable/)
+- [pandas](https://pandas.pydata.org/docs/)
+- [SciPy](https://docs.scipy.org/doc/scipy/)
 
 ---
 

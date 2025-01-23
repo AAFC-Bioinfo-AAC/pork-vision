@@ -6,13 +6,13 @@ $ tree
 |-- README
 |-- last.pt                                 [model trained using YOLOv8 based on training images derived from SAM]
 |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
-|-- raw_images                              [2 test images in different orientations]
+|-- raw_images                              [4 test images in different orientations]
 |   |-- 1701_LdLeanColor.JPG
 |   |-- 1704_LdLeanColor.JPG
 |   |-- 2401_LdLeanColor.JPG
 |   `-- 724_LDLeanColour.JPG
 -- runs                                     [Output folder]
-|-- 1701_LdLeanColor_annotated.JPG
+|   |-- 1701_LdLeanColor_annotated.JPG
 |   |-- 1704_LdLeanColor_annotated.JPG
 |   |-- 2401_LdLeanColor_annotated.JPG
 |   |-- 724_LDLeanColour_annotated.JPG
