@@ -185,12 +185,33 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ---
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
-IF APPLICABLE: Include any publications, articles, or additional resources that are related to the project.
-- [Index.md_link](docs/index.md)
-- Links to related papers or articles.
-- References for bioinformatics tools or methods used in the code.
+**Additional Resources**
+- [Index.md](docs/index.md)
 
-OTHERWISE: Write N/A
+**References**
+1.  Pomar,C., Rivest, J., Jean dit Bailleul, P., & Marcoux, M. (2001). Predicting loin-eye area from ultrasound and grading probe measurements of fat and muscle depths in pork carcasses. Canadian Journal of Animal Science. 81(4): 429-434. https://doi.org/10.4141/A00-081
+2.  Ronneberger, O., Fischer, P., & Brox, T. (2015). U-net: Convolutional networks for biomedical image segmentation. In Medical Image Computing and Computer-Assisted Intervention–MICCAI 2015: 18th International Conference, Munich, Germany, October 5-9, 2015, Proceedings, Part III 18 (pp. 234-241). Springer International Publishing
+3.  @article \
+{ \
+    kirillov2023segany, \
+  title={Segment Anything}, \
+  author={Kirillov, Alexander and Mintun, Eric and Ravi, Nikhila and Mao, Hanzi and Rolland, Chloe and Gustafson, Laura and Xiao, Tete and Whitehead, Spencer and Berg, Alexander C. and Lo, Wan-Yen and Doll{\'a}r, Piotr and Girshick, Ross}, \
+  journal={arXiv:2304.02643}, \
+  year={2023} \
+}
+
+**Documentation**
+- [NumPy](https://numpy.org/doc/stable/)
+- [Ultralytics/YOLO](https://docs.ultralytics.com/)
+- [Segment Anything](https://github.com/facebookresearch/segment-anything)
+- [IPyKernel](https://ipykernel.readthedocs.io/en/stable/)
+- [OpenCV](https://docs.opencv.org/4.x/index.html)
+- [matplotlib](https://matplotlib.org/stable/index.html)
+- [Pillow](https://pillow.readthedocs.io/en/stable/)
+- [Shapely](https://shapely.readthedocs.io/en/stable/)
+- [scikit-image](https://scikit-image.org/docs/stable/)
+- [pandas](https://pandas.pydata.org/docs/)
+- [SciPy](https://docs.scipy.org/doc/scipy/)
 
 ---
 
