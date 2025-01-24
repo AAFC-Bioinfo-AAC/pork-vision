@@ -147,6 +147,7 @@ shapely scikit-image pandas scipy
 conda activate yolosam_env
 
 pip install lsq-ellipse
+pip install tabulate
 ```
 
 ### Instructions
