@@ -167,7 +167,7 @@ pip install lsq-ellipse
 |   |-- 1704_LdLeanColor.JPG
 |   |-- 2401_LdLeanColor.JPG
 |   `-- 724_LDLeanColour.JPG
--- runs**                                     [Output folder]
+-- output**                                     [Output folder]
 |   |-- 1701_LdLeanColor_annotated.JPG**
 |   |-- 1704_LdLeanColor_annotated.JPG**
 |   |-- 2401_LdLeanColor_annotated.JPG**
