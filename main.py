@@ -982,7 +982,7 @@ model_path = 'last.pt'
 # It stores the model architecture and learned parameters as tensors, 
 # a data structure that PyTorch heavily relies on for efficient machine learning computations.
 
-image_path = 'raw_images/' # raw images
+image_path = 'data/raw_images/' # raw images
 
 model = YOLO(model_path)
 
