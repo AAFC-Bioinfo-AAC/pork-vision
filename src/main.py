@@ -1198,25 +1198,28 @@ for i in range(0, len(results)):
 
 
 '''
-Make table of results - WIP
+Make table of results
 '''
-# ADD VARIABLES THAT CAN GO HERE FOR MEASUREMENTS
+def create():
+    # ADD VARIABLES THAT CAN GO HERE FOR MEASUREMENTS
 
-#list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list, muscle_to_fat_box_method_list))
-#df = pd.DataFrame(list_of_measurements, columns=['image_id', 'ld_depth_px', 'ld_width_px', 'fat_depth_px', 'fat_depth_box_px'])
+    #list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list, muscle_to_fat_box_method_list))
+    #df = pd.DataFrame(list_of_measurements, columns=['image_id', 'ld_depth_px', 'ld_width_px', 'fat_depth_px', 'fat_depth_box_px'])
 
-list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list))
-df = pd.DataFrame(list_of_measurements, columns=['image_id', 'ld_depth_px', 'ld_width_px', 'fat_depth_px'])
-df_mm = df.iloc[:,1:5] / 140
-df_mm.columns = ['ld_depth_mm', 'ld_width_mm', 'fat_depth_mm']
+    list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list))
 
-df = pd.concat([df, df_mm], axis = 1)
-column_titles = ['image_id', "ld_depth_px", 'ld_depth_mm', 'ld_width_px', 'ld_width_mm', 'fat_depth_px', 'fat_depth_mm']
-df=df.reindex(columns=column_titles)
+    ##Converts px to mm based on a provided formula and concats the results onto the df.
+    df = pd.DataFrame(list_of_measurements, columns=['image_id', 'ld_depth_px', 'ld_width_px', 'fat_depth_px'])
+    df_mm = df.iloc[:,1:5] / 140 
+    df_mm.columns = ['ld_depth_mm', 'ld_width_mm', 'fat_depth_mm']
+    df = pd.concat([df, df_mm], axis = 1)
+    column_titles = ['image_id', "ld_depth_px", 'ld_depth_mm', 'ld_width_px', 'ld_width_mm', 'fat_depth_px', 'fat_depth_mm']
+    df=df.reindex(columns=column_titles) #Reindexing for better organization
 
-df.to_csv("output/results.csv", index=False)
+    df.to_csv("output/results.csv", index=False)
 
-f = open("output/results.csv")
-csv_f = reader(f)
-print(tabulate(csv_f, headers='firstrow', tablefmt='pipe'))
-f.close()
+    f = open("output/results.csv")
+    csv_f = reader(f)
+    print(tabulate(csv_f, headers='firstrow', tablefmt='pipe'))
+    f.close()
+create()
