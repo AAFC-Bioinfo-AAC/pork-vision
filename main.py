@@ -3,7 +3,6 @@ import numpy as np
 import cv2
 import matplotlib.pyplot as plt
 from skimage import measure, draw
-from skimage.draw import polygon2mask
 import math
 from shapely.geometry import Polygon
 import ellipse
