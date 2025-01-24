@@ -1,11 +1,26 @@
-cff-version:
-message:
+cff-version: 1.0.0
+message: "If you use this software, please cite it as below"
 authors:
-- family-names:
-  given-names:
+- family-names: Davelouis
+  given-names: Fatima
   orcid: 
-title:
-version: 
+- family-names: Yakubovich
+  given-names: Edward
+  orcid: 
+- family-names: Kommadath
+  given-names: Arun
+  orcid: 
+- family-names: Hill
+  given-names: Sean
+  orcid: 
+- family-names: Ibrahim
+  given-names: Tarik
+  orcid: 
+- family-names: Ali
+  given-names: Maaz
+  orcid: 
+title: "Porkvision"
+version: "1.0.0"
 doi: 
 date-released: 
-url:
+url: https://github.com/AAFC-Bioinformatics/porkvision
