@@ -179,11 +179,6 @@ pip install lsq-ellipse
 |       |   |-- 1704_LdLeanColor.jpg**
 |       |   |-- 2401_LdLeanColor.jpg**
 |       |   `-- 724_LDLeanColour.jpg**
-|       `-- predict2**
-|           |-- 1701_LdLeanColor.jpg**
-|           |-- 1704_LdLeanColor.jpg**
-|           |-- 2401_LdLeanColor.jpg**
-|           `-- 724_LDLeanColour.jpg**
 |-- test_yolosam_env.yml                    [conda env]
 `-- yolo_testing_1.3_AK_edited.ipynb        [code]
 ```
