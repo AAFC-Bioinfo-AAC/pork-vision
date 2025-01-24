@@ -33,9 +33,6 @@ This document provides a centralized and comprehensive reference for all functio
 | `calculcate_midpoint_muscle_box`  | `fat_bbox`              | Bounding box coordinates for the fat layer.                                                    | `numpy.ndarray`                        |
 | `calculcate_midpoint_muscle_box`  | `orientation`           | Orientation of the fat layer relative to the muscle.                                           | String (`"FAT_TOP"`, `"FAT_RIGHT"`)    |
 | `return_min_max_mask_coords` | `contours`          | Contours from a binary mask for calculating minima and maxima.                                 | `numpy.ndarray`                        |
-| `line_to_fat_box_method`          | `mid_pt_muscle`         | Midpoint of the muscle bounding box.                                                           | Tuple of two integers (x, y)           |
-| `line_to_fat_box_method`          | `fat_connect`           | Connection point to the fat layer bounding box.                                                | Tuple of two integers (x, y)           |
-| `line_to_fat_box_method`          | `fat_mask`              | Binary mask of the fat layer.                                                                  | `numpy.ndarray`                        |
 | `convert_back_to_xyxy`            | `bbox`                  | Bounding box in polygon format to convert back to YOLO's `xyxy` format.                        | `numpy.ndarray`                        |
 | `bbox_reformatter`        | `bbox`                  | Bounding box to be reformatted for compatibility with different software stacks.               | `numpy.ndarray`                        |
 
@@ -113,6 +110,9 @@ This document provides a centralized and comprehensive reference for all functio
 | `box_line_with_offset`            | `fat_bbox`              | Bounding box coordinates for the fat layer.                                                    | `numpy.ndarray`                        |
 | `box_line_with_offset`            | `img_rect`              | Image with rectangle overlays.                                                                 | `numpy.ndarray` (OpenCV image)         |
 | `box_line_with_offset`            | `orientation`           | Orientation of the fat layer relative to the muscle.                                           | String (`"FAT_TOP"`, `"FAT_RIGHT"`)    |
+| `line_to_fat_box_method`          | `mid_pt_muscle`         | Midpoint of the muscle bounding box.                                                           | Tuple of two integers (x, y)           |
+| `line_to_fat_box_method`          | `fat_connect`           | Connection point to the fat layer bounding box.                                                | Tuple of two integers (x, y)           |
+| `line_to_fat_box_method`          | `fat_mask`              | Binary mask of the fat layer.                                                                  | `numpy.ndarray`                        |
 
 ### 1.5 Rotation and Orientation
 
