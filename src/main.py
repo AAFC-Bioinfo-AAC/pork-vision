@@ -8,6 +8,8 @@ from shapely.geometry import Polygon
 import ellipse
 from ultralytics.data.utils import polygon2mask
 import pandas as pd
+from csv import reader
+from tabulate import tabulate
 
 '''
 Author: Fatima Davelouis
@@ -1213,3 +1215,8 @@ column_titles = ['image_id', "ld_depth_px", 'ld_depth_mm', 'ld_width_px', 'ld_wi
 df=df.reindex(columns=column_titles)
 
 df.to_csv("output/results.csv", index=False)
+
+f = open("output/results.csv")
+csv_f = reader(f)
+print(tabulate(csv_f, headers='firstrow', tablefmt='pipe'))
+f.close()
