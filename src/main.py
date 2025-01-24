@@ -8,6 +8,7 @@ from shapely.geometry import Polygon
 import ellipse
 from ultralytics.data.utils import polygon2mask
 import pandas as pd
+
 '''
 Author: Fatima Davelouis
 '''
@@ -1204,13 +1205,11 @@ Make table of results - WIP
 
 list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list))
 df = pd.DataFrame(list_of_measurements, columns=['image_id', 'ld_depth_px', 'ld_width_px', 'fat_depth_px'])
+df_mm = df.iloc[:,1:5] / 140
+df_mm.columns = ['ld_depth_mm', 'ld_width_mm', 'fat_depth_mm']
 
-
-df = pd.concat([df, df.iloc[:,1:5] / 140], axis = 1)
-
-#df = df.rename(columns = {df.columns[5]: "ld_depth_mm", df.columns[6]: "ld_width_mm", df.columns[7]: "fat_depth_mm", df.columns[8]: "fat_depth_box_mm"})
-
-df = df.rename(columns = {df.columns[5]: "ld_depth_mm", df.columns[6]: "ld_width_mm"})
-
+df = pd.concat([df, df_mm], axis = 1)
+column_titles = ['image_id', "ld_depth_px", 'ld_depth_mm', 'ld_width_px', 'ld_width_mm', 'fat_depth_px', 'fat_depth_mm']
+df=df.reindex(columns=column_titles)
 
 df.to_csv("output/results.csv", index=False)
