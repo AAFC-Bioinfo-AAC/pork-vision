@@ -1012,9 +1012,21 @@ def rotation_detector_by_angle_corrector(
         fat_pt = (fat_bbox[2] + fat_bbox[3]) / 2
         muscle_mid = (muscle_bbox[1] + muscle_bbox[2]) / 2
 
+        if (abs(p2-fat_pt)[0]/140 > max_distance):
+            while abs(p2 - fat_pt)[0] / 140 > common_distance:
+                p2[0] += 1
+                p2[1] -= 1
+        else:
+            p2[0] -= 1
+            p2[1] += 1
+
+
+            
+        '''
         while abs(p2 - fat_pt)[0] / 140 > common_distance:
-            p2[0] += 1 if abs(p2 - fat_pt)[0] / 140 > max_distance else -1
-            p2[1] -= 1
+        p2[0] += 1 if abs(p2 - fat_pt)[0] / 140 > max_distance else -1
+        p2[1] -= 1
+        '''
 
     return p2, muscle_mid, fat_pt
 
