@@ -47,22 +47,17 @@ def drawlines(contour_points, mask):
     color = (0, 0, 255)
     thickness = 9
 
-    with_line = cv2.line(
-        mask,
+    new_mask = np.copy(mask)
+
+    new_mask = cv2.line(
+        new_mask,
         h1_point.astype("int32"),
         h2_point.astype("int32"),
         color,
         thickness,
     )
-    with_line = cv2.line(
-        with_line,
-        v1_point.astype("int32"),
-        v2_point.astype("int32"),
-        color,
-        thickness,
-    )
 
-    return myarea, h1_point, h2_point, v1_point, v2_point, with_line
+    return myarea, h1_point, h2_point, v1_point, v2_point, new_mask
 
 def convert_contours_to_image(contours, orig_shape):
     """
