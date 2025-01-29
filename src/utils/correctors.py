@@ -162,45 +162,81 @@ def distance_corrector(
 
     return new_p2, muscle_mid
 
-def rotation_detector_by_angle(current_fat_placement, angle, min_h_muscle, max_h_muscle, min_v_muscle, max_v_muscle):
-    
-    '''
-    A simple logic-gated function to detect the orientation of the fat layer with respect to the muscle layer by way of muscle layer measurements.
-    Key input here is the angle of rotation as calculated by a different function (ellipsoid method). Based on this angle we can deduce the likely orientation of the fat layer.
-    Once we know orientation and location of the fat layer, we can extend a line from the muscle measurements so as to capture the depth of the fat layer
-    by way of its binary mask. Where that line falls within the binary mask of the fat layer is the fat layer depth, in pixels.
-    '''
-    
+def rotation_detector_by_angle(
+    current_fat_placement,
+    angle,
+    min_h_muscle,
+    max_h_muscle,
+    min_v_muscle,
+    max_v_muscle,
+):
+    """
+    Detects the orientation of the fat layer with respect to the muscle layer based on the angle of rotation.
+    Extends a line from the muscle measurements to capture the depth of the fat layer.
+
+    Parameters:
+    current_fat_placement (str): The current placement of the fat layer ("FAT_TOP", "FAT_BOTTOM", "FAT_LEFT", "FAT_RIGHT").
+    angle (float): The angle of rotation calculated by the ellipsoid method.
+    min_h_muscle (numpy.ndarray): Minimum horizontal muscle point.
+    max_h_muscle (numpy.ndarray): Maximum horizontal muscle point.
+    min_v_muscle (numpy.ndarray): Minimum vertical muscle point.
+    max_v_muscle (numpy.ndarray): Maximum vertical muscle point.
+
+    Returns:
+    tuple: A tuple containing:
+        - p1 (numpy.ndarray): The starting point of the line segment.
+        - p2 (numpy.ndarray): The ending point of the line segment.
+        - endpt_x (int): The x-coordinate of the extended endpoint.
+        - endpt_y (int): The y-coordinate of the extended endpoint.
+        - ld_depth (float): The calculated depth of the muscle.
+        - ld_width (float): The calculated width of the muscle.
+    """
     if angle > 0:
         angle_adj = abs(90 - angle)
     else:
         angle_adj = 90 + angle
-    
+
     if angle_adj < 45 and current_fat_placement == "FAT_BOTTOM":
         p1, p2, endpt_x, endpt_y = line_extender(min_v_muscle, max_v_muscle)
-        ld_depth, ld_width = return_measurements(min_v_muscle, max_v_muscle, min_h_muscle, max_h_muscle)
+        ld_depth, ld_width = return_measurements(
+            min_v_muscle, max_v_muscle, min_h_muscle, max_h_muscle
+        )
     elif angle_adj > 45 and current_fat_placement == "FAT_BOTTOM":
         p1, p2, endpt_x, endpt_y = line_extender(min_h_muscle, max_h_muscle)
-        ld_depth, ld_width = return_measurements(min_h_muscle, max_h_muscle, min_v_muscle, max_v_muscle)
+        ld_depth, ld_width = return_measurements(
+            min_h_muscle, max_h_muscle, min_v_muscle, max_v_muscle
+        )
     elif angle_adj < 45 and current_fat_placement == "FAT_TOP":
         p1, p2, endpt_x, endpt_y = line_extender(max_v_muscle, min_v_muscle)
-        ld_depth, ld_width = return_measurements(max_v_muscle, min_v_muscle, min_h_muscle, max_h_muscle)
+        ld_depth, ld_width = return_measurements(
+            max_v_muscle, min_v_muscle, min_h_muscle, max_h_muscle
+        )
     elif angle_adj > 45 and current_fat_placement == "FAT_TOP":
         p1, p2, endpt_x, endpt_y = line_extender(max_h_muscle, min_h_muscle)
-        ld_depth, ld_width = return_measurements(max_h_muscle, min_h_muscle, min_v_muscle, max_v_muscle)
+        ld_depth, ld_width = return_measurements(
+            max_h_muscle, min_h_muscle, min_v_muscle, max_v_muscle
+        )
     elif angle_adj < 45 and current_fat_placement == "FAT_RIGHT":
         p1, p2, endpt_x, endpt_y = line_extender(min_h_muscle, max_h_muscle)
-        ld_depth, ld_width = return_measurements(min_h_muscle, max_h_muscle, min_v_muscle, max_v_muscle)
+        ld_depth, ld_width = return_measurements(
+            min_h_muscle, max_h_muscle, min_v_muscle, max_v_muscle
+        )
     elif angle_adj > 45 and current_fat_placement == "FAT_RIGHT":
         p1, p2, endpt_x, endpt_y = line_extender(max_v_muscle, min_v_muscle)
-        ld_depth, ld_width = return_measurements(max_v_muscle, min_v_muscle, min_h_muscle, max_h_muscle)
+        ld_depth, ld_width = return_measurements(
+            max_v_muscle, min_v_muscle, min_h_muscle, max_h_muscle
+        )
     elif angle_adj < 45 and current_fat_placement == "FAT_LEFT":
         p1, p2, endpt_x, endpt_y = line_extender(max_h_muscle, min_h_muscle)
-        ld_depth, ld_width = return_measurements(max_h_muscle, min_h_muscle, min_v_muscle, max_v_muscle)
+        ld_depth, ld_width = return_measurements(
+            max_h_muscle, min_h_muscle, min_v_muscle, max_v_muscle
+        )
     elif angle_adj > 45 and current_fat_placement == "FAT_LEFT":
         p1, p2, endpt_x, endpt_y = line_extender(min_v_muscle, max_v_muscle)
-        ld_depth, ld_width = return_measurements(min_v_muscle, max_v_muscle, min_h_muscle, max_h_muscle)
-    
+        ld_depth, ld_width = return_measurements(
+            min_v_muscle, max_v_muscle, min_h_muscle, max_h_muscle
+        )
+
     return p1, p2, endpt_x, endpt_y, ld_depth, ld_width
 
 def line_to_fat_corrector(new_p1, endpt_x, endpt_y, rotated_fat_mask):
@@ -226,188 +262,134 @@ def line_to_fat_corrector(new_p1, endpt_x, endpt_y, rotated_fat_mask):
     disc_line_fat = np.array(discrete_line)[pts]
     return disc_line_fat[-1]
 
-def rotation_detector_by_angle_corrector(current_fat_placement, angle, fat_bbox, muscle_bbox, p2):
-    
-    print ("old p2:", p2)
-    
-    max = 6.5
-    min = 5.5
+def rotation_detector_by_angle_corrector(
+    current_fat_placement, angle, fat_bbox, muscle_bbox, p2
+):
+    """
+    Corrects the position of a point based on the angle of rotation and the placement of the fat layer.
+
+    Parameters:
+    current_fat_placement (str): The current placement of the fat layer ("FAT_TOP", "FAT_BOTTOM", "FAT_LEFT", "FAT_RIGHT").
+    angle (float): The angle of rotation calculated by the ellipsoid method.
+    fat_bbox (numpy.ndarray): Bounding box for the fat.
+    muscle_bbox (numpy.ndarray): Bounding box for the muscle.
+    p2 (numpy.ndarray): The point to be corrected.
+
+    Returns:
+    tuple: A tuple containing:
+        - p2 (numpy.ndarray): The corrected point.
+        - muscle_mid (numpy.ndarray): The midpoint of the muscle bounding box.
+        - fat_pt (numpy.ndarray): The midpoint of the fat bounding box.
+    """
+    max_distance = 6.5
+    min_distance = 5.5
     common_distance = 6.0
-    
-    if angle > 0:
-        angle_adj = abs(90 - angle) #Get the rotation matrix, its of shape 2x3
-    else:
-        angle_adj = 90 + angle
-    
+
+    angle_adj = abs(90 - angle) if angle > 0 else 90 + angle
+
     if angle_adj < 45 and current_fat_placement == "FAT_BOTTOM":
-        print ("angle < 45")
-        
         fat_pt = (fat_bbox[1] + fat_bbox[2]) / 2
-        muscle_pt1 = (muscle_bbox[0] + muscle_bbox[1]) / 2
-        muscle_pt2 = (muscle_bbox[2] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt1
-        
-        if (abs(p2 - fat_pt)[0] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[0] + muscle_bbox[1]) / 2
+
+        if (abs(p2 - fat_pt)[0] / 140 > max_distance):
             while (abs(p2 - fat_pt)[0] / 140) > common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] - 1
-        elif (abs(p2 - fat_pt)[0] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] += 1
+                p2[1] -= 1
+        elif (abs(p2 - fat_pt)[0] / 140 < min_distance):
             while (abs(p2 - fat_pt)[0] / 140) < common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] - 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-            
-    
+                p2[0] -= 1
+                p2[1] -= 1
+
     elif angle_adj > 45 and current_fat_placement == "FAT_BOTTOM":
-        print ("angle > 45")
-        
         fat_pt = (fat_bbox[1] + fat_bbox[2]) / 2
-        muscle_pt1 = (muscle_bbox[0] + muscle_bbox[1]) / 2
-        muscle_pt2 = (muscle_bbox[2] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt1
-        
-        if (abs(p2 - fat_pt)[1] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[0] + muscle_bbox[1]) / 2
+
+        if (abs(p2 - fat_pt)[1] / 140 > max_distance):
             while (abs(p2 - fat_pt)[1] / 140) > common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] - 1
-        elif (abs(p2 - fat_pt)[1] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] -= p2[0] - 1
+                p2[1] -= p2[1] - 1
+        elif (abs(p2 - fat_pt)[1] / 140 < min_distance):
             while (abs(p2 - fat_pt)[1] / 140) < common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] + 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-            
+                p2[0] -=  1
+                p2[1] += 1
+
     elif angle_adj < 45 and current_fat_placement == "FAT_TOP":
-        print ("angle < 45")
-        
         fat_pt = (fat_bbox[0] + fat_bbox[3]) / 2
-        muscle_pt1 = (muscle_bbox[0] + muscle_bbox[1]) / 2
-        muscle_pt2 = (muscle_bbox[2] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt2
-        
-        if (abs(p2 - fat_pt)[0] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[2] + muscle_bbox[3]) / 2
+
+        if (abs(p2 - fat_pt)[0] / 140 > max_distance):
             while (abs(p2 - fat_pt)[0] / 140) > common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] + 1
-        elif (abs(p2 - fat_pt)[0] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] -= 1
+                p2[1] += 1
+        elif (abs(p2 - fat_pt)[0] / 140 < min_distance):
             while (abs(p2 - fat_pt)[0] / 140) < common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] + 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-            
+                p2[0] += 1
+                p2[1] += 1
+
     elif angle_adj > 45 and current_fat_placement == "FAT_TOP":
-        print ("angle > 45")
-        
         fat_pt = (fat_bbox[0] + fat_bbox[3]) / 2
-        muscle_pt1 = (muscle_bbox[0] + muscle_bbox[1]) / 2
-        muscle_pt2 = (muscle_bbox[2] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt2
-        
-        if (abs(p2 - fat_pt)[1] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[2] + muscle_bbox[3]) / 2
+
+        if (abs(p2 - fat_pt)[1] / 140 > max_distance):
             while (abs(p2 - fat_pt)[1] / 140) > common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] + 1
-        elif (abs(p2 - fat_pt)[1] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] += 1
+                p2[1] += 1
+        elif (abs(p2 - fat_pt)[1] / 140 < min_distance):
             while (abs(p2 - fat_pt)[1] / 140) < common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] - 1
-        else:
-            print ("Within 6 +/- 0.5 ")
+                p2[0] += 1
+                p2[1] -= 1
+
     elif angle_adj < 45 and current_fat_placement == "FAT_RIGHT":
-        print ("angle < 45")
-        
         fat_pt = (fat_bbox[0] + fat_bbox[1]) / 2
-        muscle_pt1 = (muscle_bbox[1] + muscle_bbox[2]) / 2
-        muscle_pt2 = (muscle_bbox[0] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt2
-        
-        if (abs(p2 - fat_pt)[0] / 140 > max):
+        muscle_mid = (muscle_bbox[0] + muscle_bbox[3]) / 2
+
+        if (abs(p2 - fat_pt)[0] / 140 > max_distance):
             print ("More than 6.5")
             while (abs(p2 - fat_pt)[1] / 140) > common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] - 1
-        elif (abs(p2 - fat_pt)[0] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] -= 1
+                p2[1] -= 1
+        elif (abs(p2 - fat_pt)[0] / 140 < min_distance):
             while (abs(p2 - fat_pt)[1] / 140) < common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] + 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-            
+                p2[0] -= 1
+                p2[1] += 1
+
     elif angle_adj > 45 and current_fat_placement == "FAT_RIGHT":
-        
-        print ("angle > 45")
-        
         fat_pt = (fat_bbox[0] + fat_bbox[1]) / 2
-        muscle_pt1 = (muscle_bbox[1] + muscle_bbox[2]) / 2
-        muscle_pt2 = (muscle_bbox[0] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt2
-        
-        if (abs(p2 - fat_pt)[0] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[0] + muscle_bbox[3]) / 2
+
+        if (abs(p2 - fat_pt)[0] / 140 > max_distance):
             while (abs(p2 - fat_pt)[0] / 140) > common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] + 1
-        elif (abs(p2 - fat_pt)[0] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] -= 1
+                p2[1] += 1
+        elif (abs(p2 - fat_pt)[0] / 140 < min_distance):
             while (abs(p2 - fat_pt)[0] / 140) < common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] + 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-    
+                p2[0] += 1
+                p2[1] += 1
+
     elif angle_adj < 45 and current_fat_placement == "FAT_LEFT":
-        print ("angle < 45")
-        
         fat_pt = (fat_bbox[2] + fat_bbox[3]) / 2
-        muscle_pt1 = (muscle_bbox[1] + muscle_bbox[2]) / 2
-        muscle_pt2 = (muscle_bbox[0] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt1
-        
-        if (abs(p2 - fat_pt)[1] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[1] + muscle_bbox[2]) / 2
+
+        if (abs(p2 - fat_pt)[1] / 140 > max_distance):
             while (abs(p2 - fat_pt)[1] / 140) > common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] + 1
-        elif (abs(p2 - fat_pt)[1] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] += 1
+                p2[1] += 1
+        elif (abs(p2 - fat_pt)[1] / 140 < min_distance):
             while (abs(p2 - fat_pt)[1] / 140) < common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] - 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-            
+                p2[0] += 1
+                p2[1] -= 1
+
     elif angle_adj > 45 and current_fat_placement == "FAT_LEFT":
-        print ("angle > 45")
-        
         fat_pt = (fat_bbox[2] + fat_bbox[3]) / 2
-        muscle_pt1 = (muscle_bbox[1] + muscle_bbox[2]) / 2
-        muscle_pt2 = (muscle_bbox[0] + muscle_bbox[3]) / 2
-        muscle_mid = muscle_pt1
-        
-        if (abs(p2 - fat_pt)[0] / 140 > max):
-            print ("More than 6.5")
+        muscle_mid = (muscle_bbox[1] + muscle_bbox[2]) / 2
+
+        if (abs(p2 - fat_pt)[0] / 140 > max_distance):
             while (abs(p2 - fat_pt)[0] / 140) > common_distance:
-                p2[0] = p2[0] + 1
-                p2[1] = p2[1] - 1
-        elif (abs(p2 - fat_pt)[0] / 140 < min):
-            print ("Less than 5.5")
+                p2[0] += 1
+                p2[1] -= 1
+        elif (abs(p2 - fat_pt)[0] / 140 < min_distance):
             while (abs(p2 - fat_pt)[0] / 140) < common_distance:
-                p2[0] = p2[0] - 1
-                p2[1] = p2[1] - 1
-        else:
-            print ("Within 6 +/- 0.5 ")
-    
-    print ("new p2:", p2)
-    
+                p2[0] += 1
+                p2[1] -= 1
+
     return p2, muscle_mid, fat_pt

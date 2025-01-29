@@ -146,8 +146,7 @@ def main():
 
         print(ld_width)
 
-        image_old = cv2.line(image_line.copy(), p2, max_fat_pt, (255, 255, 0), 10)
-        image_old = cv2.line(image_old, p1, p2, (0, 0, 255), 20)
+        image_old = image_line
 
         muscle_to_fat = abs(math.dist(p2, max_fat_pt))
 
