@@ -48,6 +48,33 @@ def parse_args():
     )
     return parser.parse_args()
 
+def create_table(ID, depth, width, muscle_fat, args_parser):
+    list_of_measurements = list(zip(ID, depth, width, muscle_fat))
+    df = pd.DataFrame(
+        list_of_measurements,
+        columns=["image_id", "ld_depth_px", "ld_width_px", "fat_depth_px"],
+    )
+    df_mm = df.iloc[:, 1:4] / 140
+    df_mm.columns = ["ld_depth_mm", "ld_width_mm", "fat_depth_mm"]
+
+    df = pd.concat([df, df_mm], axis=1)
+    column_titles = [
+        "image_id",
+        "ld_depth_px",
+        "ld_depth_mm",
+        "ld_width_px",
+        "ld_width_mm",
+        "fat_depth_px",
+        "fat_depth_mm",
+    ]
+    df = df.reindex(columns=column_titles)
+
+    df.to_csv(args_parser.results_csv, index=False)
+
+    with open(args_parser.results_csv) as f:
+        csv_f = reader(f)
+        print(tabulate(csv_f, headers="firstrow", tablefmt="pipe"))
+
 
 def main():
     args = parse_args()
@@ -237,33 +264,7 @@ def main():
             ),
             img_final,
         )
-
-    list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list))
-    df = pd.DataFrame(
-        list_of_measurements,
-        columns=["image_id", "ld_depth_px", "ld_width_px", "fat_depth_px"],
-    )
-    df_mm = df.iloc[:, 1:4] / 140
-    df_mm.columns = ["ld_depth_mm", "ld_width_mm", "fat_depth_mm"]
-
-    df = pd.concat([df, df_mm], axis=1)
-    column_titles = [
-        "image_id",
-        "ld_depth_px",
-        "ld_depth_mm",
-        "ld_width_px",
-        "ld_width_mm",
-        "fat_depth_px",
-        "fat_depth_mm",
-    ]
-    df = df.reindex(columns=column_titles)
-
-    df.to_csv(args.results_csv, index=False)
-
-    with open(args.results_csv) as f:
-        csv_f = reader(f)
-        print(tabulate(csv_f, headers="firstrow", tablefmt="pipe"))
-
+    create_table(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list, args)
 
 if __name__ == "__main__":
     main()
