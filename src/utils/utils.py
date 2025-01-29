@@ -1125,28 +1125,28 @@ def correct_measurements(
         image_line,
         new_p1.astype("int32"),
         mid_pt_muscle.astype("int32"),
-        (0, 255, 255),
+        (0, 255, 255), # Yellow 
         10,
     )
     image_line = cv2.line(
         image_line,
         mid_pt_muscle.astype("int32"),
         max_fat_pt_method1,
-        (255, 255, 0),
+        (255, 255, 0), # Teal
         10,
     )
     image_line = cv2.line(
         image_line,
         new_p1.astype("int32"),
         new_p2.astype("int32"),
-        (255, 0, 255),
+        (255, 0, 255), # Violet
         10,
     )
     image_line = cv2.line(
         image_line,
         new_p2.astype("int32"),
         max_fat_pt_method2,
-        (255, 255, 0),
+        (255, 255, 0), # Teal
         10,
     )
 
