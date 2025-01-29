@@ -459,13 +459,6 @@ def drawlines(contour_points, mask):
         color,
         thickness,
     )
-    with_line = cv2.line(
-        with_line,
-        v1_point.astype("int32"),
-        v2_point.astype("int32"),
-        color,
-        thickness,
-    )
 
     return myarea, h1_point, h2_point, v1_point, v2_point, with_line
 
