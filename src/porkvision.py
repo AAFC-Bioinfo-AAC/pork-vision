@@ -292,9 +292,9 @@ def measure_longest_horizontal_segment(muscle_mask):
 
 def find_midline_using_fat_extremes(fat_mask):
     """
-    Determines the midline (bone side) using the vertical position of the fat mask’s leftmost and rightmost points.
+    Determines the midline (bone side) using the vertical position of the fat mask's leftmost and rightmost points.
 
-    The **higher** point (lower Y value) is the **bone side**.
+    The higher point (lower Y value) is the bone side.
 
     Parameters:
     - fat_mask (numpy.ndarray): Binary mask of the fat.
@@ -310,47 +310,63 @@ def find_midline_using_fat_extremes(fat_mask):
         return None, None
 
     fat_contour = max(contours, key=cv2.contourArea)
+    fat_contour = np.squeeze(fat_contour)  # Fix potential shape issue
 
     # Find leftmost and rightmost fat points
-    leftmost = tuple(fat_contour[fat_contour[:, :, 0].argmin()][0])  # (x, y)
-    rightmost = tuple(fat_contour[fat_contour[:, :, 0].argmax()][0])  # (x, y)
+    leftmost = tuple(fat_contour[np.argmin(fat_contour[:, 0])])  # (x, y)
+    rightmost = tuple(fat_contour[np.argmax(fat_contour[:, 0])])  # (x, y)
 
     # The higher (smaller Y) point is the midline (bone side)
     if leftmost[1] < rightmost[1]:  # Leftmost is higher up
+        print("Midline on the left")
         return "LEFT", leftmost
     else:
+        print("Midline on the right")
         return "RIGHT", rightmost
 
-def measure_longest_vertical_segment(muscle_mask):
+def measure_vertical_segment(muscle_mask, midline_side, cm_to_pixels=140):
     """
-    Finds the longest vertical segment in the muscle mask and returns its start & end points.
+    Measures muscle depth using a fixed x-coordinate at 7 cm from the midline (bone side).
 
     Returns:
-    - tuple: ((x, y1), (x, y2)) representing the longest vertical segment.
+    - tuple: ((x, y1), (x, y2)) representing the muscle depth line.
     """
+    depth_offset = int(7 * cm_to_pixels)  # Convert cm to pixels
+
     contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
-        return None, None  # No contour found
+        print("measure_vertical_segment: No contours found.")
+        return None, None
 
     muscle_contour = max(contours, key=cv2.contourArea)
+    
+    # Compute leftmost and rightmost x-coordinates
+    leftmost_x = np.min(muscle_contour[:, :, 0])
+    rightmost_x = np.max(muscle_contour[:, :, 0])
 
-    # Find the highest (min y) and lowest (max y) points for each x value
-    unique_xs = np.unique(muscle_contour[:, :, 0])
+    # Offset direction based on midline side
+    start_x = leftmost_x + depth_offset if midline_side == "LEFT" else rightmost_x - depth_offset
 
-    longest_segment = None
-    max_length = 0
+    # Ensure x is within valid image bounds
+    if start_x < 0 or start_x >= muscle_mask.shape[1]:
+        print(f"measure_vertical_segment: Computed x={start_x} is out of bounds. Skipping measurement.")
+        return None, None
 
-    for x in unique_xs:
-        y_values = muscle_contour[muscle_contour[:, :, 0] == x][:, 1]
-        top_y = np.min(y_values)
-        bottom_y = np.max(y_values)
-        length = bottom_y - top_y
+    # Extract the muscle mask column at start_x
+    column_pixels = muscle_mask[:, start_x]
 
-        if length > max_length:
-            max_length = length
-            longest_segment = ((x, top_y), (x, bottom_y))
+    # Find nonzero (muscle) pixel locations
+    muscle_pixels = np.where(column_pixels > 0)[0]  # Get y-values where muscle exists
 
-    return longest_segment
+    if muscle_pixels.size == 0:
+        print(f"measure_vertical_segment: No muscle detected at x = {start_x}. Skipping measurement.")
+        return None, None
+
+    # Get the min (top) and max (bottom) y-coordinates of the muscle in this column
+    top_muscle_y = np.min(muscle_pixels)
+    bottom_muscle_y = np.max(muscle_pixels)
+
+    return (start_x, bottom_muscle_y), (start_x, top_muscle_y)
 
 def extend_vertical_line_to_fat(fat_mask, muscle_depth_x):
     """
@@ -406,7 +422,7 @@ def extract_image_id(image_path):
 
     return filename_no_ext
 
-def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, midline_position, image_path, output_path):
+def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_path, output_path):
     """
     Draws measurement lines on the image and saves it.
 
@@ -415,7 +431,6 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, midline_p
     - muscle_width (tuple): (leftmost, rightmost) points defining the muscle width.
     - muscle_depth (tuple): (start, end) points defining the muscle depth.
     - fat_depth (tuple): (start, end) points defining the fat depth.
-    - midline_position (str): "LEFT" or "RIGHT" indicating which side is the midline.
     - image_path (str): Original image file path (to extract filename).
     - output_path (str): Directory to save annotated images.
     """
@@ -580,20 +595,34 @@ def main():
 
         # Measure muscle width
         leftmost, rightmost = measure_longest_horizontal_segment(rotated_muscle_mask)
+        if leftmost is None or rightmost is None:
+            print("Failed to find muscle width, skipping measurement.")
+            append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
+            continue  # Skip this image
         muscle_width = np.linalg.norm(np.array(leftmost) - np.array(rightmost))
 
-        # Measure longest vertical muscle depth
-        muscle_depth_start, muscle_depth_end = measure_longest_vertical_segment(rotated_muscle_mask)
+        # Determine midline using fat mask
+        midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
+        if midline_position is None:
+            print("Failed to determine midline, skipping measurement.")
+            append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
+            continue  # Skip this image
 
-        if muscle_depth_start and muscle_depth_end:
-            muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
+        # Measure muscle depth using 7cm offset
+        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position)
+        if muscle_depth_start is None or muscle_depth_end is None:
+            print("Failed to measure muscle depth, skipping measurement.")
+            append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
+            continue  # Skip this image
+        muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
 
-            # Measure fat depth at the same x-coordinate
-            fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, muscle_depth_start[0])
-            fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end)) if fat_depth_start and fat_depth_end else 0
-        else:
-            muscle_depth = 0
+        # Measure fat depth at the same x-coordinate as muscle depth
+        fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, muscle_depth_start[0])
+        if fat_depth_start is None or fat_depth_end is None:
+            print("Failed to measure fat depth, setting to zero.")
             fat_depth = 0
+        else:
+            fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
         # Save results
         id_list.append(extract_image_id(image_result.path))
@@ -607,13 +636,14 @@ def main():
             (leftmost, rightmost),
             (muscle_depth_start, muscle_depth_end),
             (fat_depth_start, fat_depth_end),
-            None,  # Midline is not needed yet
             image_result.path,
             args.output_path
         )
 
+    # Save results in CSV and display in table
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv)
     print_table_of_measurements(args.results_csv)
+
 
 if __name__ == "__main__":
     main()
