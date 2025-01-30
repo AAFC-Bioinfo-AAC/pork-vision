@@ -174,7 +174,7 @@ pip install tabulate
 |    |-- index.md
 |    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
 |    `-- parameters.md
-|-- output**     
+|-- output     
 |    |-- annotated_images**
 |    |   |-- 1701_LdLeanColor_annotated.JPG**
 |    |   |-- 1704_LdLeanColor_annotated.JPG**
@@ -182,7 +182,7 @@ pip install tabulate
 |    |   |-- 724_LDLeanColour_annotated.JPG**
 |    |-- results.csv**
 |    `-- segment
-|        |-- predict**
+|        `-- predict**
 |            |-- 1701_LdLeanColor.jpg**
 |            |-- 1704_LdLeanColor.jpg**
 |            |-- 2401_LdLeanColor.jpg**
@@ -207,9 +207,9 @@ pip install tabulate
 `-- requirements.txt
 ```
 
-4 directories, 9 files \
+2 directories, 9 files \
 NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
-For example another run with the file structure above would create a predict3 folder.
+For example another run with the file structure above would create a predict2 folder.
 
 ## KNOWN ISSUES
 N/A
@@ -260,6 +260,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 - [scikit-image](https://scikit-image.org/docs/stable/)
 - [pandas](https://pandas.pydata.org/docs/)
 - [SciPy](https://docs.scipy.org/doc/scipy/)
+- [tabulate](https://pypi.org/project/tabulate/)
 
 ---
 
