@@ -104,7 +104,7 @@ def correct_measurements(
     fat_depth_yellow = abs(math.dist(mid_pt_muscle, max_fat_pt_method1))
     fat_depth_purple = abs(math.dist(new_p2, max_fat_pt_method2))
 
-    return image_line, ld_depth_yellow, ld_depth_purple, fat_depth_yellow, fat_depth_purple
+    return image_line
 
 def distance_corrector(
     img,
