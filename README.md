@@ -161,27 +161,50 @@ pip install tabulate
 ## OUTPUT
 ```
 |-- README
-|-- last.pt                                 [model trained using YOLOv8 based on training images derived from SAM]
-|-- loin_segmentation_project_report.docx   [Older version report by Fatima]
-|-- raw_images                              [4 test images in different orientations]
+|-- checkpoints
+|   `-- last.pt                                 [model trained using YOLOv8 based on training images derived from SAM]
+|-- config
+|   `--environment.yml
+|-- data/raw_images                              [4 test images in different orientations]
 |   |-- 1701_LdLeanColor.JPG
 |   |-- 1704_LdLeanColor.JPG
 |   |-- 2401_LdLeanColor.JPG
 |   `-- 724_LDLeanColour.JPG
--- output**                                     [Output folder]
-|   |-- 1701_LdLeanColor_annotated.JPG**
-|   |-- 1704_LdLeanColor_annotated.JPG**
-|   |-- 2401_LdLeanColor_annotated.JPG**
-|   |-- 724_LDLeanColour_annotated.JPG**
-|   |-- results.csv**
-|   `-- segment**
-|       |-- predict**
-|       |   |-- 1701_LdLeanColor.jpg**
-|       |   |-- 1704_LdLeanColor.jpg**
-|       |   |-- 2401_LdLeanColor.jpg**
-|       |   `-- 724_LDLeanColour.jpg**
-|-- test_yolosam_env.yml                    [conda env]
-`-- yolo_testing_1.3_AK_edited.ipynb        [code]
+|-- docs
+|    |-- index.md
+|    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
+|    `-- parameters.md
+|-- output**     
+|    |-- annotated_images**
+|    |   |-- 1701_LdLeanColor_annotated.JPG**
+|    |   |-- 1704_LdLeanColor_annotated.JPG**
+|    |   |-- 2401_LdLeanColor_annotated.JPG**
+|    |   |-- 724_LDLeanColour_annotated.JPG**
+|    |-- results.csv**
+|    `-- segment
+|        |-- predict**
+|            |-- 1701_LdLeanColor.jpg**
+|            |-- 1704_LdLeanColor.jpg**
+|            |-- 2401_LdLeanColor.jpg**
+|            `-- 724_LDLeanColour.jpg**
+|-- src
+|    |-- models
+|    |-- utils
+|    |   |-- __init__.py
+|    |   |-- calculations.py
+|    |   |-- correctors.py
+|    |   |-- ellipses.py
+|    |   |-- helpers.py
+|    |   |-- lines.py
+|    |   |-- rotation.py
+|    |   `-- visualizations.py
+|    `-- main.py
+|-- tests
+|-- CITATION.cff
+|-- CITATIONS.md
+|-- LICENSE
+|-- README.md
+`-- requirements.txt
 ```
 
 4 directories, 9 files \

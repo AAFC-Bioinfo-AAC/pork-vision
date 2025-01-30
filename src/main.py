@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument(
         "--output_path",
         type=str,
-        default="output/annotated_images",
+        default="output/segment",
         help="Path to save the output",
     )
     parser.add_argument(
@@ -71,6 +71,7 @@ def create_table(ID, depth, width, muscle_fat, args_parser):
 
 
 def main():
+    os.makedirs("output/annotated_images", exist_ok=True)
     args = parse_args()
 
     model = YOLO(args.model_path)
@@ -250,12 +251,9 @@ def main():
                 )
         except:
             print("Error in creating measurements, likely bad mask or bad call for orientation of fat relative to muscle")
-
+        
         cv2.imwrite(
-            os.path.join(
-                args.output_path,
-                f"{result.path.split('/')[-1].split('.')[0]}_annotated.JPG",
-            ),
+            os.path.join("output/annotated_images", f"{result.path.split('/')[-1].split('.')[0]}_annotated.JPG"),
             img_final,
         )
     create_table(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list, args)
