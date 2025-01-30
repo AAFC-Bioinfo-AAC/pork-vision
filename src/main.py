@@ -6,11 +6,9 @@ import pandas as pd
 from tabulate import tabulate
 from csv import reader
 from ultralytics import YOLO
-from utils.calculations import return_measurements
 from utils.ellipses import create_fitting_ellipse
 from utils.lines import drawlines, line_to_fat, mask_selector, check_mask_presence, convert_contours_to_image
 from utils.rotation import rotate_image, rotation_detector, reverse_orientation
-from utils.visualizations import plot_polygon
 from utils.correctors import correct_measurements
 
 
