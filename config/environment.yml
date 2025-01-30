@@ -1,0 +1,23 @@
+name: yolosam_env
+channels:
+  - conda-forge
+  - nvidia
+  - pytorch
+dependencies:
+  - python=3.9
+  - ultralytics
+  - segment-anything
+  - ipykernel
+  - numpy
+  - opencv
+  - pandas
+  - matplotlib
+  - scikit-image
+  - shapely
+  - scipy
+  - tqdm
+  - pillow
+
+  - pip
+  - pip:
+      - lsq-ellipse==2.2.1
