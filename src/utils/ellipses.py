@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import cv2
 import ellipse
 from skimage import measure, draw
-from utils.visualizations import plot_polygon
+from .visualizations import plot_polygon
 
 def fit_ellipse_v1(cnt_points_arr):
     """

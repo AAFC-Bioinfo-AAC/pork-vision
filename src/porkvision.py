@@ -6,18 +6,12 @@ import pandas as pd
 from tabulate import tabulate
 from csv import reader
 from ultralytics import YOLO
-from utils.utils import (
-    check_mask_presence,
-    mask_selector,
-    convert_contours_to_image,
-    create_fitting_ellipse,
-    rotation_detector,
-    rotate_image,
-    drawlines,
-    line_to_fat,
-    reverse_orientation,
-    correct_measurements,
-)
+from utils.calculations import return_measurements
+from utils.ellipses import create_fitting_ellipse
+from utils.lines import drawlines, line_to_fat, mask_selector, check_mask_presence, convert_contours_to_image
+from utils.rotation import rotate_image, rotation_detector, reverse_orientation
+from utils.visualizations import plot_polygon
+from utils.correctors import correct_measurements
 
 
 def parse_args():
@@ -37,7 +31,7 @@ def parse_args():
     parser.add_argument(
         "--output_path",
         type=str,
-        default="output/segment",
+        default="output/annotated_images",
         help="Path to save the output",
     )
     parser.add_argument(
