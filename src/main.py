@@ -56,6 +56,11 @@ def main():
     ld_width_list = []
     muscle_to_fat_list = []
 
+    ld_depth_yellow_list = []
+    ld_depth_purple_list = []
+    fat_depth_yellow_list = []
+    fat_depth_purple_list = []
+
     for i in range(len(results)):
         result = results[i]
         print(result.path)
@@ -167,7 +172,7 @@ def main():
             if reversion and not bad_mask:
                 print("Reverted")
                 print(orientation, orientation_reverse)
-                img_final = correct_measurements(
+                img_final, ld_depth_yellow, ld_depth_purple, fat_depth_yellow, fat_depth_purple = correct_measurements(
                     image_old.copy(),
                     orientation_reverse,
                     rotated_fat_box,
@@ -182,7 +187,7 @@ def main():
             elif reversion and bad_mask:
                 print("Reverted and new mask")
                 print(orientation, orientation_reverse)
-                img_final = correct_measurements(
+                img_final, ld_depth_yellow, ld_depth_purple, fat_depth_yellow, fat_depth_purple = correct_measurements(
                     image_old.copy(),
                     orientation_reverse,
                     rotated_fat_box,
@@ -195,7 +200,7 @@ def main():
                     center,
                 )
             else:
-                img_final = correct_measurements(
+                img_final, ld_depth_yellow, ld_depth_purple, fat_depth_yellow, fat_depth_purple = correct_measurements(
                     image_old.copy(),
                     orientation,
                     rotated_fat_box,
@@ -210,39 +215,30 @@ def main():
         except Exception as e:
             print(f"ERROR in measurement correction: {e}")
 
+        id_list.append(result.path.split("/")[-1].split("_")[0])
+        ld_depth_yellow_list.append(ld_depth_yellow)
+        ld_depth_purple_list.append(ld_depth_purple)
+        ld_width_list.append(ld_width)
+        fat_depth_yellow_list.append(fat_depth_yellow)
+        fat_depth_purple_list.append(fat_depth_purple)
+
         cv2.imwrite(
-            os.path.join(
-                'output/annotated_images',
-                f"{result.path.split('/')[-1].split('.')[0]}_annotated.JPG",
-            ),
+            os.path.join("output/annotated_images", f"{result.path.split('/')[-1].split('.')[0]}_annotated.JPG"),
             img_final,
         )
 
-    list_of_measurements = list(zip(id_list, ld_depth_list, ld_width_list, muscle_to_fat_list))
     df = pd.DataFrame(
-        list_of_measurements,
-        columns=["image_id", "ld_depth_px", "ld_width_px", "fat_depth_px"],
+        list(zip(id_list, ld_depth_yellow_list, ld_depth_purple_list, ld_width_list, fat_depth_yellow_list, fat_depth_purple_list)),
+        columns=["image_id", "ld_depth_yellow_px", "ld_depth_purple_px", "ld_width_px", "fat_depth_yellow_px", "fat_depth_purple_px"],
     )
-    df_mm = df.iloc[:, 1:4] / 140
-    df_mm.columns = ["ld_depth_mm", "ld_width_mm", "fat_depth_mm"]
 
+    df_mm = df.iloc[:, 1:6] / 140
+    df_mm.columns = ["ld_depth_yellow_mm", "ld_depth_purple_mm", "ld_width_mm", "fat_depth_yellow_mm", "fat_depth_purple_mm"]
     df = pd.concat([df, df_mm], axis=1)
-    column_titles = [
-        "image_id",
-        "ld_depth_px",
-        "ld_depth_mm",
-        "ld_width_px",
-        "ld_width_mm",
-        "fat_depth_px",
-        "fat_depth_mm",
-    ]
-    df = df.reindex(columns=column_titles)
 
     df.to_csv(args.results_csv, index=False)
 
-    with open(args.results_csv) as f:
-        csv_f = reader(f)
-        print(tabulate(csv_f, headers="firstrow", tablefmt="pipe"))
+    print(tabulate(df, headers="keys", tablefmt="pipe"))
 
 if __name__ == "__main__":
     main()
