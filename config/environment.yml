@@ -18,3 +18,4 @@ dependencies:
   - pip
   - pip:
       - lsq-ellipse==2.2.1
+      - tabulate
