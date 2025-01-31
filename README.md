@@ -176,25 +176,43 @@ pip install lsq-ellipse
 ---
 
 ## OUTPUT
-```
--- annotated_images                                     [Output folder]
-|   |-- 1701_LdLeanColor_annotated.JPG**
-|   |-- 1704_LdLeanColor_annotated.JPG**
-|   |-- 2401_LdLeanColor_annotated.JPG**
-|   |-- 724_LDLeanColour_annotated.JPG**
--- segment
-|       |-- predict
-|       |   |-- 1701_LdLeanColor.jpg**
-|       |   |-- 1704_LdLeanColor.jpg**
-|       |   |-- 2401_LdLeanColor.jpg**
-|       |   `-- 724_LDLeanColour.jpg**
-|       `-- predict2
-|           |-- 1701_LdLeanColor.jpg**
-|           |-- 1704_LdLeanColor.jpg**
-|           |-- 2401_LdLeanColor.jpg**
-|           `-- 724_LDLeanColour.jpg**
-|-- results.csv**
-```
+|-- config
+|   `--environment.yml
+|-- data/raw_images                              [4 test images in different orientations]
+|   |-- 1701_LdLeanColor.JPG
+|   |-- 1704_LdLeanColor.JPG
+|   |-- 2401_LdLeanColor.JPG
+|   `-- 724_LDLeanColour.JPG
+|-- docs
+|    |-- index.md
+|    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
+|-- output**     
+|    |-- annotated_images**
+|    |   |-- 1701_LdLeanColor_annotated.JPG**
+|    |   |-- 1704_LdLeanColor_annotated.JPG**
+|    |   |-- 2401_LdLeanColor_annotated.JPG**
+|    |   |-- 724_LDLeanColour_annotated.JPG**
+|    |-- results.csv**
+|    `-- segment
+|        |-- predict**
+|            |-- 1701_LdLeanColor.jpg**
+|            |-- 1704_LdLeanColor.jpg**
+|            |-- 2401_LdLeanColor.jpg**
+|            `-- 724_LDLeanColour.jpg**
+|-- src
+|    |-- models
+|    |-- utils
+|    |   |-- measurement.py
+|    |   |-- orientation.py
+|    |   |-- postprocess.py
+|    |   |-- preprocess.py
+|    `-- main.py
+|-- tests
+|-- CITATION.cff
+|-- CITATIONS.md
+|-- LICENSE
+|-- README.md
+`-- requirements.txt
 
 NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
 For example another run with the file structure above would create a predict3 folder.
