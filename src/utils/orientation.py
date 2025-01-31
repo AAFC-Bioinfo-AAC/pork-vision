@@ -35,7 +35,7 @@ def find_largest_contour(mask, min_area=500):
 
 def preprocess_mask(binary_mask):
     """
-    Applies morphological closing to smooth small holes/gaps in the binary mask.
+    Smoothes small holes/gaps in the binary mask.
 
     Parameters:
     - binary_mask (np.ndarray): A binary mask of the object.
