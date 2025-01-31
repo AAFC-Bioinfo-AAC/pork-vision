@@ -1,0 +1,121 @@
+import os
+import cv2
+import pandas as pd
+from tabulate import tabulate
+
+def extract_image_id(image_path):
+    """
+    Extracts the image ID from a filename.
+
+    Parameters:
+    - image_path (str): Full path of the image file.
+
+    Returns:
+    - str: Extracted image ID (e.g., "1701").
+    """
+
+    # Get the filename without path
+    filename = os.path.basename(image_path)
+
+    # Remove the extension (e.g., .JPG, .PNG)
+    filename_no_ext = os.path.splitext(filename)[0]
+
+    return filename_no_ext
+
+def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_path, output_path):
+    """
+    Draws measurement lines on the image and saves it.
+
+    Parameters:
+    - image (numpy.ndarray): The rotated image.
+    - muscle_width (tuple): (leftmost, rightmost) points defining the muscle width.
+    - muscle_depth (tuple): (start, end) points defining the muscle depth.
+    - fat_depth (tuple): (start, end) points defining the fat depth.
+    - image_path (str): Original image file path (to extract filename).
+    - output_path (str): Directory to save annotated images.
+    """
+
+    # Create a copy of the image for annotation
+    annotated_image = image.copy()
+
+    # Define colors (BGR format)
+    width_color = (0, 255, 0)  # Green for muscle width
+    depth_color = (0, 0, 255)  # Red for muscle depth
+    fat_color = (255, 0, 0)  # Blue for fat depth
+    thickness = 5
+
+    # Draw muscle width line
+    if muscle_width:
+        cv2.line(annotated_image, muscle_width[0], muscle_width[1], width_color, thickness)
+
+    # Draw muscle depth line
+    if muscle_depth:
+        cv2.line(annotated_image, muscle_depth[0], muscle_depth[1], depth_color, thickness)
+    else:
+        print("no muscle depth")
+
+    # Draw fat depth line
+    if fat_depth:
+        cv2.line(annotated_image, fat_depth[0], fat_depth[1], fat_color, thickness)
+    else:
+        print("no fat depth")
+
+    # Extract filename and define output path
+    filename = os.path.basename(image_path)
+    output_file = os.path.join(output_path, f"annotated_{filename}")
+
+    # Save the annotated image
+    cv2.imwrite(output_file, annotated_image)
+
+    print(f"Annotated image saved: {output_file}" + "\n")
+
+def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path):
+    """
+    Saves the measurement results to a CSV file.
+
+    Parameters:
+    - id_list (list): List of image IDs.
+    - muscle_width_list (list): List of measured muscle widths.
+    - muscle_depth_list (list): List of measured muscle depths.
+    - fat_depth_list (list): List of measured fat depths.
+    - output_csv_path (str): Path to save the CSV file.
+    """
+
+    df = pd.DataFrame({
+        "image_id": id_list,
+        "muscle_width_px": muscle_width_list,
+        "muscle_depth_px": muscle_depth_list,
+        "fat_depth_px": fat_depth_list
+    })
+
+    # Convert measurements to millimeters (assuming 140 pixels = 1 cm)
+    conversion_factor = 10 / 140  # 10 mm per cm, 140 px per cm
+    df_mm = df.iloc[:, 1:] * conversion_factor
+    df_mm.columns = ["muscle_width_mm", "muscle_depth_mm", "fat_depth_mm"]
+
+    # Concatenate pixel and mm measurements
+    df = pd.concat([df, df_mm], axis=1)
+
+    # Save DataFrame to CSV
+    df.to_csv(output_csv_path, index=False)
+
+    print(f"Results saved to: {output_csv_path}")
+
+def print_table_of_measurements(results_csv_path):
+    """
+    Reads the CSV file and prints the results in a formatted table.
+
+    Parameters:
+    - results_csv_path (str): Path to the CSV file containing measurement results.
+    """
+
+    # Load the CSV file
+    try:
+        df = pd.read_csv(results_csv_path)
+        
+        # Print the table using tabulate
+        print("\nMeasurement Results:")
+        print(tabulate(df, headers="keys", tablefmt="pipe", showindex=False))
+
+    except Exception as e:
+        print(f"Error reading results CSV: {e}")
