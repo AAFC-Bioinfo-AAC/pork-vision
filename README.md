@@ -12,6 +12,7 @@ We use an object detection model in order to automate this. All images used are 
 
 <p align="center">
     <img src="./data/raw_images/1701_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
+    <img src="./data/raw_images/1701_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
 We wish to automate this tedious process while retaining acceptable accuracy.
@@ -171,7 +172,14 @@ shapely scikit-image pandas scipy
 conda activate yolosam_env
 
 pip install lsq-ellipse
+pip install tabulate
 ```
+
+### Instructions
+1. Ensure everything is contained to it's proper location.
+2. Make sure to have last.pt in this directory.
+3. Run normally.
+4. The results can be found in the runs subdirectory.
 
 ---
 
