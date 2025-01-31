@@ -41,14 +41,30 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ---
 
 ## OVERVIEW
-The steps this code performs can be split into smaller processes. 
-1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. 
-2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. 
-3. Image Analysis of Muscle: Using left-, right-, top-, and bottom-most coordinate points on the muscle mask we can calculate the muscle width and depth. \
-If necessary we correct for any tilts and inclinations of the loin carcass. 
-4. Image Analysis for Fat: Since our Neural-network has not been trained for fat, we use the line segment for muscle depth and extend until we reach the upper boundary of fat. \
-Then we measure the length of the line segment that extends across the fat. 
-5. Post-processing: The measurements are saved into a csv file. Since the measurements are in pixels; they are converted to metric units. 
+The steps this code performs can be split into smaller processes.
+### **1. Pre-Processing**  
+- A **trained YOLOv8 segmentation model** extracts and isolates the **muscle mask** from the image.  
+- The **fat mask** is inferred based on adjacency to the muscle region.  
+- These **binary masks** (`1 = muscle/fat, 0 = background`) serve as input for measurement functions.
+
+
+### **2. Orientation**  
+Some images may be captured in different orientations (fat on the left, right, or bottom). To standardize inputs:  
+- The **fat and muscle masks** are analyzed to determine their relative positions.  
+- The image is **rotated in 90° increments** until the fat is positioned **on top** of the muscle.    
+
+
+### **3. Image Analysis – Muscle Measurement**  
+Using **geometric analysis** of the muscle mask, we compute:  
+- **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
+- **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
+- The **x-coordinate** of the muscle depth measurement is used to **extend a vertical line upward** into the fat region.  
+- The **fat depth** is computed as the **distance between the topmost and bottommost points of the fat mask** at the selected x-coordinate.  
+
+
+### **4. Post-Processing & Output**  
+- Measurements are **saved to a CSV file** (`output/results.csv`).    
+- Annotated images with **width, depth, and fat measurements drawn as overlay lines** are saved to `output/annotated_images/`.   
 
 **Example**:
 ```mermaid
@@ -101,16 +117,6 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 |----------------------|------------------------------------------------|------------------|
 | `dilation_size`     | Size of dilation for adjacent fat detection. | `15` pixels |
 | `rotate_increment`  | Image rotation for reorienting fat. | `90` degrees |
-
----
-
-## **Measurement Methods**
-| **Function**                        | **Description** |
-|-------------------------------------|----------------|
-| `measure_longest_horizontal_segment()` | Finds the longest horizontal width of the muscle mask. |
-| `measure_vertical_segment()` | Measures muscle depth at **7 cm from midline** (bone side). |
-| `extend_vertical_line_to_fat()` | Measures fat depth at the **same x-coordinate** as muscle depth. |
-| `find_midline_using_fat_extremes()` | Determines which side of the carcass is the midline (bone side). |
 
 ---
 

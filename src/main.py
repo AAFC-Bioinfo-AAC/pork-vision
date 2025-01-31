@@ -7,7 +7,7 @@ from ultralytics import YOLO
 from utils.preprocess import mask_selector, append_None_values_to_measurement_lists, convert_contours_to_image
 from utils.orientation import orient_muscle_and_fat_using_adjacency
 from utils.measurement import measure_longest_horizontal_segment, find_midline_using_fat_extremes, measure_vertical_segment, extend_vertical_line_to_fat
-from utils.documentation import save_annotated_image, save_results_to_csv, print_table_of_measurements, extract_image_id
+from utils.postprocess import save_annotated_image, save_results_to_csv, print_table_of_measurements, extract_image_id
 
 
 def parse_args():
@@ -118,7 +118,7 @@ def main():
             fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
 ##########################################################
-# Step 4: Documentation
+# Step 4: Postprocessing
 ##########################################################
         # Save measurement results
         id_list.append(extract_image_id(image_result.path))
