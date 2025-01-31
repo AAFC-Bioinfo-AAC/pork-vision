@@ -2,14 +2,12 @@
 
 import numpy as np
 import cv2
-from skimage import measure
 from skimage.measure import points_in_poly
 from skimage.draw import polygon2mask
 from skimage.draw import line as skimage_line 
 from ultralytics.data.utils import polygon2mask
 from shapely.geometry import Polygon
 from .helpers import rotation_detector_by_angle
-from .calculations import return_measurements
 
 def drawlines(contour_points, mask):
     """

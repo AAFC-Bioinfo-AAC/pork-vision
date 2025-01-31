@@ -39,11 +39,14 @@ The project uses configuration files for environment setup and dependencies. The
 Below are links to the key tools and libraries leveraged in PorkVision:
 - [Ultralytics YOLOv8](https://docs.ultralytics.com/)
 - [Segment Anything](https://github.com/facebookresearch/segment-anything)
+- [matplotlib](https://matplotlib.org/stable/index.html)
 - [NumPy](https://numpy.org/doc/stable/)
 - [OpenCV](https://docs.opencv.org/4.x/index.html)
 - [pandas](https://pandas.pydata.org/docs/)
 - [SciPy](https://scipy.org/)
 - [Shapely](https://shapely.readthedocs.io/en/stable/)
+- [scikit-image](https://scikit-image.org/docs/stable/)
+- [tabulate](https://pypi.org/project/tabulate/)
 
 ### Environment Setup
 The recommended Python version is 3.9. To set up the environment:

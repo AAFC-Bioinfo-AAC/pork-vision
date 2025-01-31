@@ -125,15 +125,15 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
    - python=3.9
    - ultralytics
    - segment-anything
-   - ipykernel
    - numpy
    - opencv
    - matplotlib
-   - pillow
    - shapely
    - scikit-image
    - pandas
    - scipy
+   - tabulate
+   - lsq-ellipse
 
 **Installation** \
     1. Make sure to have conda installed and that you are in the project's repository. \
@@ -144,11 +144,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     3.
     ```
     conda activate yolosam_env
-    ``` \
-    4. 
-    ```
-    pip install lsq-ellipse
-    ```
+    ``` 
 
 ### Instructions
 1. Ensure everything is contained to it's proper location.
@@ -164,8 +160,8 @@ IF the environment cannot be created using environment.yml. \
 TRY:
 ```
 conda create -n yolosam_env python=3.9 -c conda-forge \
-ultralytics segment-anything ipykernel \
-numpy opencv matplotlib pillow \
+ultralytics segment-anything \
+numpy opencv matplotlib \
 shapely scikit-image pandas scipy
 
 conda activate yolosam_env
@@ -260,21 +256,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
 **Index**
-- [Index.md](docs/index.md)
-
-**Documentation**
-- [NumPy](https://numpy.org/doc/stable/)
-- [Ultralytics/YOLO](https://docs.ultralytics.com/)
-- [Segment Anything](https://github.com/facebookresearch/segment-anything)
-- [IPyKernel](https://ipykernel.readthedocs.io/en/stable/)
-- [OpenCV](https://docs.opencv.org/4.x/index.html)
-- [matplotlib](https://matplotlib.org/stable/index.html)
-- [Pillow](https://pillow.readthedocs.io/en/stable/)
-- [Shapely](https://shapely.readthedocs.io/en/stable/)
-- [scikit-image](https://scikit-image.org/docs/stable/)
-- [pandas](https://pandas.pydata.org/docs/)
-- [SciPy](https://docs.scipy.org/doc/scipy/)
-- [tabulate](https://pypi.org/project/tabulate/)
+- [Index.md](docs/index.md) [Contains documentation and additional installation instructions]
 
 ---
 

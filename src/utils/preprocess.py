@@ -1,4 +1,3 @@
-import numpy as np
 from skimage.draw import polygon2mask
 from ultralytics.data.utils import polygon2mask
 

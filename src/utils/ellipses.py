@@ -2,10 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import cv2
 import ellipse
-from skimage import measure, draw
-from .visualizations import plot_polygon
 
 def fit_ellipse_v1(cnt_points_arr):
     """
@@ -113,34 +110,3 @@ def plot_ellipse(cnt_points_arr, alphas=np.array([]), img_show=False):
         plt.show()
 
     return ellipse_coord
-
-def create_fitting_ellipse(img, mask, cnt_points):
-    """
-    Fits an ellipse onto the muscle mask.
-
-    Parameters:
-    img (numpy.ndarray): The input image.
-    mask (numpy.ndarray): The binary muscle mask.
-    cnt_points (list or numpy.ndarray): Contour points of the muscle mask.
-
-    Returns:
-    tuple: A tuple containing:
-        - center (tuple): The center coordinates of the ellipse.
-        - angle (float): The angle of ellipse inclination with respect to the x-axis.
-        - img_color_ellipse_overlay (numpy.ndarray): Image with the ellipse overlayed.
-    """
-    cnt_points_arr = cnt_points[0]
-    alphas, cnt_points_arr, X, Y, Z = fit_ellipse_v2(cnt_points)
-    ellipse_coord = plot_ellipse(cnt_points_arr, alphas=alphas, img_show=False)
-    reg, center, width, height, angle = fit_ellipse_v1(ellipse_coord)
-    polycontour_ellipse_mask = plot_polygon(
-        mask, ellipse_coord, color=(255, 0, 0), thickness=5
-    )
-    polycontour_ellipse_mask_3c = np.stack(
-        [polycontour_ellipse_mask] * 3, axis=-1
-    )
-    img_color_ellipse_overlay = cv2.addWeighted(
-        img, 0.1, polycontour_ellipse_mask_3c, 1, 0
-    )
-
-    return center, angle, img_color_ellipse_overlay
