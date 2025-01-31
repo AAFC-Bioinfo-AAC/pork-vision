@@ -2,8 +2,8 @@
 
 import numpy as np
 import cv2
-from .calculations import return_min_max_mask_coords, convert_back_to_xyxy
-from .helpers import line_extender
+from utils.calculations import return_min_max_mask_coords, convert_back_to_xyxy
+from utils.helpers import line_extender
 
 def rotation_detector(image_aspectratio, muscle_contour, fat_contour):
     """
