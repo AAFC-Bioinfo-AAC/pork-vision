@@ -41,24 +41,39 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ---
 
 ## OVERVIEW
-The steps this code performs can be split into smaller processes. 
-1. Pre-process Images: Certain images are in an incorrect orientation, so we need to rotate to the correct orientation. 
-2. Extract Region: By using our trained neural-network we are able to extract the region of muscle and create a muscle mask. 
-3. Image Analysis of Muscle: Using left-, right-, top-, and bottom-most coordinate points on the muscle mask we can calculate the muscle width and depth. \
-If necessary we correct for any tilts and inclinations of the loin carcass. 
-4. Image Analysis for Fat: Since our Neural-network has not been trained for fat, we use the line segment for muscle depth and extend until we reach the upper boundary of fat. \
-Then we measure the length of the line segment that extends across the fat. 
-5. Post-processing: The measurements are saved into a csv file. Since the measurements are in pixels; they are converted to metric units. 
+The steps this code performs can be split into smaller processes.
+### **1. Pre-Processing**  
+- A **trained YOLOv8 segmentation model** extracts and isolates the **muscle mask** from the image.  
+- These **binary masks** (`1 = muscle/fat, 0 = background`) serve as input for measurement functions.
+
+
+### **2. Orientation**  
+Some images may be captured in different orientations (fat on the left, right, or bottom). To standardize inputs:  
+- The **fat and muscle masks** are analyzed to determine their relative positions.  
+- The image is **rotated in 90° increments** until the fat is positioned **on top** of the muscle.    
+
+
+### **3. Image Analysis – Muscle Measurement**  
+Using **geometric analysis** of the muscle mask, we compute:  
+- **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
+- **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
+- The **x-coordinate** of the muscle depth measurement is used to **extend a vertical line upward** into the fat region.  
+- The **fat depth** is computed as the **distance between the topmost and bottommost points of the fat mask** at the selected x-coordinate.  
+
+
+### **4. Post-Processing & Output**  
+- Measurements are **saved to a CSV file** (`output/results.csv`).    
+- Annotated images with **width, depth, and fat measurements drawn as overlay lines** are saved to `output/annotated_images/`.   
 
 **Example**:
 ```mermaid
     flowchart LR;
-       A{Input: Raw Images and Neural Network}-->B[Correct Orientation]
-            B-->C(Extract Muscle Region and Create Mask)
-            C-->D[Correct Tilt and Inclinations]
-            D-->E(Calculate Coordinate Points)
-            E-->F[Calculate Muscle Width and Depth]
-            F-->G(Calculate Fat Depth)
+       A{Input: Raw Images and Neural Network}-->B[Select Mask]
+            B-->C(Convert Contours to Images)
+            C-->D[Correct Image Orientation]
+            D-->E(Measure Muscle Width)
+            E-->F[Measure Muscle and Fat Depth]
+            F-->G(Draw Lines on Images Using Measurements)
             G-->H{Output: Processed Images and CSV}
 
 
@@ -77,30 +92,30 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 
 ## PARAMETERS
 
-To address the extensive number of parameters used in the PorkVision source code, there is a dedicated `parameters.md` file located in the `docs/` directory. This document serves as a centralized and structured reference for all parameters categorized by their role in the process.
+## **General Parameters**
+| **Parameter**           | **Description**                                           | **Default Value** |
+|------------------------|------------------------------------------------------|------------------|
+| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"` |
+| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"` |
+| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"` |
+| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"` |
+| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"` |
 
-### Navigating `parameters.md`
+---
 
-For your convenience, the file includes a **Table of Contents** with direct links to each major section. Below is an overview of the main sections, with corresponding links to help you navigate directly to the information you need:
+## **Measurement Parameters**
+| **Parameter**        | **Description**                                        | **Default Value** |
+|--------------------|--------------------------------------------------|------------------|
+| `cm_to_pixels`    | Conversion factor for cm to pixels.              | `140` px/cm |
+| `depth_offset_cm` | Distance (cm) from the midline for depth measurement. | `7` cm |
 
-1. [Helper Function Parameters](/docs/parameters.md#1-helper-function-parameters)  
-   - [Calculations](/docs/parameters.md#11-calculations): Covers functions for calculating measurements such as depth, width, and bounding box midpoints.  
-   - [Correctors](/docs/parameters.md#12-correctors): Describes functions for correcting and refining measurements and orientations.  
-   - [Ellipse Fitting and Plotting](/docs/parameters.md#13-ellipse-fitting-and-plotting): Details functions for fitting and visualizing ellipses.  
-   - [Line, Contour, and Image Manipulations](/docs/parameters.md#14-line-contour-and-image-manipulations): Includes functions for extending lines, handling contours, and manipulating masks.  
-   - [Rotation and Orientation](/docs/parameters.md#15-rotation-and-orientation): Explains functions for detecting and adjusting orientations and rotations.  
-   - [Visualizations](/docs/parameters.md#16-visualizations): Documents functions for drawing overlays, bounding boxes, and measurement lines.
+---
 
-2. [Inference Parameters](/docs/parameters.md#2-inference-parameters)  
-   Covers parameters related to running YOLOv8 inference, including model paths, input images, and saving results.
-
-3. [Main Script Parameters](/docs/parameters.md#3-main-script-parameters)  
-   Details the parameters used in the main processing script for managing results, performing transformations, and generating measurements.
-
-4. [Results Handling Parameters](/docs/parameters.md#4-results-handling-parameters)  
-   Includes parameters for creating structured results, converting measurements, and exporting outputs to CSV files.
-
-Start exploring the parameters documentation [here](/docs/parameters.md).
+## **Image Processing Parameters**
+| **Parameter**         | **Description**                                      | **Default Value** |
+|----------------------|------------------------------------------------|------------------|
+| `dilation_size`     | Size of dilation for adjacent fat detection. | `15` pixels |
+| `rotate_increment`  | Image rotation for reorienting fat. | `90` degrees |
 
 ---
 
@@ -135,7 +150,16 @@ Start exploring the parameters documentation [here](/docs/parameters.md).
     pip install lsq-ellipse
     ```
 
-**Notes** \
+### Instructions
+1. Ensure everything is contained to it's proper location.
+2. Make sure to have last.pt in the src/models directory.
+3. Run with the following:
+    ```
+    python src/main.py
+    ```
+4. The results can be found in the annotated_images and segment subdirectories of the output folder.
+
+### Notes
 IF the environment cannot be created using environment.yml. \
 TRY:
 ```
@@ -160,9 +184,6 @@ pip install tabulate
 
 ## OUTPUT
 ```
-|-- README
-|-- checkpoints
-|   `-- last.pt                                 [model trained using YOLOv8 based on training images derived from SAM]
 |-- config
 |   `--environment.yml
 |-- data/raw_images                              [4 test images in different orientations]
@@ -173,8 +194,7 @@ pip install tabulate
 |-- docs
 |    |-- index.md
 |    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
-|    `-- parameters.md
-|-- output     
+|-- output**     
 |    |-- annotated_images**
 |    |   |-- 1701_LdLeanColor_annotated.JPG**
 |    |   |-- 1704_LdLeanColor_annotated.JPG**
@@ -182,7 +202,7 @@ pip install tabulate
 |    |   |-- 724_LDLeanColour_annotated.JPG**
 |    |-- results.csv**
 |    `-- segment
-|        `-- predict**
+|        |-- predict**
 |            |-- 1701_LdLeanColor.jpg**
 |            |-- 1704_LdLeanColor.jpg**
 |            |-- 2401_LdLeanColor.jpg**
@@ -190,14 +210,10 @@ pip install tabulate
 |-- src
 |    |-- models
 |    |-- utils
-|    |   |-- __init__.py
-|    |   |-- calculations.py
-|    |   |-- correctors.py
-|    |   |-- ellipses.py
-|    |   |-- helpers.py
-|    |   |-- lines.py
-|    |   |-- rotation.py
-|    |   `-- visualizations.py
+|    |   |-- measurement.py
+|    |   |-- orientation.py
+|    |   |-- postprocess.py
+|    |   |-- preprocess.py
 |    `-- main.py
 |-- tests
 |-- CITATION.cff
@@ -206,8 +222,6 @@ pip install tabulate
 |-- README.md
 `-- requirements.txt
 ```
-
-2 directories, 9 files \
 NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
 For example another run with the file structure above would create a predict2 folder.
 
