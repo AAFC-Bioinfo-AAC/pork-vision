@@ -86,33 +86,34 @@ def main():
         # Measure muscle width
         leftmost, rightmost = measure_longest_horizontal_segment(rotated_muscle_mask)
         if leftmost is None or rightmost is None:
-            print("Failed to find muscle width, skipping measurement.")
+            print("Failed to find muscle width, skipping image.")
             append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
             continue  # Skip this image
-        muscle_width = np.linalg.norm(np.array(leftmost) - np.array(rightmost))
+        muscle_width = np.linalg.norm(np.array(leftmost) - np.array(rightmost)) # Calculate measurement
 
         # Determine midline using fat mask
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
-            print("Failed to determine midline, skipping measurement.")
+            print("Failed to determine midline, skipping image.")
             append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
             continue  # Skip this image
 
         # Measure muscle depth using 7cm offset
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position)
         if muscle_depth_start is None or muscle_depth_end is None:
-            print("Failed to measure muscle depth, skipping measurement.")
+            print("Failed to measure muscle depth, skipping image.")
             append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
             continue  # Skip this image
-        muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
+        muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end)) # Calculate measurement
 
         # Measure fat depth at the same x-coordinate as muscle depth
         fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, muscle_depth_start[0])
         if fat_depth_start is None or fat_depth_end is None:
-            print("Failed to measure fat depth, setting to zero.")
-            fat_depth = 0
+            print("Failed to measure fat depth, skipping image.")
+            append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result)
+            continue  # Skip this image
         else:
-            fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
+            fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end)) # Calculate measurement
 
 ##########################################################
 # Step 4: Postprocessing
