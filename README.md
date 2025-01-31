@@ -44,7 +44,6 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 The steps this code performs can be split into smaller processes.
 ### **1. Pre-Processing**  
 - A **trained YOLOv8 segmentation model** extracts and isolates the **muscle mask** from the image.  
-- The **fat mask** is inferred based on adjacency to the muscle region.  
 - These **binary masks** (`1 = muscle/fat, 0 = background`) serve as input for measurement functions.
 
 
