@@ -8,8 +8,8 @@ from skimage.draw import polygon2mask
 from skimage.draw import line as skimage_line 
 from ultralytics.data.utils import polygon2mask
 from shapely.geometry import Polygon
-from .helpers import rotation_detector_by_angle
-from .calculations import return_measurements
+from utils.helpers import rotation_detector_by_angle
+from utils.calculations import return_measurements
 
 def drawlines(contour_points, mask):
     """
