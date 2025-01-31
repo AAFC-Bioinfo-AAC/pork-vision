@@ -1,7 +1,4 @@
 import argparse
-import os
-import cv2
-import pandas as pd
 import numpy as np
 from ultralytics import YOLO
 from utils.preprocess import mask_selector, append_None_values_to_measurement_lists, convert_contours_to_image
