@@ -43,18 +43,18 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ## OVERVIEW
 The steps this code performs can be split into smaller processes.
 ### **1. Pre-Processing**  
-- A **trained YOLOv8 segmentation model** extracts and isolates the **muscle mask** from the image.  
-- These **binary masks** (`1 = muscle/fat, 0 = background`) serve as input for measurement functions.
+- A trained segmentation model extracts and isolates a mask for the fat and the muscle from the image.  
+- These masks serve as input for measurement functions.
 
 
 ### **2. Orientation**  
 Some images may be captured in different orientations (fat on the left, right, or bottom). To standardize inputs:  
-- The **fat and muscle masks** are analyzed to determine their relative positions.  
-- The image is **rotated in 90° increments** until the fat is positioned **on top** of the muscle.    
+- The fat and muscle masks are analyzed to determine their relative positions.  
+- The image is rotated until the fat is positioned **on top** of the muscle.    
 
 
 ### **3. Image Analysis – Muscle Measurement**  
-Using **geometric analysis** of the muscle mask, we compute:  
+Using geometric analysis of the muscle mask, we compute:  
 - **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
 - **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
 - The **x-coordinate** of the muscle depth measurement is used to **extend a vertical line upward** into the fat region.  
@@ -65,7 +65,7 @@ Using **geometric analysis** of the muscle mask, we compute:
 - Measurements are **saved to a CSV file** (`output/results.csv`).    
 - Annotated images with **width, depth, and fat measurements drawn as overlay lines** are saved to `output/annotated_images/`.   
 
-**Example**:
+**Process Flowchart**:
 ```mermaid
     flowchart LR;
        A{Input: Raw Images and Neural Network}-->B[Select Mask]
