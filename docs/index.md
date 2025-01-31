@@ -24,7 +24,6 @@ The following documentation provides deatiled guidance on navigating the PorkVis
   - [Software and Tools](#software-and-tools)
 - [Additional Documentation Files](#additional-documentation-files)
   - [README.md](#readmemd)
-  - [Parameters.md](#parametersmd)
   - [ABCC_RCBA_Guide](#abcc_rcba_guide)
 
 ---
@@ -63,8 +62,8 @@ The recommended Python version is 3.9. To set up the environment:
 
 ### Testing and Validation
 To ensure the repository is functioning as expected:
-1. Use the provided sample images in the `raw_images/` directory.
-2. Run the pipeline and validate the outputs in the `runs/` directory.
+1. Use the provided sample images in the `data/raw_images/` directory.
+2. Run the pipeline and validate the outputs in the `output/` directory.
 
 ---
 
@@ -115,9 +114,6 @@ Refer to [this video](https://001gc.sharepoint.com/:v:/r/sites/42732/mmg1/Bioinf
 
 ### README.md
 Refer to [README.md](/README.md) for an overview of the repository.
-
-### Parameters.md
-Refer to [parameters.md](/docs/parameters.md) for clarification on function inputs throughout the source code.
 
 ### ABCC_RCBA_Guide
 Refer to the [ABCC_RCBA_Guide](https://github.com/AAFC-Bioinformatics/ABCC_RCBA_Guide) for additional context and supplementary materials that align with this and other AAFC projects.
