@@ -176,6 +176,7 @@ pip install lsq-ellipse
 ---
 
 ## OUTPUT
+```
 |-- config
 |   `--environment.yml
 |-- data/raw_images                              [4 test images in different orientations]
@@ -213,7 +214,7 @@ pip install lsq-ellipse
 |-- LICENSE
 |-- README.md
 `-- requirements.txt
-
+```
 NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
 For example another run with the file structure above would create a predict3 folder.
 
