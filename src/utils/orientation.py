@@ -136,7 +136,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
             fat_center_y = fy + fh / 2
 
             if fat_center_y < muscle_center_y:
-                print("Fat already correctly positioned on top. No rotation needed.")
+                #print("Fat already correctly positioned on top. No rotation needed.")
                 return original_image, muscle_mask, fat_mask, 0
         
         print("No valid adjacent fat region detected. Skipping orientation.")
@@ -152,16 +152,14 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
 
     final_angle = 0
     if dy > 0 and abs(dy) >= abs(dx):
-        print("Fat (adjacent region) below muscle. Rotating 180°.")
+        #print("Fat (adjacent region) below muscle. Rotating 180°.")
         final_angle = 180
     elif dx > 0 and abs(dx) > abs(dy):
-        print("Fat (adjacent region) on the right. Rotating +90°.")
+        #print("Fat (adjacent region) on the right. Rotating +90°.")
         final_angle = 90
     elif dx < 0 and abs(dx) > abs(dy):
-        print("Fat (adjacent region) on the left. Rotating -90°.")
+        #print("Fat (adjacent region) on the left. Rotating -90°.")
         final_angle = -90
-    else:
-        print("Fat (adjacent region) already on top. No rotation needed.")
 
     # 5. Apply final rotation
     rotated_image = rotate_image(original_image, final_angle)
