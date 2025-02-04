@@ -198,19 +198,19 @@ pip install tabulate
 |-- docs
 |    |-- index.md
 |    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
-|-- output**     
-|    |-- annotated_images**
-|    |   |-- 1701_LdLeanColor_annotated.JPG**
-|    |   |-- 1704_LdLeanColor_annotated.JPG**
-|    |   |-- 2401_LdLeanColor_annotated.JPG**
-|    |   |-- 724_LDLeanColour_annotated.JPG**
-|    |-- results.csv**
+|-- output     
+|    |-- annotated_images
+|    |   |-- 1701_LdLeanColor_annotated.JPG
+|    |   |-- 1704_LdLeanColor_annotated.JPG
+|    |   |-- 2401_LdLeanColor_annotated.JPG
+|    |   |-- 724_LDLeanColour_annotated.JPG
+|    |-- results.csv
 |    `-- segment
-|        |-- predict**
-|            |-- 1701_LdLeanColor.jpg**
-|            |-- 1704_LdLeanColor.jpg**
-|            |-- 2401_LdLeanColor.jpg**
-|            `-- 724_LDLeanColour.jpg**
+|        |-- predict
+|            |-- 1701_LdLeanColor.jpg
+|            |-- 1704_LdLeanColor.jpg
+|            |-- 2401_LdLeanColor.jpg
+|            `-- 724_LDLeanColour.jpg
 |-- src
 |    |-- models
 |    |-- utils
