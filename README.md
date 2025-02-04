@@ -71,8 +71,7 @@ Using geometric analysis of the muscle mask, we compute:
        A{Input: Raw Images and Neural Network}-->B[Select Mask]
             B-->C(Convert Contours to Images)
             C-->D[Correct Image Orientation]
-            D-->E(Measure Muscle Width)
-            E-->F[Measure Muscle and Fat Depth]
+            D-->E(Measure Muscle Width and Depth and Fat Depth)
             F-->G(Draw Lines on Images Using Measurements)
             G-->H{Output: Processed Images and CSV}
 
@@ -107,15 +106,24 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 | **Parameter**        | **Description**                                        | **Default Value** |
 |--------------------|--------------------------------------------------|------------------|
 | `cm_to_pixels`    | Conversion factor for cm to pixels.              | `140` px/cm |
-| `depth_offset_cm` | Distance (cm) from the midline for depth measurement. | `7` cm |
+| `step` | Step size in pixels to sample along line | `1.0` px |
+| `max_iter` | Maximum iterations to avoid infinite loops | `10000` iterations|
+
+---
+
+## **Orientation Parameters**
+| **Parameter** | **Description** | **Default Value** |
+| ------------- | --------------- | ----------------- |
+| `min_area`    | Minimum area to be considered valid | `500` px |
+| `kernel_size` | Size of the dilation kernel | `15` px |
+| `dilation_size` | Pixel size for dilation to define adjacency | `15` px |
 
 ---
 
 ## **Image Processing Parameters**
 | **Parameter**         | **Description**                                      | **Default Value** |
 |----------------------|------------------------------------------------|------------------|
-| `dilation_size`     | Size of dilation for adjacent fat detection. | `15` pixels |
-| `rotate_increment`  | Image rotation for reorienting fat. | `90` degrees |
+| `confidence_threshold` | Minimum confidence score for valid detection | `0.5` |
 
 ---
 
