@@ -41,22 +41,32 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
     # Define colors (BGR format)
     width_color = (0, 255, 0)  # Green for muscle width
     depth_color = (0, 0, 255)  # Red for muscle depth
-    fat_color = (255, 0, 0)  # Blue for fat depth
+    fat_color   = (255, 0, 0)  # Blue for fat depth
     thickness = 5
+
+    # Helper function to convert a point to integer coordinates.
+    def to_int_point(pt):
+        return (int(round(pt[0])), int(round(pt[1])))
 
     # Draw muscle width line
     if muscle_width:
-        cv2.line(annotated_image, muscle_width[0], muscle_width[1], width_color, thickness)
+        pt1 = to_int_point(muscle_width[0])
+        pt2 = to_int_point(muscle_width[1])
+        cv2.line(annotated_image, pt1, pt2, width_color, thickness)
 
     # Draw muscle depth line
     if muscle_depth:
-        cv2.line(annotated_image, muscle_depth[0], muscle_depth[1], depth_color, thickness)
+        pt1 = to_int_point(muscle_depth[0])
+        pt2 = to_int_point(muscle_depth[1])
+        cv2.line(annotated_image, pt1, pt2, depth_color, thickness)
     else:
         print("no muscle depth")
 
     # Draw fat depth line
     if fat_depth:
-        cv2.line(annotated_image, fat_depth[0], fat_depth[1], fat_color, thickness)
+        pt1 = to_int_point(fat_depth[0])
+        pt2 = to_int_point(fat_depth[1])
+        cv2.line(annotated_image, pt1, pt2, fat_color, thickness)
     else:
         print("no fat depth")
 
@@ -67,7 +77,7 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
     # Save the annotated image
     cv2.imwrite(output_file, annotated_image)
 
-    print(f"Annotated image saved: {output_file}" + "\n")
+    print(f"Annotated image saved: {output_file}\n")
 
 def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path):
     """
@@ -99,7 +109,7 @@ def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth
     # Save DataFrame to CSV
     df.to_csv(output_csv_path, index=False)
 
-    print(f"Results saved to: {output_csv_path}")
+    #print(f"Results saved to: {output_csv_path}")
 
 def print_table_of_measurements(results_csv_path):
     """
