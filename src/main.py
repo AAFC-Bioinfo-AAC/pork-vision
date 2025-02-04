@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 import os
+import cv2
 import numpy as np
 from ultralytics import YOLO
 from utils.preprocess import (
@@ -20,6 +21,7 @@ from utils.postprocess import (
     save_results_to_csv,
     print_table_of_measurements,
     extract_image_id,
+    save_to_roi
 )
 
 
@@ -30,6 +32,7 @@ def parse_args():
     parser.add_argument("--segment_path", type=str, default="output/segment")
     parser.add_argument("--output_path", type=str, default="output/annotated_images")
     parser.add_argument("--results_csv", type=str, default="output/results.csv")
+    parser.add_argument("--rois_path", type=str, default="output/rois")
     return parser.parse_args()
 
 
@@ -58,10 +61,10 @@ def process_image(image_path, args):
         )
 
         # Step 4: Measurement
-        leftmost, rightmost = measure_longest_horizontal_segment(rotated_muscle_mask)
-        if leftmost is None or rightmost is None:
+        muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
+        if muscle_width_start is None or muscle_width_end is None:
             return extract_image_id(image_path), None, None, None
-        muscle_width = np.linalg.norm(np.array(leftmost) - np.array(rightmost))
+        muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
 
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
@@ -79,8 +82,19 @@ def process_image(image_path, args):
 
         # Step 5: Save annotated image
         save_annotated_image(
-            rotated_image, (leftmost, rightmost), (muscle_depth_start, muscle_depth_end),
+            rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
             (fat_depth_start, fat_depth_end), image_path, args.output_path
+        )
+
+        save_to_roi(
+            muscle_width_start,
+            muscle_width_end,
+            muscle_depth_start,
+            muscle_depth_end,
+            fat_depth_start,
+            fat_depth_end,
+            image_id=extract_image_id(image_path),
+            rois_folder="output/rois"
         )
 
         return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth
