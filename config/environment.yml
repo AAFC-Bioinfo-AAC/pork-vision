@@ -8,7 +8,6 @@ dependencies:
   - ultralytics
   - segment-anything
   - numpy
-  - opencv
   - pandas
   - matplotlib
   - scikit-image
@@ -19,3 +18,5 @@ dependencies:
   - pip:
       - lsq-ellipse==2.2.1
       - tabulate
+      - roifile
+      - opencv-contrib-python
