@@ -137,9 +137,9 @@ def save_to_roi(muscle_width_start, muscle_width_end, muscle_depth_start, muscle
     '''
     Generates an ROI for each segment and saves it to file.
     inputs:
-        H1, H2 are the coordinate points of the horizontal loin segment.
-        V1v, V2v are the coordinate points of the vertical loin segment.
-        top_fat_coord: the coordinate point of the upper part of the fat segment.
+        muscle_width_start, muscle_width_end are the coordinate points of the horizontal loin segment.
+        musce_deth_start, muscle_depth_end are the coordinate points of the vertical loin segment.
+        fat_depth_start, fat_depth_end are the coordinate point of the fat segment.
         image_id: a string of the image ID number
         rois_folder: path to save the rois.
     '''
