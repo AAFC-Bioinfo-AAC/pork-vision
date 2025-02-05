@@ -1,6 +1,8 @@
 import os
 import cv2
 import pandas as pd
+import numpy as np
+from roifile import ImagejRoi, ROI_TYPE, ROI_OPTIONS
 from tabulate import tabulate
 
 def extract_image_id(image_path):
@@ -129,3 +131,50 @@ def print_table_of_measurements(results_csv_path):
 
     except Exception as e:
         print(f"Error reading results CSV: {e}")
+
+
+def save_to_roi(muscle_width_start, muscle_width_end, muscle_depth_start, muscle_depth_end, fat_depth_start, fat_depth_end, image_id, rois_folder):
+    '''
+    Generates an ROI for each segment and saves it to file.
+    inputs:
+        H1, H2 are the coordinate points of the horizontal loin segment.
+        V1v, V2v are the coordinate points of the vertical loin segment.
+        top_fat_coord: the coordinate point of the upper part of the fat segment.
+        image_id: a string of the image ID number
+        rois_folder: path to save the rois.
+    '''
+
+    def to_int_point(pt):
+        return (int(round(pt[0])), int(round(pt[1])))
+
+    horizontal_start = to_int_point(muscle_width_start)
+    horizontal_end = to_int_point(muscle_width_end)
+    vertical_start = to_int_point(muscle_depth_start)
+    vertical_end = to_int_point(muscle_depth_end)
+    fat_start = to_int_point(fat_depth_start)
+    fat_end = to_int_point(fat_depth_end)
+    horiz_pts = np.array([np.array(horizontal_start), np.array(horizontal_end)])
+    vert_pts = np.array([np.array(vertical_start), np.array(vertical_end)])
+    fat_pts = np.array([np.array(fat_start), np.array(fat_end)])
+    roi_h = ImagejRoi.frompoints(horiz_pts, name=f"{image_id}_horizontal")
+    roi_h.roitype = ROI_TYPE.POLYGON
+    roi_h.version=227
+    roi_h.options = ROI_OPTIONS(0)
+    # print("roi_h coordinates =", roi_h.coordinates())
+    roi_h.tofile(os.path.join(rois_folder, f'{image_id}_horizontal.roi'))
+
+    roi_v = ImagejRoi.frompoints(vert_pts, name=f"{image_id}_vertical")
+    roi_v.roitype = ROI_TYPE.POLYGON
+    roi_v.version=227
+    roi_v.options = ROI_OPTIONS(0)
+    # print("roi_v coordinates =", roi_v.coordinates())
+    roi_v.tofile(os.path.join(rois_folder, f'{image_id}_vertical.roi'))
+
+
+
+    roi_f = ImagejRoi.frompoints(fat_pts, name=f"{image_id}_fat")
+    roi_f.roitype = ROI_TYPE.POLYGON
+    roi_f.version=227
+    roi_f.options = ROI_OPTIONS(0)
+    # print("roi_f coordinates =", roi_f.coordinates())
+    roi_f.tofile(os.path.join(rois_folder, f'{image_id}_fat.roi'))
