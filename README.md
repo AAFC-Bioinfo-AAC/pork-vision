@@ -62,8 +62,9 @@ Using geometric analysis of the muscle mask, we compute:
 
 
 ### **4. Post-Processing & Output**  
-- Measurements are **saved to a CSV file** (`output/results.csv`).    
-- Annotated images with **width, depth, and fat measurements drawn as overlay lines** are saved to `output/annotated_images/`.   
+- Measurements are saved to a CSV file (`output/results.csv`).    
+- Annotated images with width, depth, and fat measurements drawn as overlay lines are saved to `output/annotated_images/`.
+- .roi files are saved to `output/rois/` incase a technician would like to manually verify measurements.    
 
 **Process Flowchart**:
 ```mermaid
@@ -72,8 +73,8 @@ Using geometric analysis of the muscle mask, we compute:
             B-->C(Convert Contours to Images)
             C-->D[Correct Image Orientation]
             D-->E(Measure Muscle Width and Depth and Fat Depth)
-            F-->G(Draw Lines on Images Using Measurements)
-            G-->H{Output: Processed Images and CSV}
+            E-->F(Draw Lines on Images Using Measurements)
+            F-->G{Output: Processed Images and CSV}
 
 
 ```
@@ -99,6 +100,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 | `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"` |
 | `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"` |
 | `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"` |
+| `--rois_path`      | Directory where .roi files are saved.        | `"output/rois/"` |
 
 ---
 
@@ -197,13 +199,26 @@ pip install tabulate
 |   `-- 724_LDLeanColour.JPG
 |-- docs
 |    |-- index.md
-|    |-- loin_segmentation_project_report.docx   [Older version report by Fatima]
+|    |-- loin_segmentation_project_report.docx   [Older version report by Edward/Fatima]
 |-- output     
 |    |-- annotated_images
 |    |   |-- 1701_LdLeanColor_annotated.JPG
 |    |   |-- 1704_LdLeanColor_annotated.JPG
 |    |   |-- 2401_LdLeanColor_annotated.JPG
 |    |   |-- 724_LDLeanColour_annotated.JPG
+|    |-- rois
+|    |   |-- 724_LDLeanColour_fat.roi
+|    |   |-- 724_LDLeanColour_horizontal.roi
+|    |   |-- 724_LDLeanColour_vertical.roi
+|    |   |-- 1701_LDLeanColour_fat.roi
+|    |   |-- 1701_LDLeanColour_horizontal.roi
+|    |   |-- 1701_LDLeanColour_vertical.roi
+|    |   |-- 1704_LDLeanColour_fat.roi
+|    |   |-- 1704_LDLeanColour_horizontal.roi
+|    |   |-- 1704_LDLeanColour_vertical.roi
+|    |   |-- 2401_LDLeanColour_fat.roi
+|    |   |-- 2401_LDLeanColour_horizontal.roi
+|    |   |-- 2401_LDLeanColour_vertical.roi
 |    |-- results.csv
 |    `-- segment
 |        |-- predict
