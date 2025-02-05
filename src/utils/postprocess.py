@@ -42,7 +42,7 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
 
     # Define colors (BGR format)
     width_color = (0, 255, 0)  # Green for muscle width
-    depth_color = (0, 0, 255)  # Red for muscle depth
+    depth_color = (0, 255, 255)  # Yellow for muscle depth
     fat_color   = (255, 0, 0)  # Blue for fat depth
     thickness = 5
 
