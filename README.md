@@ -163,7 +163,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ```
     python src/main.py
     ```
-4. The results can be found in the annotated_images and segment subdirectories of the output folder.
+4. The results can be found in the annotated_images, segment, and rois subdirectories in the output folder.
 
 ### Notes
 IF the environment cannot be created using environment.yml. \
