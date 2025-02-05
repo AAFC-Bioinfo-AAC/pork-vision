@@ -53,111 +53,171 @@ def find_midline_using_fat_extremes(fat_mask):
         #print("Midline on the right")
         return "RIGHT", rightmost
 
-def measure_vertical_segment(muscle_mask, midline_side, cm_to_pixels=140):
+def get_muscle_rotation_angle(muscle_mask):
     """
-    Measures muscle depth by searching for the line segment within 5.5–6.5 cm from the midline
-    that yields the greatest vertical (y-coordinate) muscle thickness, subject to the constraint
-    that the line’s tilt is no more than 15° from vertical.
+    Computes the rotation angle of the muscle based on the largest contour in the muscle mask.
     
-    The candidate line is defined as:
-        x(y) = candidate_x + (y - mid_y) * tan(theta)
-    where candidate_x is computed from the leftmost (or rightmost) x-coordinate of the muscle contour
-    plus (or minus) an offset (in pixels) corresponding to the distance from the midline, and mid_y
-    is the vertical center of the image. The tilt angle theta is allowed to vary between -15° and +15°.
+    This function finds all external contours in the binary muscle mask, selects the largest by area,
+    and fits an ellipse to it using cv2.fitEllipse. The angle of the fitted ellipse (its major axis relative
+    to the horizontal) is returned as the muscle’s rotation angle.
     
     Parameters:
     - muscle_mask (numpy.ndarray): A binary image where nonzero pixels indicate muscle.
-    - midline_side (str): Either "LEFT" or another value (e.g. "RIGHT") to indicate on which side
-                          the midline is located. (For "LEFT", the candidate base is computed from the
-                          leftmost contour x-coordinate; otherwise from the rightmost.)
+    
+    Returns:
+    - float or None: The rotation angle in degrees. The angle is defined as the angle between the ellipse's
+      major axis and the horizontal axis. (For example, 0° means the ellipse is horizontally oriented,
+      and 90° means it is vertically oriented.) If no valid contour or ellipse is found, returns None.
+    """
+    # Find all external contours in the mask.
+    contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        print("get_muscle_rotation_angle: No contours found in the muscle mask.")
+        return None
+
+    # Select the largest contour by area.
+    largest_contour = max(contours, key=cv2.contourArea)
+
+    # Ensure there are enough points to fit an ellipse (at least 5 are required).
+    if len(largest_contour) < 5:
+        print("get_muscle_rotation_angle: Not enough contour points to fit an ellipse.")
+        return None
+
+    # Fit an ellipse to the largest contour.
+    ellipse_fit = cv2.fitEllipse(largest_contour)
+    # cv2.fitEllipse returns a tuple:
+    #   ((center_x, center_y), (major_axis_length, minor_axis_length), angle)
+    # The angle is measured in degrees between the ellipse's major axis and the horizontal.
+    angle = ellipse_fit[2]
+    
+    return angle
+
+def measure_vertical_segment(muscle_mask, midline_side, rotation_angle, cm_to_pixels=140):
+    """
+    Finds the absolute longest segment through the muscle mask along the known rotation angle 
+    of the muscle. The search is restricted to a candidate base region defined by an offset 
+    range (in pixels, converted from cm) from the midline.
+    
+    The candidate base is computed as:
+        - For midline_side "LEFT": candidate_base_x = leftmost contour x + offset
+        - For midline_side "RIGHT": candidate_base_x = rightmost contour x - offset
+    The candidate base point is set to (candidate_base_x, mid_y), where mid_y is the vertical
+    center of the image.
+    
+    Then, using the given rotation_angle (in degrees), the function “walks” along the line
+    defined by:
+        L(t) = candidate_base + t * d,  where d = (cos(angle), sin(angle))
+    in both directions until the mask is exited. The candidate with the maximum distance
+    between its two endpoints is returned.
+    
+    Parameters:
+    - muscle_mask (numpy.ndarray): A binary image where nonzero pixels indicate muscle.
+    - midline_side (str): "LEFT" or "RIGHT" to indicate on which side the carcass midline lies.
+                          (For "LEFT", the candidate base is computed from the leftmost contour x;
+                           for "RIGHT", from the rightmost.)
+    - rotation_angle (float): The rotation angle (in degrees) of the muscle (as determined by
+                              your ellipse-fitting code).
     - cm_to_pixels (int, optional): Conversion factor from centimeters to pixels (default is 140).
     
     Returns:
-    - tuple: ((x_bottom, y_bottom), (x_top, y_top)) representing the endpoints of the candidate line 
-             with maximum vertical muscle depth. The bottom endpoint is the point with the largest y 
-             value and the top endpoint with the smallest y value.
-             If no valid muscle segment is found, returns (None, None).
+    - tuple: ((x_bottom, y_bottom), (x_top, y_top)) representing the endpoints of the segment
+             with maximum distance. The endpoint with the larger y value is designated as the bottom.
+             If no valid segment is found, returns (None, None).
     """
-    # Select the largest contour (by area)
+    # Find contours and select the largest by area.
     contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
         print("measure_vertical_segment: No contours found.")
         return None, None
     muscle_contour = max(contours, key=cv2.contourArea)
-    
-    # Determine leftmost and rightmost x-coordinates from the contour
+
+    # Determine the extreme x-values of the contour.
     leftmost_x = np.min(muscle_contour[:, :, 0])
     rightmost_x = np.max(muscle_contour[:, :, 0])
-    
-    # Defining the range of offsets (in pixels)
-    min_offset = int(5.5 * cm_to_pixels)
-    max_offset = int(6 * cm_to_pixels)
-    
+
+    # Convert cm offsets to pixels.
+    min_offset = int(4 * cm_to_pixels)
+    max_offset = int(5.75 * cm_to_pixels)
+
     height, width = muscle_mask.shape
-    mid_y = height // 2  # Use the vertical center of the image as reference
-    
-    best_depth = 0
+
+    # Determine candidate base x-range based on the midline side.
+    if midline_side.upper() == "LEFT":
+        base_min = leftmost_x + min_offset
+        base_max = leftmost_x + max_offset
+    else:  # "RIGHT"
+        # For the right side we want an increasing range:
+        base_min = rightmost_x - max_offset
+        base_max = rightmost_x - min_offset
+
+    # Clamp candidate x values to be within the image bounds.
+    base_min = max(0, min(base_min, width - 1))
+    base_max = max(0, min(base_max, width - 1))
+
+    # Use the vertical center of the image as the base y-coordinate.
+    mid_y = height // 2
+
+    # Convert rotation angle to radians and compute the unit direction vector.
+    angle_rad = np.deg2rad(rotation_angle)
+    d = (np.cos(angle_rad), np.sin(angle_rad))
+
+    best_distance = 0
     best_endpoints = None
 
-    # Iterate over candidate offsets (pixel distances) from the midline
-    for offset in range(min_offset, max_offset + 1):
-        # Compute the candidate base x-coordinate depending on the midline side.
-        if midline_side.upper() == "LEFT":
-            candidate_x = leftmost_x + offset
-        else:
-            candidate_x = rightmost_x - offset
+    # Iterate over candidate base x positions in the valid range.
+    for candidate_x in range(base_min, base_max + 1):
+        candidate_base = (candidate_x, mid_y)
 
-        # Skip this candidate if the computed candidate_x is out of bounds.
-        if candidate_x < 0 or candidate_x >= width:
-            continue
+        # Walk in the positive t direction.
+        t_pos = 0
+        while True:
+            t = t_pos + 1
+            x_new = candidate_base[0] + t * d[0]
+            y_new = candidate_base[1] + t * d[1]
+            x_idx = int(round(x_new))
+            y_idx = int(round(y_new))
+            if x_idx < 0 or x_idx >= width or y_idx < 0 or y_idx >= height:
+                break
+            if muscle_mask[y_idx, x_idx] == 0:
+                break
+            t_pos = t
 
-        # Iterate over tilt angles from -5° to +5° (in 1° increments).
-        for angle_deg in range(-5, 6):
-            angle_rad = np.deg2rad(angle_deg)
-            tan_angle = np.tan(angle_rad)
-            
-            candidate_line_points = []  # List to hold (x, y) points on the candidate line that are in the mask
-            
-            # Sample along the vertical direction (all possible y values)
-            for y in range(height):
-                # Define the x-coordinate along the candidate line.
-                # When y == mid_y, x is exactly candidate_x.
-                x = candidate_x + (y - mid_y) * tan_angle
-                
-                # Only consider the point if it lies within the image horizontally.
-                if x < 0 or x >= width:
-                    continue
-                
-                # Use nearest neighbor indexing for x.
-                x_idx = int(round(x))
-                
-                # Check if the pixel on the candidate line is part of the muscle mask.
-                if muscle_mask[y, x_idx] > 0:
-                    candidate_line_points.append((x, y))
-            
-            # If no muscle pixels were found along this candidate line, move to the next candidate.
-            if not candidate_line_points:
-                continue
+        # Walk in the negative t direction.
+        t_neg = 0
+        while True:
+            t = t_neg - 1
+            x_new = candidate_base[0] + t * d[0]
+            y_new = candidate_base[1] + t * d[1]
+            x_idx = int(round(x_new))
+            y_idx = int(round(y_new))
+            if x_idx < 0 or x_idx >= width or y_idx < 0 or y_idx >= height:
+                break
+            if muscle_mask[y_idx, x_idx] == 0:
+                break
+            t_neg = t
 
-            # Determine the depth of the candidate line segment.
-            y_coords = [pt[1] for pt in candidate_line_points]
-            top_y = min(y_coords)
-            bottom_y = max(y_coords)
-            depth = bottom_y - top_y
-
-            # Update the best candidate if this one has a greater vertical depth.
-            if depth > best_depth:
-                # Recompute the corresponding x coordinates for the endpoints using the candidate line equation.
-                top_x = candidate_x + (top_y - mid_y) * tan_angle
-                bottom_x = candidate_x + (bottom_y - mid_y) * tan_angle
-                best_depth = depth
-                best_endpoints = ((bottom_x, bottom_y), (top_x, top_y))
+        # Total length along this candidate line is the difference between the two extremes.
+        distance = t_pos - t_neg  # (t_neg is negative so gives sum)
+        if distance > best_distance:
+            endpoint1 = (candidate_base[0] + t_neg * d[0], candidate_base[1] + t_neg * d[1])
+            endpoint2 = (candidate_base[0] + t_pos * d[0], candidate_base[1] + t_pos * d[1])
+            best_distance = distance
+            best_endpoints = (endpoint1, endpoint2)
 
     if best_endpoints is None:
-        print("measure_vertical_segment: No valid muscle segment found within specified range and tilt constraints.")
+        print("measure_vertical_segment: No valid segment found.")
         return None, None
 
-    return best_endpoints
+    # Designate the point with the smaller y-value as the "top" and the other as the "bottom."
+    pt1, pt2 = best_endpoints
+    if pt1[1] < pt2[1]:
+        top_point = pt1
+        bottom_point = pt2
+    else:
+        top_point = pt2
+        bottom_point = pt1
+
+    return bottom_point, top_point  # (x_bottom, y_bottom), (x_top, y_top)
 
 def extend_vertical_line_to_fat(fat_mask, muscle_depth_line, step=1.0, max_iter=10000):
     """

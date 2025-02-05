@@ -15,6 +15,7 @@ from utils.measurement import (
     find_midline_using_fat_extremes,
     measure_vertical_segment,
     extend_vertical_line_to_fat,
+    get_muscle_rotation_angle,
 )
 from utils.postprocess import (
     save_annotated_image,
@@ -70,7 +71,11 @@ def process_image(image_path, args):
         if midline_position is None:
             return extract_image_id(image_path), None, None, None
 
-        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position)
+        angle = get_muscle_rotation_angle(rotated_muscle_mask)
+        if angle is None:
+            return extract_image_id(image_path), None, None, None
+
+        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
         if muscle_depth_start is None or muscle_depth_end is None:
             return extract_image_id(image_path), None, None, None
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
