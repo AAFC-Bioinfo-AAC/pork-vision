@@ -9,9 +9,9 @@ cv2.waitKey(0)
 
 def global_threshold(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=9.5, tileGridSize=(3,3))
+    clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(3,1))
     gray_image = clahe.apply(gray_image)
-    ret, binary_image = cv2.threshold(gray_image, 142, 255, cv2.THRESH_BINARY) #180
+    ret, binary_image = cv2.threshold(gray_image, 140, 255, cv2.THRESH_BINARY) #180
     concat = np.hstack((binary_image, gray_image))
     cv2.imshow('image', concat)
     cv2.waitKey(0)
