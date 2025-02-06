@@ -21,8 +21,8 @@ We wish to automate this tedious process while retaining acceptable accuracy.
 ## TABLE OF CONTENTS
 | **Section**                                | **Description**                                                                                           |
 |--------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| [ABOUT](#about)                            | An overview of the PorkVision project, including its purpose and process. |
-| [OVERVIEW](#overview)                      | A more detailed step-by-step explanation of the project's processes, supported by a pipeline diagram illustrating the workflow. |
+| [ABOUT](#about)                            | An overview of the PorkVision project, introducing its purpose and process. |
+| [OVERVIEW](#overview)                      | A detailed step-by-step explanation of the project's processes, supported by a pipeline diagram illustrating the workflow. |
 | [DATA](#data)                              | Information about the dataset used, including its structure, example images, and naming conventions.      |
 | [PARAMETERS](#parameters)                  | A detailed reference to the parameters used throughout the project, categorized by functionality. |
 | [USAGE](#usage)                            | Instructions on setting up and running the project, including pre-requisites, environment setup, and usage examples. |
