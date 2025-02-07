@@ -22,6 +22,34 @@ def global_threshold(image):
 
     return binary_image
 
+def gaussian_threshold(image):
+    '''
+    A function that uses gaussian threshold to generate a binary image,.
+    Input: A Matlike image
+    Output: Binary black and white image.
+    '''
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
+    gray_image = clahe.apply(gray_image)
+    cv2.imshow('clahe', gray_image)
+    cv2.waitKey(0)
+    binary_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
+        cv2.THRESH_BINARY,451, -30)
+    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
+    concat = np.hstack((binary_image, image))
+    cv2.imshow('image', concat)
+    cv2.waitKey(0)
+    return binary_image
+
+def mean_threshold(image):
+    '''
+    A function that uses mean thresholds to generate binary image
+    Input: A Matlike image
+    Output: Binary black and white image.
+    '''
+
+
+
 def overlay_images(image_1, image_2):
     '''
     Overlays a primary image with a secondary image.
@@ -58,7 +86,7 @@ def optimize_image(image):
     g_modified = np.clip( 255 * (g/ 255) ** 2.0, 0, 255).astype(np.uint8)
     b_modified = np.clip( 255 * (b/ 255) ** 1.0, 0, 255).astype(np.uint8)
     optimized_image = cv2.merge([b_modified, g_modified, r_modified])
-    cv2.imshow("Optimized Image", optimized_image)
+    #cv2.imshow("Optimized Image", optimized_image)
     return optimized_image
 
 def sharpen(image):
@@ -79,8 +107,7 @@ for data in test:
     image = cv2.resize(image, (0, 0), fx = 0.2, fy = 0.2) # Have to scale in order for the program to run on weaker hardware.
     sharpened = sharpen(image)
     optimized = optimize_image(sharpened)
-    cv2.waitKey(0)
-    binary = global_threshold(optimized)
+    binary = gaussian_threshold(optimized)
     overlay = overlay_images(image, binary)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
