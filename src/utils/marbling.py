@@ -15,7 +15,7 @@ def global_threshold(image):
     gray_image = clahe.apply(gray_image)
     cv2.imshow('clahe', gray_image)
     cv2.waitKey(0)
-    ret, binary_image = cv2.threshold(gray_image, 140, 255, cv2.THRESH_BINARY) #adjust first value to change sensitivity
+    ret, binary_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY) #adjust first value to change sensitivity
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     concat = np.hstack((binary_image, image))
     cv2.imshow('image', concat)
@@ -29,28 +29,43 @@ def overlay_images(image_1, image_2):
     Input: Primary and Secondary images.
     Output: Overlay_image with the two on top of each other.
     '''
-    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 0.1, 0)
+    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 0.18, 0)
     cv2.imshow('overlay image', overlay_image)
     cv2.waitKey(0)
     return overlay_image
 
 
 def edge_detect(image):
-    edges = cv2.Canny(image, 210, 300)
+    edges = cv2.Canny(image, 143, 300)
     edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     cv2.imshow('image', edges)
     cv2.waitKey(0)
     return edges_colored
 
+def optimize_image(image):
+    b, g, r = cv2.split(image)
+    r_modified = np.clip(255 * (r / 255) ** 1, 0, 255).astype(np.uint8)
+    g_modified = np.clip( 255 * (g/ 255) ** 2.0, 0, 255).astype(np.uint8)
+    b_modified = np.clip( 255 * (b/ 255) ** 1.0, 0, 255).astype(np.uint8)
+    optimized_image = cv2.merge([b_modified, g_modified, r_modified])
+    cv2.imshow("Optimized Image", optimized_image)
+    return optimized_image
 
-image = cv2.imread("data/raw_images/2401_LdLeanColor.JPG")
-image = cv2.resize(image, (0, 0), fx = 0.2, fy = 0.2) # Have to scale in order for the program to run on weaker hardware.
-b, g, r = cv2.split(image)
-r_modified = np.clip(255 * (r / 255) ** 0.5, 0, 255).astype(np.uint8)
-g_modified = np.clip( 255 * (g/ 255) ** 1.5, 0, 255).astype(np.uint8)
-b_modified = np.clip( 255 * (b/ 255) ** 1.5, 0, 255).astype(np.uint8)
-optimized_image = cv2.merge([b_modified, g_modified, r_modified])
-cv2.imshow("Optimized Image", optimized_image)
-cv2.waitKey(0)
-binary_image = global_threshold(optimized_image)
-overlay_image = overlay_images(image_1=image, image_2=binary_image)
+def sharpen(image):
+    sharpen_kernel = np.array([[-1.0, -1.0, -1.0],
+                           [-1.0,  9.0, -1.0],
+                           [-1.0, -1.0, -1.0]])
+    sharpened = cv2.filter2D(image, -1, sharpen_kernel)
+    return sharpened
+    
+test = ["724_LDLeanColour.JPG", "1701_LdLeanColor.JPG", "1704_LdLeanColor.JPG", "2401_LdLeanColor.JPG"]
+for data in test:
+    image = cv2.imread(f"data/raw_images/{data}")
+    image = cv2.resize(image, (0, 0), fx = 0.2, fy = 0.2) # Have to scale in order for the program to run on weaker hardware.
+    sharpened = sharpen(image)
+    optimized = optimize_image(sharpened)
+    cv2.waitKey(0)
+    binary = global_threshold(optimized)
+    overlay = overlay_images(image, binary)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
