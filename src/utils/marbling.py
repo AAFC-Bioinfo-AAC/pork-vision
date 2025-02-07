@@ -1,0 +1,212 @@
+import cv2
+import numpy as np
+import os
+from matplotlib import pyplot as plt
+
+def extract_muscle_region(rotated_image, muscle_mask):
+    """
+    Extracts the muscle portion of the image using the provided mask.
+    """
+    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=muscle_mask)
+    return muscle_region
+
+def enhance_contrast_and_sharpen(image):
+    """
+    Applies contrast enhancement and sharpening.
+    Converts the image to grayscale, applies CLAHE, sharpens it, and
+    then converts back to a 3-channel image for compatibility.
+    """
+    # Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    
+    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
+    clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8, 8))
+    gray = clahe.apply(gray)
+    
+    # Apply sharpening filter
+    sharpen_kernel = np.array([[0, -1, 0],
+                               [-1, 5, -1],
+                               [0, -1, 0]])
+    sharpened = cv2.filter2D(gray, -1, sharpen_kernel)
+    
+    # Convert back to 3-channel image (for compatibility with later OpenCV functions)
+    sharpened_3ch = cv2.merge([sharpened, sharpened, sharpened])
+    
+    return sharpened_3ch
+
+def global_threshold(image):
+    """
+    Creates a binary image using a global threshold.
+    """
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
+    gray_image = clahe.apply(gray_image)
+    ret, binary_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
+    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
+    return binary_image
+
+def gaussian_threshold(image):
+    """
+    Uses Gaussian adaptive thresholding to generate a binary image.
+    (Adjust blockSize and constant as needed.)
+    """
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
+    gray_image = clahe.apply(gray_image)
+    binary_image = cv2.adaptiveThreshold(
+        gray_image, 255, 
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY, 451, -30
+    )
+    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
+    return binary_image
+
+def mean_threshold(image):
+    """
+    Uses mean adaptive thresholding to generate a binary image.
+    """
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
+    gray_image = clahe.apply(gray_image)
+    binary_image = cv2.adaptiveThreshold(
+        gray_image, 255, 
+        cv2.ADAPTIVE_THRESH_MEAN_C,
+        cv2.THRESH_BINARY, 451, -30
+    )
+    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
+    return binary_image
+
+def overlay_images(image_1, image_2):
+    """
+    Overlays two images using weighted addition.
+    """
+    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 1.0, 0)
+    return overlay_image
+
+def edge_detect(image):
+    """
+    (Experimental) Uses Canny edge detection to produce an image of edges.
+    """
+    edges = cv2.Canny(image, 143, 300)
+    edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
+    return edges_colored
+
+def optimize_image(image):
+    """
+    Adjusts the blue, green, and red channels of an image to enhance it.
+    """
+    b, g, r = cv2.split(image)
+    r_modified = np.clip(255 * (r / 255) ** 1, 0, 255).astype(np.uint8)
+    g_modified = np.clip(255 * (g / 255) ** 2.0, 0, 255).astype(np.uint8)
+    b_modified = np.clip(255 * (b / 255) ** 1.0, 0, 255).astype(np.uint8)
+    optimized_image = cv2.merge([b_modified, g_modified, r_modified])
+    return optimized_image
+
+def sharpen(image):
+    """
+    Applies a sharpening kernel to the image.
+    """
+    sharpen_kernel = np.array([[-1.0, -1.0, -1.0],
+                               [-1.0,  9.0, -1.0],
+                               [-1.0, -1.0, -1.0]])
+    sharpened = cv2.filter2D(image, -1, sharpen_kernel)
+    return sharpened
+
+############################################
+# --- MARBLING EXTRACTION & SAVE PIPELINE ---
+############################################
+
+def extract_marbling(enhanced_image, muscle_mask):
+    """
+    Extracts marbling by thresholding the brightest pixels in the enhanced image.
+    The thresholding uses a Gaussian adaptive method and then restricts the output
+    to only those pixels corresponding to the muscle region.
+    """
+    # Use Gaussian adaptive thresholding
+    binary = gaussian_threshold(enhanced_image)  # Returns a BGR binary image
+    binary_gray = cv2.cvtColor(binary, cv2.COLOR_BGR2GRAY)  # Convert to single-channel
+    
+    # Restrict thresholding to muscle pixels (mask out background)
+    marbling_mask = cv2.bitwise_and(binary_gray, muscle_mask)
+    
+    # Smooth and clean up the mask using Gaussian blur and morphological opening
+    marbling_mask = cv2.GaussianBlur(marbling_mask, (5, 5), 0)
+    kernel = np.ones((3, 3), np.uint8)
+    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=2)
+    
+    return marbling_mask
+
+def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", base_filename=None):
+    """
+    Full pipeline to extract marbling from the rotated muscle image.
+    This function processes the given image and muscle mask (both as arrays),
+    and saves intermediate images (with descriptive filenames) to the output directory.
+    
+    Parameters:
+      rotated_image: The rotated image (as a NumPy array).
+      muscle_mask: The binary muscle mask (as a NumPy array).
+      output_dir: Directory where output images will be saved.
+      base_filename: Optional base name for saving files. If not provided, defaults to 'marbling_result'.
+    
+    Returns:
+      marbling_mask: The final marbling mask (as a single-channel image).
+    """
+    # Use a default base filename if not provided
+    if base_filename is None:
+        base_filename = "marbling_result"
+    
+    # Extract the muscle region from the image using the provided mask
+    muscle_region = extract_muscle_region(rotated_image, muscle_mask)
+    
+    # Enhance contrast and sharpen the muscle region
+    enhanced_image = enhance_contrast_and_sharpen(muscle_region)
+    
+    # Extract the marbling mask, considering only muscle pixels
+    marbling_mask = extract_marbling(enhanced_image, muscle_mask)
+    
+    # Create an overlay image to visualize marbling on the original image
+    overlay = overlay_images(rotated_image, cv2.cvtColor(marbling_mask, cv2.COLOR_GRAY2BGR))
+    
+    # Create a subfolder for the current image (named by the base filename)
+    base_output_dir = os.path.join(output_dir, base_filename)
+    os.makedirs(base_output_dir, exist_ok=True)
+    
+    # Save each intermediate image inside the subfolder
+    muscle_region_filename = os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg")
+    enhanced_filename      = os.path.join(base_output_dir, f"{base_filename}_enhanced.jpg")
+    marbling_mask_filename = os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg")
+    overlay_filename       = os.path.join(base_output_dir, f"{base_filename}_overlay.jpg")
+    
+    cv2.imwrite(muscle_region_filename, muscle_region)
+    cv2.imwrite(enhanced_filename, enhanced_image)
+    cv2.imwrite(marbling_mask_filename, marbling_mask)
+    cv2.imwrite(overlay_filename, overlay)
+    
+    return marbling_mask
+
+####################################
+# --- MAIN FUNCTION FOR TESTING ---
+####################################
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 3:
+        print("Usage: python marbling.py <rotated_image_path> <muscle_mask_path>")
+        sys.exit(1)
+    
+    image_path = sys.argv[1]
+    muscle_mask_path = sys.argv[2]
+    
+    rotated_image = cv2.imread(image_path)
+    if rotated_image is None:
+        print(f"Error: Unable to read image from {image_path}")
+        sys.exit(1)
+    
+    muscle_mask = cv2.imread(muscle_mask_path, cv2.IMREAD_GRAYSCALE)
+    if muscle_mask is None:
+        print(f"Error: Unable to read muscle mask from {muscle_mask_path}")
+        sys.exit(1)
+    
+    # Derive a base filename from the input image path for saving results
+    base_filename = os.path.splitext(os.path.basename(image_path))[0]
+    
+    process_marbling(rotated_image, muscle_mask, base_filename=base_filename)
