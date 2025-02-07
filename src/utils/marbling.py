@@ -113,16 +113,26 @@ def sharpen(image):
     sharpened = cv2.filter2D(image, -1, sharpen_kernel)
     return sharpened
 
+def convert_fat_color(image):
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    l_modified = np.clip(255 * (l / 255) ** 0, 0, 255).astype(np.uint8)
+    a_modified = np.clip( 255 * (a/ 255) ** 0, 0, 255).astype(np.uint8)
+    b_modified = np.clip( 255 * (b/ 255) ** 1.0, 0, 255).astype(np.uint8)
+    lab_final = cv2.merge([l_modified, a_modified, b_modified])
+    return lab_final
+
 def fat_enhance_save(image_path, fat_path):
     img = cv2.imread(image_path)
     sharpened = sharpen(img)
     optimized = optimize_image(sharpened)
     binary = gaussian_threshold(optimized)
     overlay_image = overlay_images(img, binary)
+    lab_image = convert_fat_color(overlay_image)
     filename = os.path.basename(image_path)
     output_file = os.path.join(fat_path, f"FAT_{filename}")
 
-    cv2.imwrite(output_file, overlay_image)
+    cv2.imwrite(output_file, lab_image)
     print(f"Overlay image saved: {output_file}\n")
 
 
