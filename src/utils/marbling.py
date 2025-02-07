@@ -5,10 +5,9 @@ from matplotlib import pyplot as plt
 
 def global_threshold(image):
     '''
-    A function which creates a binary image using thresholds, and overlays on top
-    of the original image.
+    A function which creates a binary image using thresholds
     Input: A Matlike image, usually through libraries like cv2.
-    Output: Overlay of original image and the binary.
+    Output: A binary black and white image.
     '''
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
@@ -36,6 +35,12 @@ def overlay_images(image_1, image_2):
 
 
 def edge_detect(image):
+    '''
+    EXPERIMENTAL
+    Used to detect edges with CANNY
+    Input: Matlike image
+    Output: Canny produced images of edges.
+    '''
     edges = cv2.Canny(image, 143, 300)
     edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     cv2.imshow('image', edges)
@@ -43,6 +48,11 @@ def edge_detect(image):
     return edges_colored
 
 def optimize_image(image):
+    '''
+    Adjusts b,g,r channels for an image to make it more effective for analysis
+    Input: Matlike image
+    Output: Image with altered color channels.
+    '''
     b, g, r = cv2.split(image)
     r_modified = np.clip(255 * (r / 255) ** 1, 0, 255).astype(np.uint8)
     g_modified = np.clip( 255 * (g/ 255) ** 2.0, 0, 255).astype(np.uint8)
@@ -52,6 +62,11 @@ def optimize_image(image):
     return optimized_image
 
 def sharpen(image):
+    '''
+    Applies a sharpening kernel to make the contrasting colors pop out.
+    Input: Matlike image.
+    Output: Sharpened image
+    '''
     sharpen_kernel = np.array([[-1.0, -1.0, -1.0],
                            [-1.0,  9.0, -1.0],
                            [-1.0, -1.0, -1.0]])
