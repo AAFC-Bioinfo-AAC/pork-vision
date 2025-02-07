@@ -114,12 +114,11 @@ def sharpen(image):
     return sharpened
 
 def convert_fat_color(image):
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
-    l_modified = np.clip(255 * (l / 255) ** 0, 0, 255).astype(np.uint8)
-    a_modified = np.clip( 255 * (a/ 255) ** 0, 0, 255).astype(np.uint8)
-    b_modified = np.clip( 255 * (b/ 255) ** 1.0, 0, 255).astype(np.uint8)
-    lab_final = cv2.merge([l_modified, a_modified, b_modified])
+    lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    white_mask = (lab_image[:,:,0] == 255) & (lab_image[:,:, 1] == 128) & (lab_image[:,:,2] == 128)
+    lab_image[white_mask, 2] = lab_image[white_mask, 2] + 50
+    lab_image = np.clip(lab_image, 0, 255)
+    lab_final = cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
     return lab_final
 
 def fat_enhance_save(image_path, fat_path):
