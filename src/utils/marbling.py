@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
+import os
 
 
 def global_threshold(image):
@@ -12,14 +13,13 @@ def global_threshold(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
     gray_image = clahe.apply(gray_image)
-    cv2.imshow('clahe', gray_image)
-    cv2.waitKey(0)
+    #cv2.imshow('clahe', gray_image)
+    #cv2.waitKey(0)
     ret, binary_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY) #adjust first value to change sensitivity
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     concat = np.hstack((binary_image, image))
-    cv2.imshow('image', concat)
-    cv2.waitKey(0)
-
+    #cv2.imshow('image', concat)
+    #cv2.waitKey(0)
     return binary_image
 
 def gaussian_threshold(image):
@@ -31,14 +31,14 @@ def gaussian_threshold(image):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
     gray_image = clahe.apply(gray_image)
-    cv2.imshow('clahe', gray_image)
-    cv2.waitKey(0)
+    #cv2.imshow('clahe', gray_image)
+    #cv2.waitKey(0)
     binary_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, \
         cv2.THRESH_BINARY,451, -30)
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     concat = np.hstack((binary_image, image))
-    cv2.imshow('image', concat)
-    cv2.waitKey(0)
+    #cv2.imshow('image', concat)
+    #cv2.waitKey(0)
     return binary_image
 
 def mean_threshold(image):
@@ -47,6 +47,18 @@ def mean_threshold(image):
     Input: A Matlike image
     Output: Binary black and white image.
     '''
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
+    gray_image = clahe.apply(gray_image)
+    #cv2.imshow('clahe', gray_image)
+    #cv2.waitKey(0)
+    binary_image = cv2.adaptiveThreshold(gray_image, 255, cv2.ADAPTIVE_THRESH_MEAN_C, \
+        cv2.THRESH_BINARY,451, -30)
+    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
+    concat = np.hstack((binary_image, image))
+    #cv2.imshow('image', concat)
+    #cv2.waitKey(0)
+    return binary_image
 
 
 
@@ -56,9 +68,9 @@ def overlay_images(image_1, image_2):
     Input: Primary and Secondary images.
     Output: Overlay_image with the two on top of each other.
     '''
-    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 0.18, 0)
-    cv2.imshow('overlay image', overlay_image)
-    cv2.waitKey(0)
+    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 0.3, 0)
+    #cv2.imshow('overlay image', overlay_image)
+    #cv2.waitKey(0)
     return overlay_image
 
 
@@ -100,14 +112,31 @@ def sharpen(image):
                            [-1.0, -1.0, -1.0]])
     sharpened = cv2.filter2D(image, -1, sharpen_kernel)
     return sharpened
+
+def fat_enhance_save(image_path, fat_path):
+    img = cv2.imread(image_path)
+    sharpened = sharpen(img)
+    optimized = optimize_image(sharpened)
+    binary = gaussian_threshold(optimized)
+    overlay_image = overlay_images(img, binary)
+    filename = os.path.basename(image_path)
+    output_file = os.path.join(fat_path, f"FAT_{filename}")
+
+    cv2.imwrite(output_file, overlay_image)
+    print(f"Overlay image saved: {output_file}\n")
+
+
     
+
+'''
 test = ["724_LDLeanColour.JPG", "1701_LdLeanColor.JPG", "1704_LdLeanColor.JPG", "2401_LdLeanColor.JPG"]
 for data in test:
     image = cv2.imread(f"data/raw_images/{data}")
     image = cv2.resize(image, (0, 0), fx = 0.2, fy = 0.2) # Have to scale in order for the program to run on weaker hardware.
     sharpened = sharpen(image)
     optimized = optimize_image(sharpened)
-    binary = gaussian_threshold(optimized)
+    binary = mean_threshold(optimized)
     overlay = overlay_images(image, binary)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+'''
