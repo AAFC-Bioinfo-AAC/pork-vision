@@ -114,9 +114,14 @@ def sharpen(image):
     return sharpened
 
 def convert_fat_color(image):
+    '''
+    Converts pure white in the images, into a yellow.
+    Input: Matlike image.
+    Output: Image where only the white has been shifted to yellow
+    '''
     lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    white_mask = (lab_image[:,:,0] == 255) & (lab_image[:,:, 1] == 128) & (lab_image[:,:,2] == 128)
-    lab_image[white_mask, 2] = lab_image[white_mask, 2] + 50
+    white_mask = (lab_image[:,:,0] == 255) & (lab_image[:,:, 1] == 128) & (lab_image[:,:,2] == 128) ##Checks for pure white.
+    lab_image[white_mask, 2] = lab_image[white_mask, 2] + 100
     lab_image = np.clip(lab_image, 0, 255)
     lab_final = cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
     return lab_final
