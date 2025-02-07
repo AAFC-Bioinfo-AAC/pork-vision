@@ -48,7 +48,6 @@ def global_threshold(image):
 def gaussian_threshold(image):
     """
     Uses Gaussian adaptive thresholding to generate a binary image.
-    (Adjust blockSize and constant as needed.)
     """
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
@@ -56,7 +55,7 @@ def gaussian_threshold(image):
     binary_image = cv2.adaptiveThreshold(
         gray_image, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 451, -30
+        cv2.THRESH_BINARY, 81, -36
     )
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     return binary_image
@@ -122,17 +121,17 @@ def extract_marbling(enhanced_image, muscle_mask):
     The thresholding uses a Gaussian adaptive method and then restricts the output
     to only those pixels corresponding to the muscle region.
     """
-    # Use Gaussian adaptive thresholding
+    # Use Gaussian adaptive thresholding with updated parameters for higher resolution
     binary = gaussian_threshold(enhanced_image)  # Returns a BGR binary image
     binary_gray = cv2.cvtColor(binary, cv2.COLOR_BGR2GRAY)  # Convert to single-channel
     
     # Restrict thresholding to muscle pixels (mask out background)
     marbling_mask = cv2.bitwise_and(binary_gray, muscle_mask)
     
-    # Smooth and clean up the mask using Gaussian blur and morphological opening
-    marbling_mask = cv2.GaussianBlur(marbling_mask, (5, 5), 0)
-    kernel = np.ones((3, 3), np.uint8)
-    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=2)
+    # Reduce the amount of blurring and morphological processing to preserve details
+    marbling_mask = cv2.GaussianBlur(marbling_mask, (1, 1), 0)
+    kernel = np.ones((1, 1), np.uint8)
+    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=1)
     
     return marbling_mask
 
@@ -151,7 +150,6 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     Returns:
       marbling_mask: The final marbling mask (as a single-channel image).
     """
-    # Use a default base filename if not provided
     if base_filename is None:
         base_filename = "marbling_result"
     
