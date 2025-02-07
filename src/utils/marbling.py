@@ -11,11 +11,11 @@ def global_threshold(image):
     Output: Overlay of original image and the binary.
     '''
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=10, tileGridSize=(3,1))
-    #gray_image = clahe.apply(gray_image)
+    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8,8))
+    gray_image = clahe.apply(gray_image)
     cv2.imshow('clahe', gray_image)
     cv2.waitKey(0)
-    ret, binary_image = cv2.threshold(gray_image, 158, 255, cv2.THRESH_BINARY) #adjust first value to change sensitivity
+    ret, binary_image = cv2.threshold(gray_image, 140, 255, cv2.THRESH_BINARY) #adjust first value to change sensitivity
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     concat = np.hstack((binary_image, image))
     cv2.imshow('image', concat)
@@ -43,12 +43,12 @@ def edge_detect(image):
     return edges_colored
 
 
-image = cv2.imread("data/raw_images/724_LDLeanColour.JPG")
+image = cv2.imread("data/raw_images/2401_LdLeanColor.JPG")
 image = cv2.resize(image, (0, 0), fx = 0.2, fy = 0.2) # Have to scale in order for the program to run on weaker hardware.
 b, g, r = cv2.split(image)
-r_modified = np.clip(255 * (r / 255) ** 0.1, 0, 255).astype(np.uint8)
+r_modified = np.clip(255 * (r / 255) ** 0.5, 0, 255).astype(np.uint8)
 g_modified = np.clip( 255 * (g/ 255) ** 1.5, 0, 255).astype(np.uint8)
-b_modified = np.clip( 255 * (b/ 255) ** 2.0, 0, 255).astype(np.uint8)
+b_modified = np.clip( 255 * (b/ 255) ** 1.5, 0, 255).astype(np.uint8)
 optimized_image = cv2.merge([b_modified, g_modified, r_modified])
 cv2.imshow("Optimized Image", optimized_image)
 cv2.waitKey(0)
