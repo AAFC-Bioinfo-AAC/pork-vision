@@ -68,7 +68,7 @@ def overlay_images(image_1, image_2):
     Input: Primary and Secondary images.
     Output: Overlay_image with the two on top of each other.
     '''
-    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 0.3, 0)
+    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 1.0, 0)
     #cv2.imshow('overlay image', overlay_image)
     #cv2.waitKey(0)
     return overlay_image
