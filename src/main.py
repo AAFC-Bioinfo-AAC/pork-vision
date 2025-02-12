@@ -1,7 +1,6 @@
 import argparse
 import concurrent.futures
 import os
-import cv2
 import numpy as np
 from ultralytics import YOLO
 from utils.preprocess import (
@@ -10,7 +9,10 @@ from utils.preprocess import (
     convert_contours_to_image,
 )
 from utils.orientation import orient_muscle_and_fat_using_adjacency
-from utils.marbling import process_marbling,save_marbling_csv
+from utils.marbling import (
+    process_marbling,
+    save_marbling_csv
+)
 from utils.measurement import (
     measure_longest_horizontal_segment,
     find_midline_using_fat_extremes,
@@ -25,8 +27,6 @@ from utils.postprocess import (
     extract_image_id,
     save_to_roi
 )
-from utils.marbling import *
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
