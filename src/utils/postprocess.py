@@ -160,21 +160,23 @@ def save_to_roi(muscle_width_start, muscle_width_end, muscle_depth_start, muscle
     roi_h.roitype = ROI_TYPE.POLYGON
     roi_h.version=227
     roi_h.options = ROI_OPTIONS(0)
+
+    base_output_dir = os.path.join(rois_folder, image_id)
+    os.makedirs(base_output_dir, exist_ok=True)
+
     # print("roi_h coordinates =", roi_h.coordinates())
-    roi_h.tofile(os.path.join(rois_folder, f'{image_id}_horizontal.roi'))
+    roi_h.tofile(os.path.join(base_output_dir, f'{image_id}_horizontal.roi'))
 
     roi_v = ImagejRoi.frompoints(vert_pts, name=f"{image_id}_vertical")
     roi_v.roitype = ROI_TYPE.POLYGON
     roi_v.version=227
     roi_v.options = ROI_OPTIONS(0)
     # print("roi_v coordinates =", roi_v.coordinates())
-    roi_v.tofile(os.path.join(rois_folder, f'{image_id}_vertical.roi'))
-
-
+    roi_v.tofile(os.path.join(base_output_dir, f'{image_id}_vertical.roi'))
 
     roi_f = ImagejRoi.frompoints(fat_pts, name=f"{image_id}_fat")
     roi_f.roitype = ROI_TYPE.POLYGON
     roi_f.version=227
     roi_f.options = ROI_OPTIONS(0)
     # print("roi_f coordinates =", roi_f.coordinates())
-    roi_f.tofile(os.path.join(rois_folder, f'{image_id}_fat.roi'))
+    roi_f.tofile(os.path.join(base_output_dir, f'{image_id}_fat.roi'))
