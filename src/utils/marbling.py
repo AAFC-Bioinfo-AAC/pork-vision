@@ -4,7 +4,7 @@ import os
 from matplotlib import pyplot as plt
 
 # =============================================================================
-# Preprocessing Functions
+# Helper Functions
 # =============================================================================
 def extract_muscle_region(rotated_image, muscle_mask):
     """
@@ -80,13 +80,26 @@ def perform_preprocessing(image, kernel_size=11, lut=cv2.COLORMAP_JET):
     pseudo_color = apply_custom_lut(contrast_stretched, lut=lut)
     return contrast_stretched, pseudo_color
 
+def contour_detection(marbling_mask):
+    """ Removes the contour line from the marbling mask. """
+    contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=5)  # Fill the contour with black
+    return marbling_mask
+
+def convert_fat_color(image):
+    """ Converts white pixels in the overlay to yellow for fat regions. """
+    lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    white_mask = (lab_image[:, :, 0] == 255) & (lab_image[:, :, 1] == 128) & (lab_image[:, :, 2] == 128)
+    lab_image[white_mask, 2] = lab_image[white_mask, 2] + 100
+    lab_image = np.clip(lab_image, 0, 255)
+    return cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
+
 # =============================================================================
 # Contrast Enhancement Function
 # =============================================================================
 def contrast_enhancement(image, gamma=0.3):
     """
     Applies gamma correction to exaggerate brightness differences in the input image.
-    A gamma value less than 1 will boost the brightness dramatically.
     
     Parameters:
       image: Input 8-bit image (should be a single-channel image).
@@ -210,20 +223,22 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=50)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=60)
+    refined_marbling_mask = contour_detection(refined_marbling_mask)
     
     # Calculate marbling percentage relative to the muscle area
     marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
     
     # Create an overlay for visualization
     overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
+    overlay_yellow = convert_fat_color(overlay)
     
     # Save images in a subfolder
     base_output_dir = os.path.join(output_dir, base_filename)
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg"), muscle_region)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay)
+    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow)
     
     print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
     return refined_marbling_mask, marbling_percentage
