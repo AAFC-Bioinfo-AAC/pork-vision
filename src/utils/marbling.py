@@ -109,9 +109,6 @@ def smooth_marbling_mask(marbling_mask, kernel_size=(5, 5)):
     _, binary_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
     return binary_mask
 
-# =============================================================================
-# Contrast Enhancement Function
-# =============================================================================
 def contrast_enhancement(image, gamma=0.3):
     """
     Applies gamma correction to exaggerate brightness differences in the input image.
