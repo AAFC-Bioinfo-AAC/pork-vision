@@ -83,7 +83,7 @@ def perform_preprocessing(image, kernel_size=11, lut=cv2.COLORMAP_JET):
 def contour_detection(marbling_mask):
     """ Removes the contour line from the marbling mask. """
     contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=5)  # Fill the contour with black
+    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=30)  # Fill the contour with black
     return marbling_mask
 
 def convert_fat_color(image):
