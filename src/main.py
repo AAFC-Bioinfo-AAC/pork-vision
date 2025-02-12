@@ -24,6 +24,7 @@ from utils.postprocess import (
     extract_image_id,
     save_to_roi
 )
+from utils.marbling import *
 
 
 def parse_args():
@@ -34,6 +35,7 @@ def parse_args():
     parser.add_argument("--output_path", type=str, default="output/annotated_images")
     parser.add_argument("--results_csv", type=str, default="output/results.csv")
     parser.add_argument("--rois_path", type=str, default="output/rois")
+    parser.add_argument("--fat_path", type=str, default="output/fat_enhanced")
     return parser.parse_args()
 
 
@@ -101,6 +103,10 @@ def process_image(image_path, args):
             image_id=extract_image_id(image_path),
             rois_folder="output/rois"
         )
+
+        fat_enhance_save(image_path, args.fat_path)
+        
+
 
         return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth
 
