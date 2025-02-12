@@ -3,6 +3,9 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 
+# =============================================================================
+# Helper Functions
+# =============================================================================
 def extract_muscle_region(rotated_image, muscle_mask):
     """
     Extracts the muscle portion of the image using the provided mask.
@@ -10,70 +13,25 @@ def extract_muscle_region(rotated_image, muscle_mask):
     muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=muscle_mask)
     return muscle_region
 
-def enhance_contrast_and_sharpen(image):
+def background_subtraction(image, kernel_size=11):
     """
-    Applies contrast enhancement and sharpening.
-    Converts the image to grayscale, applies CLAHE, sharpens it, and
-    then converts back to a 3-channel image for compatibility.
-    """
-    # Convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    Performs background subtraction using a Gaussian blur.
+    If the input is a color image, it is first converted to grayscale.
     
-    # Apply CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    clahe = cv2.createCLAHE(clipLimit=5.0, tileGridSize=(8, 8))
-    gray = clahe.apply(gray)
-    
-    # Apply sharpening filter
-    sharpen_kernel = np.array([[0, -1, 0],
-                               [-1, 5, -1],
-                               [0, -1, 0]])
-    sharpened = cv2.filter2D(gray, -1, sharpen_kernel)
-    
-    # Convert back to 3-channel image (for compatibility with later OpenCV functions)
-    sharpened_3ch = cv2.merge([sharpened, sharpened, sharpened])
-    
-    return sharpened_3ch
-
-def gaussian_threshold(image):
+    Parameters:
+      image: Input image (grayscale or color).
+      kernel_size: Size of the Gaussian kernel (must be odd).
+      
+    Returns:
+      subtracted: The background-subtracted image.
     """
-    Uses Gaussian adaptive thresholding to generate a binary image.
-    """
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
-    gray_image = clahe.apply(gray_image)
-    binary_image = cv2.adaptiveThreshold(
-        gray_image, 255, 
-        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 81, -1
-    )
-    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
-    return binary_image
-
-def overlay_images(image_1, image_2):
-    """
-    Overlays two images using weighted addition.
-    """
-    overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 1.0, 0)
-    return overlay_image
-
-def extract_marbling(enhanced_image, muscle_mask):
-    """
-    Extracts marbling by thresholding the brightest pixels in the enhanced image.
-    The thresholding uses a Gaussian adaptive method and then restricts the output
-    to only those pixels corresponding to the muscle region.
-    """
-    # Use Gaussian adaptive thresholding with updated parameters for higher resolution
-    binary = gaussian_threshold(enhanced_image)  # Returns a BGR binary image
-    binary_gray = cv2.cvtColor(binary, cv2.COLOR_BGR2GRAY)  # Convert to single-channel
-    
-    # Restrict thresholding to muscle pixels (mask out background)
-    marbling_mask = cv2.bitwise_and(binary_gray, muscle_mask)
-    
-    # Reduce the amount of blurring and morphological processing to preserve details
-    marbling_mask = cv2.GaussianBlur(marbling_mask, (1, 1), 0)
-    marbling_mask = contour_detection(marbling_mask)
-    marbling_mask = clean_specks(marbling_mask)
-    return marbling_mask
+    if len(image.shape) == 3:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image.copy()
+    bg = cv2.GaussianBlur(gray, (kernel_size, kernel_size), 0)
+    subtracted = cv2.subtract(gray, bg)
+    return subtracted
 
 def clean_specks(marbling_mask):
     """
@@ -84,100 +42,227 @@ def clean_specks(marbling_mask):
     marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=5)
     return marbling_mask
 
+def dynamic_contrast_stretch(image):
+    """
+    Stretches the contrast of the input 8-bit grayscale image dynamically
+    using normalization to map the intensity range to 0-255.
+    
+    Parameters:
+      image: Input 8-bit image (grayscale).
+      
+    Returns:
+      stretched: The contrast-stretched image.
+    """
+    stretched = cv2.normalize(image, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    return np.uint8(stretched)
+
+def apply_custom_lut(image, lut=cv2.COLORMAP_JET):
+    """
+    Applies a custom Look-Up Table (LUT) for pseudo‑colour imaging.
+    
+    Parameters:
+      image: Input 8-bit single‑channel image.
+      lut: OpenCV colormap to use (default is COLORMAP_JET).
+      
+    Returns:
+      pseudo: The pseudo‑colour image.
+    """
+    pseudo = cv2.applyColorMap(image, lut)
+    return pseudo
+
+def perform_preprocessing(image, kernel_size=11, lut=cv2.COLORMAP_JET):
+    """
+    Performs enhanced preprocessing that includes background subtraction,
+    dynamic contrast stretching, and applying a custom LUT for pseudo‑colour imaging.
+    
+    Parameters:
+      image: Input image (color or grayscale).
+      kernel_size: Kernel size for Gaussian background subtraction.
+      lut: LUT to be applied.
+      
+    Returns:
+      contrast_stretched: The contrast‑stretched (grayscale) image.
+      pseudo_color: The pseudo‑colour version of the preprocessed image.
+    """
+    bg_subtracted = background_subtraction(image, kernel_size=kernel_size)
+    contrast_stretched = dynamic_contrast_stretch(bg_subtracted)
+    pseudo_color = apply_custom_lut(contrast_stretched, lut=lut)
+    return contrast_stretched, pseudo_color
+
 def contour_detection(marbling_mask):
-    """
-    Finds the contours composing the mask. 
-    The 0th contour is the first one found (tends to be the one outlining the mask).
-    Draws a black contour line to mute the edge of the image (which are incorrectly white).
-    """
-    contours, hierarchy = cv2.findContours(marbling_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    contour_mask = cv2.drawContours(marbling_mask, contours, 0, color=(0,0,0), thickness=30)  # Change thickness in order to adjust the amount of white outline on the mask.
-    return contour_mask
+    """ Removes the contour line from the marbling mask. """
+    contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=30)  # Fill the contour with black
+    return marbling_mask
 
 def convert_fat_color(image):
-    '''
-    Converts pure white in the images, into a yellow.
-    Input: Matlike image.
-    Output: Image where only the white has been shifted to yellow
-    '''
+    """ Converts white pixels in the overlay to yellow for fat regions. """
     lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    white_mask = (lab_image[:,:,0] == 255) & (lab_image[:,:, 1] == 128) & (lab_image[:,:,2] == 128) ##Checks for pure white.
+    white_mask = (lab_image[:, :, 0] == 255) & (lab_image[:, :, 1] == 128) & (lab_image[:, :, 2] == 128)
     lab_image[white_mask, 2] = lab_image[white_mask, 2] + 100
     lab_image = np.clip(lab_image, 0, 255)
-    lab_final = cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
-    return lab_final
+    return cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
 
+def smooth_marbling_mask(marbling_mask, kernel_size=(5, 5)):
+    """
+    Applies Gaussian blur to the marbling mask for smoothing pixel boundaries.
+
+    Parameters:
+      marbling_mask: Binary marbling mask (0/255) as a single-channel 8-bit image.
+      kernel_size: Size of the Gaussian kernel (default is (5, 5)).
+
+    Returns:
+      smoothed_mask: The smoothed marbling mask.
+    """
+    smoothed_mask = cv2.GaussianBlur(marbling_mask, kernel_size, 0)
+    _, binary_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
+    return binary_mask
+
+def contrast_enhancement(image, gamma=0.3):
+    """
+    Applies gamma correction to exaggerate brightness differences in the input image.
+    
+    Parameters:
+      image: Input 8-bit image (should be a single-channel image).
+      gamma: Gamma correction factor (default is 0.3).
+      
+    Returns:
+      enhanced: Image after gamma correction.
+    """
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255 
+                      for i in np.arange(0, 256)]).astype("uint8")
+    enhanced = cv2.LUT(image, table)
+    return enhanced
+
+# =============================================================================
+# Marbling Analysis Functions
+# =============================================================================
+def particle_analysis(binary_mask, min_area=5):
+    """
+    Performs particle analysis on a binary mask using connected component analysis.
+    Filters out components smaller than a specified minimum area.
+    
+    Parameters:
+      binary_mask: Binary image (0 and 255 values) as a single‑channel 8-bit image.
+      min_area: Minimum area (in pixels) for a component to be considered.
+      
+    Returns:
+      refined_mask: Binary mask containing only the components above the area threshold.
+      total_area: Sum of areas for all accepted components.
+    """
+    if len(binary_mask.shape) == 3:
+        mask = cv2.cvtColor(binary_mask, cv2.COLOR_BGR2GRAY)
+    else:
+        mask = binary_mask.copy()
+    ret, thresh = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(thresh, connectivity=8)
+    refined_mask = np.zeros_like(thresh)
+    total_area = 0
+    for i in range(1, num_labels):  # skip background label 0
+        area = stats[i, cv2.CC_STAT_AREA]
+        if area >= min_area:
+            refined_mask[labels == i] = 255
+            total_area += area
+    return refined_mask, total_area
+
+def calculate_marbling_percentage(marbling_mask, muscle_mask):
+    """
+    Calculates the marbling percentage relative to the inner area of the muscle mask,
+    excluding the outer contour of the muscle.
+
+    Parameters:
+      marbling_mask: Binary mask (0/255) for marbling.
+      muscle_mask: Binary mask (0/255) for muscle (lean) area.
+
+    Returns:
+      percentage: Marbling area as a percentage of the inner muscle area (excluding the contour).
+    """
+    # Find contours of the muscle mask
+    contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    if not contours:
+        return 0.0  # Return 0 if no contours found
+
+    # Create a new mask with only the inner area of the muscle (exclude the contour)
+    inner_muscle_mask = np.zeros_like(muscle_mask)
+    cv2.drawContours(inner_muscle_mask, contours, -1, 255, thickness=cv2.FILLED)
+
+    # Ensure the marbling mask is restricted to the inner muscle region
+    inner_marbling_mask = cv2.bitwise_and(marbling_mask, inner_muscle_mask)
+    
+    # Calculate areas
+    marbling_area = cv2.countNonZero(inner_marbling_mask)
+    muscle_area = cv2.countNonZero(inner_muscle_mask)
+    
+    if muscle_area == 0:
+        return 0.0
+    
+    percentage = (marbling_area / muscle_area) * 100.0
+    return percentage
+
+# =============================================================================
+# Full Marbling Processing Pipeline
+# =============================================================================
 def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", base_filename=None):
     """
     Full pipeline to extract marbling from the rotated muscle image.
-    This function processes the given image and muscle mask (both as arrays),
-    and saves intermediate images (with descriptive filenames) to the output directory.
+    This pipeline uses the pseudo‑colour image (from COLORMAP_JET) and extracts its blue channel,
+    applies extreme contrast enhancement (gamma correction) within the muscle mask,
+    and then thresholds to capture every pixel of fat.
     
     Parameters:
       rotated_image: The rotated image (as a NumPy array).
       muscle_mask: The binary muscle mask (as a NumPy array).
       output_dir: Directory where output images will be saved.
-      base_filename: Optional base name for saving files. If not provided, defaults to 'marbling_result'.
+      base_filename: Optional base name for saving files; defaults to 'marbling_result'.
     
     Returns:
-      marbling_mask: The final marbling mask (as a single-channel image).
+      refined_marbling_mask: Final refined marbling mask (a single‑channel image).
+      marbling_percentage: Marbling area as a percentage of the muscle area.
     """
     if base_filename is None:
         base_filename = "marbling_result"
     
-    # Extract the muscle region from the image using the provided mask
+    # Extract the muscle region
     muscle_region = extract_muscle_region(rotated_image, muscle_mask)
     
-    # Enhance contrast and sharpen the muscle region
-    enhanced_image = enhance_contrast_and_sharpen(muscle_region)
+    # Obtain the pseudo‑colour image from enhanced preprocessing
+    _, pseudo_color = perform_preprocessing(muscle_region, kernel_size=11, lut=cv2.COLORMAP_JET)
     
-    # Extract the marbling mask, considering only muscle pixels
-    marbling_mask = extract_marbling(enhanced_image, muscle_mask)
+    # Instead of converting the full pseudo‑colour to grayscale, extract the blue channel.
+    # In OpenCV's BGR, blue is at index 0.
+    pseudo_blue = pseudo_color[:, :, 0]
     
-    # Create an overlay image to visualize marbling on the original image
-    overlay = overlay_images(rotated_image, cv2.cvtColor(marbling_mask, cv2.COLOR_GRAY2BGR))
-    overlay = convert_fat_color(overlay)
+    # Apply contrast enhancement on the blue channel to boost fat brightness.
+    enhanced_blue = contrast_enhancement(pseudo_blue, gamma=0.4)
     
-    # Create a subfolder for the current image (named by the base filename)
+    # Use a low fixed threshold on the enhanced blue channel so that every bright fat pixel is captured.
+    ret, thresh_blue = cv2.threshold(enhanced_blue, 50, 255, cv2.THRESH_BINARY)
+    
+    # Restrict the threshold result to the muscle region (masking out any areas outside).
+    raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
+    
+    # Refine the marbling mask
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
+    refined_marbling_mask = contour_detection(refined_marbling_mask)
+
+    # Smooth the marbling mask
+    refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(5, 5))
+    
+    # Calculate marbling percentage relative to the muscle area
+    marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
+    
+    # Create an overlay for visualization
+    overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
+    overlay_yellow = convert_fat_color(overlay)
+    
+    # Save images in a subfolder
     base_output_dir = os.path.join(output_dir, base_filename)
     os.makedirs(base_output_dir, exist_ok=True)
+    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg"), muscle_region)
+    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
+    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow)
     
-    # Save each intermediate image inside the subfolder
-    muscle_region_filename = os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg")
-    enhanced_filename      = os.path.join(base_output_dir, f"{base_filename}_enhanced.jpg")
-    marbling_mask_filename = os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg")
-    overlay_filename       = os.path.join(base_output_dir, f"{base_filename}_overlay.jpg")
-    
-    cv2.imwrite(muscle_region_filename, muscle_region)
-    cv2.imwrite(enhanced_filename, enhanced_image)
-    cv2.imwrite(marbling_mask_filename, marbling_mask)
-    cv2.imwrite(overlay_filename, overlay)
-    
-    return marbling_mask
-
-####################################
-# --- MAIN FUNCTION FOR TESTING ---
-####################################
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) < 3:
-        print("Usage: python marbling.py <rotated_image_path> <muscle_mask_path>")
-        sys.exit(1)
-    
-    image_path = sys.argv[1]
-    muscle_mask_path = sys.argv[2]
-    
-    rotated_image = cv2.imread(image_path)
-    if rotated_image is None:
-        print(f"Error: Unable to read image from {image_path}")
-        sys.exit(1)
-    
-    muscle_mask = cv2.imread(muscle_mask_path, cv2.IMREAD_GRAYSCALE)
-    if muscle_mask is None:
-        print(f"Error: Unable to read muscle mask from {muscle_mask_path}")
-        sys.exit(1)
-    
-    # Derive a base filename from the input image path for saving results
-    base_filename = os.path.splitext(os.path.basename(image_path))[0]
-    
-    process_marbling(rotated_image, muscle_mask, base_filename=base_filename)
+    print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
+    return refined_marbling_mask, marbling_percentage
