@@ -34,17 +34,6 @@ def enhance_contrast_and_sharpen(image):
     
     return sharpened_3ch
 
-def global_threshold(image):
-    """
-    Creates a binary image using a global threshold.
-    """
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
-    gray_image = clahe.apply(gray_image)
-    ret, binary_image = cv2.threshold(gray_image, 150, 255, cv2.THRESH_BINARY)
-    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
-    return binary_image
-
 def gaussian_threshold(image):
     """
     Uses Gaussian adaptive thresholding to generate a binary image.
@@ -60,46 +49,12 @@ def gaussian_threshold(image):
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     return binary_image
 
-def mean_threshold(image):
-    """
-    Uses mean adaptive thresholding to generate a binary image.
-    """
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=0.1, tileGridSize=(8, 8))
-    gray_image = clahe.apply(gray_image)
-    binary_image = cv2.adaptiveThreshold(
-        gray_image, 255, 
-        cv2.ADAPTIVE_THRESH_MEAN_C,
-        cv2.THRESH_BINARY, 451, -30
-    )
-    binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
-    return binary_image
-
 def overlay_images(image_1, image_2):
     """
     Overlays two images using weighted addition.
     """
     overlay_image = cv2.addWeighted(image_1, 1.0, image_2, 1.0, 0)
     return overlay_image
-
-def edge_detect(image):
-    """
-    (Experimental) Uses Canny edge detection to produce an image of edges.
-    """
-    edges = cv2.Canny(image, 143, 300)
-    edges_colored = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
-    return edges_colored
-
-def optimize_image(image):
-    """
-    Adjusts the blue, green, and red channels of an image to enhance it.
-    """
-    b, g, r = cv2.split(image)
-    r_modified = np.clip(255 * (r / 255) ** 1, 0, 255).astype(np.uint8)
-    g_modified = np.clip(255 * (g / 255) ** 2.0, 0, 255).astype(np.uint8)
-    b_modified = np.clip(255 * (b / 255) ** 1.0, 0, 255).astype(np.uint8)
-    optimized_image = cv2.merge([b_modified, g_modified, r_modified])
-    return optimized_image
 
 def sharpen(image):
     """
