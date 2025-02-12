@@ -108,11 +108,6 @@ def process_image(image_path, args):
             image_id=extract_image_id(image_path),
             rois_folder="output/rois"
         )
-
-        fat_enhance_save(image_path, args.fat_path)
-        
-
-
         return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth
 
     except Exception as e:
