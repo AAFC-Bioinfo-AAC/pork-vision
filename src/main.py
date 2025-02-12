@@ -10,7 +10,7 @@ from utils.preprocess import (
     convert_contours_to_image,
 )
 from utils.orientation import orient_muscle_and_fat_using_adjacency
-from utils.marbling import process_marbling
+from utils.marbling import process_marbling,save_marbling_csv
 from utils.measurement import (
     measure_longest_horizontal_segment,
     find_midline_using_fat_extremes,
@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument("--output_path", type=str, default="output/annotated_images")
     parser.add_argument("--results_csv", type=str, default="output/results.csv")
     parser.add_argument("--rois_path", type=str, default="output/rois")
+    parser.add_argument("--marbling_csv", type=str, default="output/marbling_percentage.csv")
     return parser.parse_args()
 
 
@@ -64,7 +65,7 @@ def process_image(image_path, args):
 
         # Step 3.5: Marbling Extraction
         image_id = extract_image_id(image_path)
-        marbling_mask = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
+        marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
 
         # Step 4: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
@@ -107,7 +108,7 @@ def process_image(image_path, args):
             rois_folder="output/rois"
         )
 
-        return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth
+        return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth, marbling_percentage
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
@@ -121,21 +122,25 @@ def main():
     image_paths = sorted([os.path.join(args.image_path, img) for img in os.listdir(args.image_path)])
 
     # Step 2: Parallel Processing
-    id_list, muscle_width_list, muscle_depth_list, fat_depth_list = [], [], [], []
+    id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
     max_workers = min(4, os.cpu_count() // 2)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
-            img_id, muscle_width, muscle_depth, fat_depth = future.result()
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage = future.result()
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
             fat_depth_list.append(fat_depth)
+            marbling_percentage_list.append(marbling_percentage)
 
     # Step 3: Save and display results
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv)
+    save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
     print_table_of_measurements(args.results_csv)
+    print_table_of_measurements(args.marbling_csv)
+
 
 
 if __name__ == "__main__":
