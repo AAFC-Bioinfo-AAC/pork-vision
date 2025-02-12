@@ -44,7 +44,7 @@ def gaussian_threshold(image):
     binary_image = cv2.adaptiveThreshold(
         gray_image, 255, 
         cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        cv2.THRESH_BINARY, 81, -36
+        cv2.THRESH_BINARY, 81, -1
     )
     binary_image = cv2.cvtColor(binary_image, cv2.COLOR_GRAY2BGR)
     return binary_image
@@ -71,15 +71,27 @@ def extract_marbling(enhanced_image, muscle_mask):
     
     # Reduce the amount of blurring and morphological processing to preserve details
     marbling_mask = cv2.GaussianBlur(marbling_mask, (1, 1), 0)
-    kernel = np.ones((1, 1), np.uint8)
-    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=1)
-    
-    marbling_mak = contour_detection(marbling_mask)
+    marbling_mask = contour_detection(marbling_mask)
+    marbling_mask = clean_specks(marbling_mask)
+    return marbling_mask
+
+def clean_specks(marbling_mask):
+    """
+    Removes noisy speckles of detected fat from the image
+    Ensures only significant areas remain.
+    """
+    kernel = np.ones((2, 2), np.uint8)    
+    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=5)
     return marbling_mask
 
 def contour_detection(marbling_mask):
+    """
+    Finds the contours composing the mask. 
+    The 0th contour is the first one found (tends to be the one outlining the mask).
+    Draws a black contour line to mute the edge of the image (which are incorrectly white).
+    """
     contours, hierarchy = cv2.findContours(marbling_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
-    contour_mask = cv2.drawContours(marbling_mask, contours, 0, color=(0,0,0), thickness=30)
+    contour_mask = cv2.drawContours(marbling_mask, contours, 0, color=(0,0,0), thickness=30)  # Change thickness in order to adjust the amount of white outline on the mask.
     return contour_mask
 
 def convert_fat_color(image):
