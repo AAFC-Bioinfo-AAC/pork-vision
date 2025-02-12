@@ -74,7 +74,13 @@ def extract_marbling(enhanced_image, muscle_mask):
     kernel = np.ones((1, 1), np.uint8)
     marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=1)
     
+    marbling_mak = contour_detection(marbling_mask)
     return marbling_mask
+
+def contour_detection(marbling_mask):
+    contours, hierarchy = cv2.findContours(marbling_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    contour_mask = cv2.drawContours(marbling_mask, contours, 0, color=(0,0,0), thickness=30)
+    return contour_mask
 
 def convert_fat_color(image):
     '''
