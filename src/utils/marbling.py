@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 import os
-from matplotlib import pyplot as plt
+import pandas as pd
 
 # =============================================================================
 # Helper Functions
@@ -244,11 +244,11 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=80)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
 
     # Smooth the marbling mask
-    refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(5, 5))
+    refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(7, 7))
     
     # Calculate marbling percentage relative to the muscle area
     marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
@@ -266,3 +266,14 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     
     print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
     return refined_marbling_mask, marbling_percentage
+
+# ==============================
+# Saving results
+# ==============================
+def save_marbling_csv(id_list, fat_percentage_list, output_csv_path):
+    df = pd.DataFrame({
+        "image_id" : id_list,
+        "fat_percentage" : fat_percentage_list
+    })
+
+    df.to_csv(output_csv_path, index=False)
