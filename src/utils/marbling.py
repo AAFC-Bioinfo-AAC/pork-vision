@@ -94,6 +94,21 @@ def convert_fat_color(image):
     lab_image = np.clip(lab_image, 0, 255)
     return cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
 
+def smooth_marbling_mask(marbling_mask, kernel_size=(5, 5)):
+    """
+    Applies Gaussian blur to the marbling mask for smoothing pixel boundaries.
+
+    Parameters:
+      marbling_mask: Binary marbling mask (0/255) as a single-channel 8-bit image.
+      kernel_size: Size of the Gaussian kernel (default is (5, 5)).
+
+    Returns:
+      smoothed_mask: The smoothed marbling mask.
+    """
+    smoothed_mask = cv2.GaussianBlur(marbling_mask, kernel_size, 0)
+    _, binary_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
+    return binary_mask
+
 # =============================================================================
 # Contrast Enhancement Function
 # =============================================================================
@@ -223,8 +238,11 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=60)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
+
+    # Smooth the marbling mask
+    refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(5, 5))
     
     # Calculate marbling percentage relative to the muscle area
     marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
