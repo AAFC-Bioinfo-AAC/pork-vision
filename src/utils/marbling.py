@@ -235,7 +235,7 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=80)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
 
     # Smooth the marbling mask
