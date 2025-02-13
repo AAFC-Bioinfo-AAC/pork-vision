@@ -11,6 +11,7 @@ from utils.preprocess import (
 )
 from utils.orientation import orient_muscle_and_fat_using_adjacency
 from utils.marbling import process_marbling,save_marbling_csv
+from utils.colouring import color_grading
 from utils.measurement import (
     measure_longest_horizontal_segment,
     find_midline_using_fat_extremes,
@@ -36,6 +37,7 @@ def parse_args():
     parser.add_argument("--results_csv", type=str, default="output/results.csv")
     parser.add_argument("--rois_path", type=str, default="output/rois")
     parser.add_argument("--marbling_csv", type=str, default="output/marbling_percentage.csv")
+    parser.add_argument("--colouring_path", type=str, default="output/colouring")
     return parser.parse_args()
 
 
@@ -67,7 +69,11 @@ def process_image(image_path, args):
         image_id = extract_image_id(image_path)
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
 
-        # Step 5: Measurement
+        # Step 5: Perform color grading
+        grayscale_image = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
+        color_grading(grayscale_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
+
+        # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
         if muscle_width_start is None or muscle_width_end is None:
             return extract_image_id(image_path), None, None, None
@@ -91,7 +97,7 @@ def process_image(image_path, args):
             return extract_image_id(image_path), None, None, None
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
-        # Step 6: Save annotated image
+        # Step 7: Save annotated image
         save_annotated_image(
             rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
             (fat_depth_start, fat_depth_end), image_path, args.output_path
