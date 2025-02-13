@@ -6,9 +6,9 @@ def white_balance(image):
     result = cv2.xphoto.createSimpleWB().balanceWhite(image)
     return result
 
-def get_pixel_value(event, x, y, flags, param):
+def get_pixel_value(event, x, y, flag, params):
     if event == cv2.EVENT_LBUTTONDOWN:
-        pixel_value = img[y,x]
+        pixel_value = params[y,x]
         print(f'Pixel value at ({x}, {y}): {pixel_value}')
 
 def equalize(image):
@@ -49,11 +49,14 @@ def reference_standardize(images, reference_image):
     standardized_images = []
     for img in images:
         standard_img = adjust_brightness(img, target_lightness, target_a, target_b)
+        #standard_img = cv2.medianBlur(img, 3)
+        standard_img = cv2.fastNlMeansDenoisingColored(img,None,1,10,7,21)
         standardized_images.append(standard_img)
     return standardized_images
 
 reference_image = cv2.imread('data/raw_images/724_LDLeanColour.JPG')
 reference_image = white_balance(reference_image)
+reference_image = equalize(reference_image)
 img_list = ['data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 ready_imgs = []
 for img in img_list:
@@ -64,9 +67,9 @@ for img in img_list:
 standardized = reference_standardize(ready_imgs, reference_image)
 
 for img in standardized:
-    print(img[148,440])
-    cv2.imshow("Image", img)
-    cv2.setMouseCallback("Image", get_pixel_value)
+    eq = equalize(img)
+    cv2.imshow("Image", eq)
+    cv2.setMouseCallback("Image", get_pixel_value, eq)
     cv2.waitKey()
     cv2.destroyAllWindows()
 
