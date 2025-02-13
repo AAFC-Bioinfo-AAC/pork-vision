@@ -64,11 +64,11 @@ def process_image(image_path, args):
             results.orig_img, muscle_binary_mask, fat_binary_mask
         )
 
-        # Step 3.5: Marbling Extraction
+        # Step 4: Marbling Extraction
         image_id = extract_image_id(image_path)
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
 
-        # Step 4: Measurement
+        # Step 5: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
         if muscle_width_start is None or muscle_width_end is None:
             return extract_image_id(image_path), None, None, None
@@ -92,7 +92,7 @@ def process_image(image_path, args):
             return extract_image_id(image_path), None, None, None
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
-        # Step 5: Save annotated image
+        # Step 6: Save annotated image
         save_annotated_image(
             rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
             (fat_depth_start, fat_depth_end), image_path, args.output_path
