@@ -264,7 +264,7 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow)
     
-    print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
+    # print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
     return refined_marbling_mask, marbling_percentage
 
 # ==============================
