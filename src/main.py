@@ -9,10 +9,8 @@ from utils.preprocess import (
     convert_contours_to_image,
 )
 from utils.orientation import orient_muscle_and_fat_using_adjacency
-from utils.marbling import (
-    process_marbling,
-    save_marbling_csv
-)
+from utils.marbling import process_marbling,save_marbling_csv
+from utils.colouring import colour_grading, save_colouring_csv
 from utils.measurement import (
     measure_longest_horizontal_segment,
     find_midline_using_fat_extremes,
@@ -37,6 +35,8 @@ def parse_args():
     parser.add_argument("--results_csv", type=str, default="output/results.csv")
     parser.add_argument("--rois_path", type=str, default="output/rois")
     parser.add_argument("--marbling_csv", type=str, default="output/marbling_percentage.csv")
+    parser.add_argument("--colouring_path", type=str, default="output/colouring")
+    parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
     return parser.parse_args()
 
 
@@ -68,7 +68,10 @@ def process_image(image_path, args):
         image_id = extract_image_id(image_path)
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
 
-        # Step 5: Measurement
+        # Step 5: Perform color grading
+        canadian_classified, japanese_classified, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
+
+        # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
         if muscle_width_start is None or muscle_width_end is None:
             return extract_image_id(image_path), None, None, None
@@ -92,7 +95,7 @@ def process_image(image_path, args):
             return extract_image_id(image_path), None, None, None
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
-        # Step 6: Save annotated image
+        # Step 7: Save annotated image
         save_annotated_image(
             rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
             (fat_depth_start, fat_depth_end), image_path, args.output_path
@@ -109,7 +112,7 @@ def process_image(image_path, args):
             rois_folder="output/rois"
         )
 
-        return extract_image_id(image_path), muscle_width, muscle_depth, fat_depth, marbling_percentage
+        return image_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, lean_mask
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
@@ -124,25 +127,32 @@ def main():
 
     # Step 2: Parallel Processing
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
+    canadian_classified_list, japanese_classified_list, lean_mask_list = [], [], []
     max_workers = min(4, os.cpu_count() // 2)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage = future.result()
+            result = future.result()
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, lean_mask = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
             fat_depth_list.append(fat_depth)
             marbling_percentage_list.append(marbling_percentage)
+            canadian_classified_list.append(canadian_classified)
+            japanese_classified_list.append(japanese_classified)
+            lean_mask_list.append(lean_mask)
 
     # Step 3: Save and display results
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv)
     save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
     print_table_of_measurements(args.results_csv)
     print_table_of_measurements(args.marbling_csv)
-
-
+    
+    # OPTIONAL: Comment these out to improve performance
+    save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
+    print_table_of_measurements(args.colouring_csv)
 
 if __name__ == "__main__":
     main()
