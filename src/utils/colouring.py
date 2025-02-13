@@ -5,13 +5,13 @@ import os
 
 # RGB values for Canadian and Japanese lean color standards
 canadian_rgb = np.array([
-    (170, 87, 95),   # C6
-    (177, 101, 103), # C5
-    (195, 125, 125), # C4
-    (204, 146, 142), # C3
-    (209, 162, 152), # C2
-    (211, 175, 161), # C1
-    (215, 184, 164)  # C0
+    (185, 89, 99),   # C6
+    (197, 105, 113), # C5
+    (206, 127, 127), # C4
+    (216, 149, 141), # C3
+    (222, 170, 157), # C2
+    (231, 187, 171), # C1
+    (239, 202, 179)  # C0
 ], dtype=np.float32)
 
 japanese_rgb = np.array([
@@ -52,7 +52,9 @@ def apply_lut(image, category_values, lut_values, mask):
 
     # Ensure the background is black
     colored_image[mask == 0] = [0, 0, 0]
-
+    cv2.imshow("after LUT", colored_image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
     return colored_image
 
 def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
