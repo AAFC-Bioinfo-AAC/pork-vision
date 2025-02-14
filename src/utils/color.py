@@ -94,7 +94,6 @@ def reference_standardize(images, reference_image):
     Returns standardized image.
     '''
     standardized_images = []
-    reference_image = cv2.fastNlMeansDenoisingColored(reference_image,None,3,3,7,21)
     reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
     reference_image = white_balance(reference_image, "LearnWB")
     for img in images:
