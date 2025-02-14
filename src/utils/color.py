@@ -3,62 +3,72 @@ import cv2
 import numpy as np
 from skimage.exposure import match_histograms,equalize_hist
 
-def white_balance(image):
-    result = cv2.xphoto.createSimpleWB().balanceWhite(image)
+
+original_colors = []
+standard_colors = []
+
+test_c6 = []
+
+###################################
+######TESTING FUNCTIONS############
+###################################
+
+def test_LAB(reference_image, image):
+    lab_ref = cv2.cvtColor(reference_image, cv2.COLOR_BGR2LAB)
+    l_ref, a_ref, b_ref = cv2.split(lab_ref)
+    target_mean_l = np.mean(l_ref)
+    target_mean_a = np.mean(a_ref)
+    target_mean_b = np.mean(b_ref)
+    print(f"Target mean L: {target_mean_l}")
+    print(f"Target mean A: {target_mean_a}")
+    print(f"Target mean B: {target_mean_b}")
+    lab_current = cv2.cvtColor(reference_image, cv2.COLOR_BGR2LAB)
+    l_cur, a_cur, b_cur = cv2.split(lab_current)
+    current_mean_l = np.mean(l_cur)
+    current_mean_a = np.mean(a_cur)
+    current_mean_b = np.mean(b_cur)
+    print(f"Current mean L: {current_mean_l}")
+    print(f"Current mean A: {current_mean_a}")
+    print(f"Current mean B: {current_mean_b}")
+
+
+def test_var(original_colors, standard_colors):
+    print(f"Original values of c6:{original_colors}")
+    original_array = np.array(original_colors)
+    print(f"Variance of original: {np.var(original_array, axis=0)}")
+    print(f"Standardized values of c6:{standard_colors}")
+    standardized_array = np.array(standard_colors)
+    print(f"Variance of Standardized: {np.var(standardized_array, axis = 0)}")
+
+
+def white_balance(image, option):
+    if option == "SimpleWB":
+        result = cv2.xphoto.createSimpleWB().balanceWhite(image)
+    if option == "LearnWB":
+        result = cv2.xphoto.createLearningBasedWB().balanceWhite(image)
     return result
 
 def get_pixel_value(event, x, y, flag, params):
     if event == cv2.EVENT_LBUTTONDOWN:
-        pixel_value = params[y,x]
+        pixel_value = params[0][y,x]
         print(f'Pixel value at ({x}, {y}): {pixel_value}')
-
-def equalize(image):
-    '''
-    ISSUE
-    '''
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hsv[:,:,2]= cv2.equalizeHist(hsv[:,:,2])
-    result = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
-    return result
-
-def adjust_brightness(image, target_mean_lightness, target_mean_a, target_mean_b):
-    '''
-    DEPRECATED
-    '''
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l_channel, a_channel, b_channel = cv2.split(lab)
-    current_mean_lightness = np.mean(l_channel)
-    current_mean_a = np.mean(a_channel)
-    current_mean_b = np.mean(b_channel)
-    #print(f"Current mean lightness: {current_mean_lightness}")
-    #print(f"Target mean lightness: {target_mean_lightness}")
-    scale_l = target_mean_lightness/current_mean_lightness
-    scale_a = target_mean_a/current_mean_a
-    scale_b = target_mean_b/current_mean_b
-    l_channel = np.clip(l_channel*scale_l,0,255).astype(np.uint8)
-    a_channel = np.clip(a_channel*scale_a,0,255).astype(np.uint8)
-    b_channel = np.clip(b_channel*scale_b,0,255).astype(np.uint8)
-    #print(f"Adjusted lightness to {np.mean(l_channel)}")
-    adjusted_lab_image = cv2.merge([l_channel, a_channel, b_channel])
-    adjusted_image = cv2.cvtColor(adjusted_lab_image, cv2.COLOR_LAB2BGR)
-    return adjusted_image
+        if params[1] == True:
+            standard_colors.append(np.array(pixel_value).tolist())
+        else:
+            original_colors.append(np.array(pixel_value).tolist())
 
 def reference_standardize(images, reference_image):
     standardized_images = []
     reference_image = cv2.fastNlMeansDenoisingColored(reference_image,None,3,3,7,21)
     for img in images:
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        standard_img = match_histograms(img_rgb, reference_image, channel_axis=-1)
-        #standard_img = cv2.medianBlur(img, 3)
-        standard_img = cv2.cvtColor(standard_img, cv2.COLOR_RGB2BGR)
-        #standard_img = cv2.fastNlMeansDenoisingColored(img,None,3,3,7,21)
+
+        standard_img = match_histograms(img, reference_image, channel_axis=-1)
         standardized_images.append(standard_img)
     return standardized_images
 
-reference_image = cv2.imread('data/raw_images/724_LDLeanColour.JPG')
+reference_image = cv2.imread('data/raw_images/1701_LdLeanColor.JPG')
 reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
-reference_image = white_balance(reference_image)
-reference_image = cv2.cvtColor(reference_image, cv2.COLOR_BGR2RGB)
+reference_image = white_balance(reference_image, "LearnWB")
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 ready_imgs = []
 
@@ -68,19 +78,24 @@ for img in img_list:
     half = cv2.resize(image, (0,0), fx=0.15, fy=0.15)
     #### For testing purposes
     cv2.imshow("Image", half)
-    cv2.setMouseCallback("Image", get_pixel_value, half)
+    cv2.setMouseCallback("Image", get_pixel_value, [half, False])
     cv2.waitKey()
     cv2.destroyAllWindows()
-
-    balance = white_balance(half)
+    print("=========================================")
+    balance = white_balance(half, "LearnWB")
     ready_imgs.append(balance)
 standardized = reference_standardize(ready_imgs, reference_image)
 
+
+print("================================================================")
+print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+
 for img in standardized:
     cv2.imshow("Standard", img)
-    cv2.setMouseCallback("Standard", get_pixel_value, img)
+    cv2.setMouseCallback("Standard", get_pixel_value, [img, True])
     cv2.waitKey()
     cv2.destroyAllWindows()
+    print("=========================================")
 
-    
+
     
