@@ -14,13 +14,32 @@ canadian_rgb = np.array([
     (239, 202, 179)  # C0
 ], dtype=np.float32)
 
+canadian_rgb_standard = np.array([
+    (175, 83, 81),   # C6
+    (185, 100, 87),  # C5
+    (190, 114, 97),  # C4
+    (194, 129, 106), # C3
+    (203, 146, 117), # C2
+    (208, 160, 125), # C1
+    (217, 172, 131)  # C0
+], dtype=np.float32)
+
 japanese_rgb = np.array([
     (146, 46, 44),   # J6
     (153, 65, 55),   # J5
     (168, 85, 67),   # J4
-    (178, 103, 80),   # J3
+    (178, 103, 80),  # J3
     (193, 126, 97),  # J2
-    (199, 144, 105)   # J1
+    (199, 144, 105)  # J1
+], dtype=np.float32)
+
+japanese_rgb_standard = np.array([
+    (124, 33, 26),  # J6
+    (144, 40, 36),  # J5
+    (160, 72, 50),  # J4
+    (173, 88, 60),  # J3
+    (188, 110, 70), # J2
+    (191, 124, 75), # J1
 ], dtype=np.float32)
 
 def classify_rgb_vectorized(image, standards, lean_mask):
