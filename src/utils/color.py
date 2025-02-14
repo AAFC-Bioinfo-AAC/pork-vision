@@ -89,7 +89,7 @@ def get_pixel_value(event, x, y, flag, params):
             original_colors.append(np.array(pixel_value).tolist())
 
 
-def LAB_check(reference_image, image, images_for_correction, standardized_images):
+def LAB_check(reference_image, image, standardized_images):
     lab_ref = cv2.cvtColor(reference_image, cv2.COLOR_BGR2LAB)
     lab_current = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
     l_ref, a_ref, b_ref = cv2.split(lab_ref)
@@ -98,36 +98,30 @@ def LAB_check(reference_image, image, images_for_correction, standardized_images
     or (np.mean(a_cur)/np.mean(a_ref) < 0.99) or (np.mean(a_cur)/np.mean(a_ref) > 1.01) \
     or (np.mean(b_cur)/np.mean(b_ref) < 0.99) or (np.mean(b_cur)/np.mean(b_ref) > 1.01):
         print("Outside margin of error, add to correction list")
-        images_for_correction.append(image)
+        standard_img  = reference_standardize(image, reference_image)
+        standardized_images.append(standard_img)
     else:
         print("Within margin of error, no need to standardize")
         standardized_images.append(image)
-    return images_for_correction, standardized_images
+    return standardized_images
 
-def reference_standardize(images, reference_image):
+def reference_standardize(image, reference_image):
     '''
     Takes in a list of images, and a reference.
     Standardizes the list of images to the reference
     by matching histograms.
     Returns standardized image.
     '''
-    standardized_images = []
-
-    for img in images:
-        standard_img = match_histograms(img, reference_image, channel_axis=-1)
-        #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
-        standardized_images.append(standard_img)
-    return standardized_images, reference_image
+    standard_img = match_histograms(image, reference_image, channel_axis=-1)
+    #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
+    return standard_img
 
 reference_image = cv2.imread('data/raw_images/1701_LdLeanColor.JPG')
 reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
 reference_image = white_balance(reference_image, "SimpleWB")
 
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
-ready_imgs = []
-images_for_correction = []
 standardized_images = []
-
 
 for img in img_list:
     print(img)
@@ -136,11 +130,7 @@ for img in img_list:
     balance = white_balance(half, "SimpleWB")
     test_extract(half, False)
     test_LAB(reference_image, balance)
-    images_for_correction, standardized_images = LAB_check(reference_image, balance, images_for_correction, standardized_images)
-
-standardized, reference_image = reference_standardize(images_for_correction, reference_image)
-standardized_images.extend(standardized)
-
+    standardized_images = LAB_check(reference_image, balance, standardized_images)
 
 print("================================================================")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
