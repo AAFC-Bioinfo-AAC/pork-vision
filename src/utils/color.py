@@ -38,6 +38,30 @@ def test_LAB(reference_image, image):
     print()
     print()
 
+def test_HSV(reference_image, image):
+    '''
+    Used to test the LAB values,
+    See if the LAB of an image matches the reference LAB
+    after standardization.
+    '''
+    lab_ref = cv2.cvtColor(reference_image, cv2.COLOR_BGR2HSV)
+    h_ref, s_ref, v_ref = cv2.split(lab_ref)
+    target_mean_h = np.mean(h_ref)
+    target_mean_s = np.mean(s_ref)
+    target_mean_v = np.mean(v_ref)
+    print(f"Target mean H: {target_mean_h}")
+    print(f"Target mean S: {target_mean_s}")
+    print(f"Target mean V: {target_mean_v}")
+    lab_current = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h_cur, s_cur, v_cur = cv2.split(lab_current)
+    current_mean_h = np.mean(h_cur)
+    current_mean_s = np.mean(s_cur)
+    current_mean_v = np.mean(v_cur)
+    print(f"Current mean H: {current_mean_h}")
+    print(f"Current mean S: {current_mean_s}")
+    print(f"Current mean V: {current_mean_v}")
+    print()
+    print()
 
 def test_var(original_colors, standard_colors):
     '''
@@ -61,6 +85,9 @@ def test_extract(image, BoolStandard):
     cv2.destroyAllWindows()
     print("=========================================")
 
+#########################################
+##########CORE FUNCTIONS#################
+#########################################
 
 def white_balance(image, option):
     '''
@@ -116,9 +143,10 @@ def reference_standardize(image, reference_image):
     #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
     return standard_img
 
+
 reference_image = cv2.imread('data/raw_images/1701_LdLeanColor.JPG')
 reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
-reference_image = white_balance(reference_image, "SimpleWB")
+reference_image = white_balance(reference_image, "LearnWB")
 
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 standardized_images = []
@@ -127,17 +155,18 @@ for img in img_list:
     print(img)
     image = cv2.imread(img)
     half = cv2.resize(image, (0,0), fx=0.15, fy=0.15)
-    balance = white_balance(half, "SimpleWB")
+    balance = white_balance(half, "LearnWB")
     test_extract(half, False)
-    test_LAB(reference_image, balance)
+    test_LAB(reference_image, half)
     standardized_images = LAB_check(reference_image, balance, standardized_images)
 
 print("================================================================")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
 
 for img in standardized_images:
-    test_LAB(reference_image, img)
     test_extract(img, True)
+    test_LAB(reference_image, img)
+
 
 test_var(original_colors, standard_colors)
     
