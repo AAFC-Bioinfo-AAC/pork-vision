@@ -98,6 +98,7 @@ def reference_standardize(images, reference_image):
     reference_image = white_balance(reference_image, "LearnWB")
     for img in images:
         standard_img = match_histograms(img, reference_image, channel_axis=-1)
+        #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
         standardized_images.append(standard_img)
     return standardized_images
 
