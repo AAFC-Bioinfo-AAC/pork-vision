@@ -1,6 +1,7 @@
 import argparse
 import concurrent.futures
 import os
+import cv2
 import numpy as np
 from ultralytics import YOLO
 from utils.preprocess import (
@@ -25,6 +26,7 @@ from utils.postprocess import (
     extract_image_id,
     save_to_roi
 )
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
