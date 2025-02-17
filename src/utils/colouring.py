@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import pandas as pd
 import os
-from skimage.exposure import match_histograms
+from skimage.exposure import match_histograms, rescale_intensity
 
 
 # RGB values for Canadian and Japanese lean color standards
@@ -82,7 +82,8 @@ def reference_standardize(image, reference_image):
     by matching histograms.
     Returns standardized image.
     '''
-    standard_img = match_histograms(image, reference_image, channel_axis=-1)
+    standard_img = image
+    #standard_img = match_histograms(image, reference_image, channel_axis=-1)
     #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
     return standard_img
 
