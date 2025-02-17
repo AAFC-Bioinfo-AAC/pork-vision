@@ -25,12 +25,12 @@ canadian_rgb_standard = np.array([
 ], dtype=np.float32)
 
 japanese_rgb = np.array([
-    (126, 38, 36),   # J6
-    (145, 56, 45),   # J5
-    (159, 77, 58),   # J4
-    (174, 95, 75),  # J3
-    (184, 115, 85),  # J2
-    (192, 136, 93)  # J1
+    (146, 46, 44),   # J6
+    (153, 65, 55),   # J5
+    (168, 85, 67),   # J4
+    (178, 103, 80),   # J3
+    (193, 126, 97),  # J2
+    (199, 144, 105)   # J1
 ], dtype=np.float32)
 
 japanese_rgb_standard = np.array([
@@ -71,9 +71,7 @@ def apply_lut(image, category_values, lut_values, mask):
 
     # Ensure the background is black
     colored_image[mask == 0] = [0, 0, 0]
-    cv2.imshow("after LUT", colored_image)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+
     return colored_image
 
 def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
