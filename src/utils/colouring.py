@@ -5,13 +5,13 @@ import os
 
 # RGB values for Canadian and Japanese lean color standards
 canadian_rgb = np.array([
-    (174, 94, 100),   # C6
-    (184, 103, 109), # C5
-    (193, 126, 124), # C4
-    (200, 142, 136), # C3
-    (207, 158, 148), # C2
-    (211, 171, 159), # C1
-    (218, 185, 165)  # C0
+    (170, 87, 95),   # C6
+    (177, 101, 103), # C5
+    (195, 125, 125), # C4
+    (204, 146, 142), # C3
+    (209, 162, 152), # C2
+    (211, 175, 161), # C1
+    (215, 184, 164)  # C0
 ], dtype=np.float32)
 
 canadian_rgb_standard = np.array([
