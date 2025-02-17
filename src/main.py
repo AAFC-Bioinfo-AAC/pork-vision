@@ -39,6 +39,7 @@ def parse_args():
     parser.add_argument("--marbling_csv", type=str, default="output/marbling_percentage.csv")
     parser.add_argument("--colouring_path", type=str, default="output/colouring")
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
+    parser.add_argument("--standardcolor_path", type=str, default="output/colour_standardized")
     return parser.parse_args()
 
 
@@ -71,7 +72,8 @@ def process_image(image_path, args):
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
 
         # Step 5: Perform color grading
-        canadian_classified, japanese_classified, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
+        # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
+        canadian_classified, japanese_classified, lean_mask = colour_grading(results.orig_img, muscle_binary_mask, marbling_mask, args.colouring_path, image_id)
 
         # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
@@ -146,6 +148,7 @@ def main():
             japanese_classified_list.append(japanese_classified)
             lean_mask_list.append(lean_mask)
 
+            
     # Step 3: Save and display results
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv)
     save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
@@ -153,8 +156,8 @@ def main():
     print_table_of_measurements(args.marbling_csv)
     
     # OPTIONAL: Comment these out to improve performance
-    save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
-    print_table_of_measurements(args.colouring_csv)
+    #save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
+    #print_table_of_measurements(args.colouring_csv)
 
 if __name__ == "__main__":
     main()
