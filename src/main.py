@@ -73,7 +73,7 @@ def process_image(image_path, args):
 
         # Step 5: Perform color grading
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
-        canadian_classified, japanese_classified, lean_mask = colour_grading(results.orig_img, muscle_binary_mask, marbling_mask, args.colouring_path, image_id)
+        canadian_classified, japanese_classified, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
 
         # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
