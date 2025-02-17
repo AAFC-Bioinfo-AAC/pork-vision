@@ -146,7 +146,7 @@ def reference_standardize(image, reference_image):
 
 reference_image = cv2.imread('data/reference_images/2704_LdLeanColor.JPG')
 reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
-reference_image = white_balance(reference_image, "SimpleWB")
+#reference_image = white_balance(reference_image, "SimpleWB")
 
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 standardized_images = []
