@@ -144,9 +144,9 @@ def reference_standardize(image, reference_image):
     return standard_img
 
 
-reference_image = cv2.imread('data/raw_images/1701_LdLeanColor.JPG')
+reference_image = cv2.imread('data/reference_images/2704_LdLeanColor.JPG')
 reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
-reference_image = white_balance(reference_image, "LearnWB")
+reference_image = white_balance(reference_image, "SimpleWB")
 
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 standardized_images = []
@@ -155,10 +155,10 @@ for img in img_list:
     print(img)
     image = cv2.imread(img)
     half = cv2.resize(image, (0,0), fx=0.15, fy=0.15)
-    balance = white_balance(half, "LearnWB")
+    #balance = white_balance(half, "SimpleWB")
     test_extract(half, False)
     test_LAB(reference_image, half)
-    standardized_images = LAB_check(reference_image, balance, standardized_images)
+    standardized_images = LAB_check(reference_image, half, standardized_images)
 
 print("================================================================")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
