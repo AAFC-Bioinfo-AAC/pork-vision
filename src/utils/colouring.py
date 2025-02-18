@@ -82,31 +82,9 @@ def reference_standardize(image, reference_image):
     by matching histograms.
     Returns standardized image.
     '''
-
-    def match_channel(source, target):
-        # Calculate the mean and standard deviation of source and target channels
-        mean_source, std_source = cv2.meanStdDev(source)
-        mean_target, std_target = cv2.meanStdDev(target)
-    
-        # Normalize the source channel
-        normalized_source = (source - mean_source) / std_source
-        matched_channel = (normalized_source * std_target) + mean_target
-    
-        # Clip the values to be in valid LAB range [0, 255]
-        matched_channel = np.clip(matched_channel, 0, 255).astype(np.uint8)
-        return matched_channel
-    lab_source = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    lab_target = cv2.cvtColor(reference_image, cv2.COLOR_BGR2LAB)
-
-    L_source, A_source, B_source = cv2.split(lab_source)
-    L_target, A_target, B_target = cv2.split(lab_target)
-    L_matched = match_channel(L_source, L_target)
-    A_matched = match_channel(A_source, A_target)
-    B_matched = match_channel(B_source, B_target)
-    lab_matched = cv2.merge([L_matched, A_matched, B_matched])
-    standard_img = cv2.cvtColor(lab_matched, cv2.COLOR_LAB2BGR)
-
-    #standard_img = match_histograms(image, reference_image, channel_axis=-1)
+    height, width = image.shape[:2]
+    resized_ref = cv2.resize(reference_image, (height, width))
+    standard_img = match_histograms(image, reference_image, channel_axis=-1)
     #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
     return standard_img
 
