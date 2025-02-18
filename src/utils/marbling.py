@@ -33,6 +33,15 @@ def background_subtraction(image, kernel_size=11):
     subtracted = cv2.subtract(gray, bg)
     return subtracted
 
+def clean_specks(marbling_mask):
+    """
+    Removes noisy speckles of detected fat from the image
+    Ensures only significant areas remain.
+    """
+    kernel = np.ones((2, 2), np.uint8)    
+    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=5)
+    return marbling_mask
+
 def dynamic_contrast_stretch(image):
     """
     Stretches the contrast of the input 8-bit grayscale image dynamically
@@ -235,7 +244,7 @@ def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", b
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=80)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
 
     # Smooth the marbling mask

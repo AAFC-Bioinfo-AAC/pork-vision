@@ -60,7 +60,21 @@ def rotate_image(image, angle):
     h, w = image.shape[:2]
     center = (w // 2, h // 2)
     rot_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-    return cv2.warpAffine(image, rot_matrix, (w, h))
+
+    abs_cos = abs(rot_matrix[0, 0])
+    abs_sin = abs(rot_matrix[0, 1])
+
+    # Compute the new dimensions of the rotated image
+    new_w = int(h * abs_sin + w * abs_cos)
+    new_h = int(h * abs_cos + w * abs_sin)
+    
+    # Adjust the rotation matrix to account for translation (no cropping)
+    rot_matrix[0, 2] += (new_w / 2) - center[0]
+    rot_matrix[1, 2] += (new_h / 2) - center[1]
+    
+    # Perform the rotation with the new dimensions
+    rotated_image = cv2.warpAffine(image, rot_matrix, (new_w, new_h))
+    return rotated_image
 
 def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
     """
