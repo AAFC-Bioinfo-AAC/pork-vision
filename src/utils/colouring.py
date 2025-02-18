@@ -126,9 +126,10 @@ def classify_rgb_vectorized(image, standards, lean_mask):
     """Vectorized classification of RGB pixels using Euclidean distance."""
     h, w, _ = image.shape
     classified_image = np.zeros((h, w), dtype=np.uint8)
+    image_rgb = image[..., ::-1] # Convert to RGB in orderr to extract pixels.
 
     # Apply the lean mask to restrict analysis to lean muscle pixels
-    lean_pixels = image[lean_mask > 0].astype(np.float32)  # Extract lean muscle pixels as a (N, 3) array
+    lean_pixels = image_rgb[lean_mask > 0].astype(np.float32)  # Extract lean muscle pixels as a (N, 3) array
 
     # Calculate Euclidean distances to each standard for all lean pixels
     distances = np.linalg.norm(lean_pixels[:, None] - standards[None, :], axis=2)  # (N, num_standards)
@@ -172,7 +173,7 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     
     # Creates a standardization for the image
     standard_img = execute_color_standardization(image)
-    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask)
+    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask) 
     japanese_classified_standard = classify_rgb_vectorized(standard_img, japanese_rgb_standard, lean_mask)
 
     canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)
