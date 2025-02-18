@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument("--marbling_csv", type=str, default="output/marbling_percentage.csv")
     parser.add_argument("--colouring_path", type=str, default="output/colouring")
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
-    parser.add_argument("--standardcolor_path", type=str, default="output/colour_standardized")
+    parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
     return parser.parse_args()
 
 
@@ -73,7 +73,7 @@ def process_image(image_path, args):
 
         # Step 5: Perform color grading
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
-        canadian_classified, japanese_classified, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
+        canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
 
         # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
@@ -116,7 +116,7 @@ def process_image(image_path, args):
             rois_folder="output/rois"
         )
 
-        return image_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, lean_mask
+        return image_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
@@ -131,14 +131,14 @@ def main():
 
     # Step 2: Parallel Processing
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
-    canadian_classified_list, japanese_classified_list, lean_mask_list = [], [], []
+    canadian_classified_list, japanese_classified_list, canadian_classified_standard_list, japanese_classified_standard_list, lean_mask_list = [], [], [], [], []
     max_workers = min(4, os.cpu_count() // 2)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, lean_mask = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
@@ -146,6 +146,8 @@ def main():
             marbling_percentage_list.append(marbling_percentage)
             canadian_classified_list.append(canadian_classified)
             japanese_classified_list.append(japanese_classified)
+            canadian_classified_standard_list.append(canadian_classified_standard)
+            japanese_classified_standard_list.append(japanese_classified_standard)
             lean_mask_list.append(lean_mask)
 
             
@@ -156,8 +158,10 @@ def main():
     print_table_of_measurements(args.marbling_csv)
     
     # OPTIONAL: Comment these out to improve performance
-    #save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
-    #print_table_of_measurements(args.colouring_csv)
+    save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
+    save_colouring_csv(id_list, canadian_classified_standard_list, japanese_classified_standard_list, lean_mask_list, args.standard_color_csv)
+    print_table_of_measurements(args.colouring_csv)
+    print_table_of_measurements(args.standard_color_csv)
 
 if __name__ == "__main__":
     main()

@@ -172,6 +172,11 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     
     # Creates a standardization for the image
     standard_img = execute_color_standardization(image)
+    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask)
+    japanese_classified_standard = classify_rgb_vectorized(standard_img, japanese_rgb_standard, lean_mask)
+
+    canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)
+    japanese_lut_image_standard = apply_lut(japanese_classified_standard, list(range(6)), japanese_rgb_standard, lean_mask)
 
     # Save results
     base_output_dir = os.path.join(output_dir, image_id)
@@ -179,8 +184,10 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut.png"), japanese_lut_image)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img)
+    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
+    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut_STANDARDIZED.png"), japanese_lut_image_standard)
 
-    return canadian_classified, japanese_classified, lean_mask
+    return canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
 
 def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, output_csv_path):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""
