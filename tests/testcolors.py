@@ -74,6 +74,7 @@ def test_var(original_colors, standard_colors):
     print(f"Standardized values:{standard_colors}")
     standardized_array = np.array(standard_colors)
     print(f"Variance of Standardized: {np.var(standardized_array, axis = 0)}")
+    print(f"Mean of standard: {np.mean(standardized_array, axis=0)}")
 
 def test_extract(image, BoolStandard):
     '''
@@ -164,7 +165,7 @@ def reference_standardize(image, reference_image):
     standard_img = cv2.cvtColor(lab_matched, cv2.COLOR_LAB2BGR)
 
     #standard_img = match_histograms(image, reference_image, channel_axis=-1)
-    #standard_img = cv2.medianBlur(standard_img, 3) Used just to approximate Category cutoffs
+    #standard_img = cv2.medianBlur(standard_img, 3) #Used just to approximate Category cutoffs
     return standard_img
 
 
@@ -175,6 +176,9 @@ reference_image= cv2.resize(reference_image, (0,0), fx=0.15, fy=0.15)
 img_list = ['data/raw_images/724_LDLeanColour.JPG','data/raw_images/1704_LdLeanColor.JPG', 'data/raw_images/1701_LdLeanColor.JPG', 'data/raw_images/2401_LdLeanColor.JPG']
 standardized_images = []
 
+
+standardized_test = ['data/reference_images/2704_LdLeanColor.JPG']
+'''
 for img in img_list:
     print(img)
     image = cv2.imread(img)
@@ -186,11 +190,13 @@ for img in img_list:
 
 print("================================================================")
 print("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+'''
 
-for img in standardized_images:
-    test_extract(img, True)
-    test_LAB(reference_image, img)
-
+for img in standardized_test:
+    image = cv2.imread(img)
+    half = cv2.resize(image, (0,0), fx=0.15, fy=0.15)
+    test_extract(half, True)
+    test_LAB(reference_image, half)
 
 test_var(original_colors, standard_colors)
     
