@@ -105,37 +105,28 @@ def execute_color_standardization(image):
 ############################
 def classify_rgb_vectorized(image, standards, lean_mask):
     """Vectorized classification of RGB pixels using Euclidean distance."""
-    h, w, _ = image.shape
-    classified_image = np.zeros((h, w), dtype=np.uint8)
+    # Convert the image to RGB (if it's in BGR)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     
-    standard_means = np.array([np.mean(standard) for standard in standards])
-    print(standard_means)
-    for i in range(image.shape[0]):
-        for j in range(image.shape[1]):
-            if lean_mask[i, j] > 0:
-                pixel_rgb = image_rgb[i, j]
-                pixel_mean = np.mean(pixel_rgb)
+    # Reshape the image to a (h*w, 3) matrix of RGB values
+    h, w, _ = image.shape
+    image_rgb_reshaped = image_rgb.reshape(-1, 3)
 
-                distances = np.abs(standard_means - pixel_mean)
+    # Create a mask to filter out pixels where lean_mask == 0
+    mask = lean_mask.reshape(-1) > 0
 
-                closest_index = np.argmin(distances)
-
-                classified_image[i,j] = closest_index
-
-    return classified_image
-
-
-    # Calculate Euclidean distances to each standard for all lean pixels
-    #distances = np.linalg.norm(lean_pixels[:, None] - bgr_standards[None, :], axis=2)  # (N, num_standards)
+    # Compute the distances between each pixel and each standard
+    distances = np.linalg.norm(image_rgb_reshaped[mask][:, np.newaxis] - standards, axis=2)
 
     # Find the index of the closest standard for each pixel
-    #closest_standard_indices = np.argmin(distances, axis=1)  # (N,)
+    closest_indices = np.argmin(distances, axis=1)
 
-    # Map the classified indices back to the original image shape
-    #classified_image[lean_mask > 0] = closest_standard_indices
+    # Create the classified image and apply the mask
+    classified_image = np.zeros((h, w), dtype=np.uint8)
+    classified_image.reshape(-1)[mask] = closest_indices
 
     return classified_image
+
 
 def apply_lut(image, category_values, lut_values, mask):
     """Applies a custom LUT to the classified image and ensures the background is black."""
