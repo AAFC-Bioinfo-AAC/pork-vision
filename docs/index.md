@@ -123,4 +123,4 @@ Refer to the [ABCC_RCBA_Guide](https://github.com/AAFC-Bioinformatics/ABCC_RCBA_
 
 ---
 
-For any questions or contributions, please refer to the [CONTRIBUTING.md](../.github/CONTRIBUTING.md) file.
+For any questions or contributions, please refer to the [CONTRIBUTING.md](/CONTRIBUTING.md) file.
