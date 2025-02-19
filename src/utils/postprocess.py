@@ -73,6 +73,7 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
         print("no fat depth")
 
     # Extract filename and define output path
+    os.makedirs(output_path, exist_ok=True)
     filename = os.path.basename(image_path)
     output_file = os.path.join(output_path, f"annotated_{filename}")
 
