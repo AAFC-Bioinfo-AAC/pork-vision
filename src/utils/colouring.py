@@ -6,42 +6,23 @@ from skimage.exposure import match_histograms, rescale_intensity
 
 
 # RGB values for Canadian and Japanese lean color standards
-canadian_rgb = np.array([
-    (170, 87, 95),   # C6
-    (177, 101, 103), # C5
-    (195, 125, 125), # C4
-    (204, 146, 142), # C3
-    (209, 162, 152), # C2
-    (211, 175, 161), # C1
-    (215, 184, 164)  # C0
-], dtype=np.float32)
-
 canadian_rgb_standard = np.array([
-    (171, 88, 96),   # C6
-    (182, 102, 107), # C5
-    (191, 122, 122), # C4
-    (196, 141, 136), # C3
-    (205, 158, 150), # C2
+    (213, 183, 164), # C0
     (209, 172, 159), # C1
-    (213, 183, 164)  # C0
-], dtype=np.float32)
-
-japanese_rgb = np.array([
-    (146, 46, 44),   # J6
-    (153, 65, 55),   # J5
-    (168, 85, 67),   # J4
-    (178, 103, 80),   # J3
-    (193, 126, 97),  # J2
-    (199, 144, 105)   # J1
+    (205, 158, 150), # C2
+    (196, 141, 136), # C3
+    (191, 122, 122), # C4
+    (182, 102, 107), # C5
+    (171, 88, 96),   # C6
 ], dtype=np.float32)
 
 japanese_rgb_standard = np.array([
-    (128, 39, 38),  # J6
-    (144, 56, 47),  # J5
-    (156, 76, 60),  # J4
-    (169, 95, 71),  # J3
-    (186, 117, 86), # J2
-    (192, 138, 97), # J1
+    (190, 138, 100),  # J1
+    (185, 117, 86),   # J2
+    (173, 96, 74),    # J3
+    (154, 75, 59),    # J4
+    (144, 57, 48),    # J5
+    (127, 39, 38),    # J6
 ], dtype=np.float32)
 
 #######################################
@@ -126,31 +107,45 @@ def classify_rgb_vectorized(image, standards, lean_mask):
     """Vectorized classification of RGB pixels using Euclidean distance."""
     h, w, _ = image.shape
     classified_image = np.zeros((h, w), dtype=np.uint8)
-    image_rgb = image[..., ::-1] # Convert to RGB in orderr to extract pixels.
+    image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    
+    standard_means = np.array([np.mean(standard) for standard in standards])
+    print(standard_means)
+    for i in range(image.shape[0]):
+        for j in range(image.shape[1]):
+            if lean_mask[i, j] > 0:
+                pixel_rgb = image_rgb[i, j]
+                pixel_mean = np.mean(pixel_rgb)
 
-    # Apply the lean mask to restrict analysis to lean muscle pixels
-    lean_pixels = image_rgb[lean_mask > 0].astype(np.float32)  # Extract lean muscle pixels as a (N, 3) array
+                distances = np.abs(standard_means - pixel_mean)
+
+                closest_index = np.argmin(distances)
+
+                classified_image[i,j] = closest_index
+
+    return classified_image
+
 
     # Calculate Euclidean distances to each standard for all lean pixels
-    distances = np.linalg.norm(lean_pixels[:, None] - standards[None, :], axis=2)  # (N, num_standards)
+    #distances = np.linalg.norm(lean_pixels[:, None] - bgr_standards[None, :], axis=2)  # (N, num_standards)
 
     # Find the index of the closest standard for each pixel
-    closest_standard_indices = np.argmin(distances, axis=1)  # (N,)
+    #closest_standard_indices = np.argmin(distances, axis=1)  # (N,)
 
     # Map the classified indices back to the original image shape
-    classified_image[lean_mask > 0] = closest_standard_indices
+    #classified_image[lean_mask > 0] = closest_standard_indices
 
     return classified_image
 
 def apply_lut(image, category_values, lut_values, mask):
     """Applies a custom LUT to the classified image and ensures the background is black."""
+    
     lut = np.zeros((256, 1, 3), dtype=np.uint8)
     for i, (r, g, b) in enumerate(lut_values):
         lut[category_values[i]] = [b, g, r]
 
     colored_image = cv2.LUT(cv2.merge([image] * 3), lut)
-
-    # Ensure the background is black
+    #Ensure the background is black
     colored_image[mask == 0] = [0, 0, 0]
 
     return colored_image
@@ -164,12 +159,12 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
     
     # Performs vectorized color analysis for Canadian and Japanese standards
-    canadian_classified = classify_rgb_vectorized(image, canadian_rgb_standard, lean_mask)
     japanese_classified = classify_rgb_vectorized(image, japanese_rgb_standard, lean_mask)
+    canadian_classified = classify_rgb_vectorized(image, canadian_rgb_standard, lean_mask)
     
     # Applies LUTs for visualization with a black background
-    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
     japanese_lut_image = apply_lut(japanese_classified, list(range(6)), japanese_rgb_standard, lean_mask)
+    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
     
     # Creates a standardization for the image
     standard_img = execute_color_standardization(image)
@@ -184,9 +179,9 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut.png"), japanese_lut_image)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut_STANDARDIZED.png"), japanese_lut_image_standard)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut_STANDARDIZED.png"), japanese_lut_image_standard)
 
     return canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
 
