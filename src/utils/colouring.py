@@ -164,12 +164,12 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
     
     # Performs vectorized color analysis for Canadian and Japanese standards
-    canadian_classified = classify_rgb_vectorized(image, canadian_rgb, lean_mask)
-    japanese_classified = classify_rgb_vectorized(image, japanese_rgb, lean_mask)
+    canadian_classified = classify_rgb_vectorized(image, canadian_rgb_standard, lean_mask)
+    japanese_classified = classify_rgb_vectorized(image, japanese_rgb_standard, lean_mask)
     
     # Applies LUTs for visualization with a black background
-    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb, lean_mask)
-    japanese_lut_image = apply_lut(japanese_classified, list(range(6)), japanese_rgb, lean_mask)
+    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
+    japanese_lut_image = apply_lut(japanese_classified, list(range(6)), japanese_rgb_standard, lean_mask)
     
     # Creates a standardization for the image
     standard_img = execute_color_standardization(image)
