@@ -1,4 +1,4 @@
-from imports import *
+from utils.imports import *
 
 def dilate_mask(binary_mask, kernel_size=15):
     """

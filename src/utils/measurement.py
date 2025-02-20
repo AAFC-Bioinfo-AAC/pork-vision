@@ -1,4 +1,4 @@
-from imports import *
+from utils.imports import *
 import math
 
 def measure_longest_horizontal_segment(muscle_mask):

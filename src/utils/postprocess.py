@@ -1,4 +1,4 @@
-from imports import *
+from utils.imports import *
 from roifile import ImagejRoi, ROI_TYPE, ROI_OPTIONS
 from tabulate import tabulate
 
