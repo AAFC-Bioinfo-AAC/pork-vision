@@ -1,9 +1,7 @@
 #!/usr/bin/env python
+from utils.imports import *
 import argparse
 import concurrent.futures
-import os
-import cv2
-import numpy as np
 from ultralytics import YOLO
 from utils.preprocess import (
     mask_selector,

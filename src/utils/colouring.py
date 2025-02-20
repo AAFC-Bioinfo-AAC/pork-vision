@@ -1,9 +1,4 @@
-import cv2
-import numpy as np
-import pandas as pd
-import os
-from skimage.exposure import match_histograms, rescale_intensity
-
+from imports import *
 
 # RGB values for Canadian and Japanese lean color standards
 canadian_rgb_standard = np.array([
