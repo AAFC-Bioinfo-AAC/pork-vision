@@ -39,6 +39,7 @@ def parse_args():
     parser.add_argument("--colouring_path", type=str, default="output/colouring")
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
     parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
+    parser.add_argument("--reference_path", type=str, default="data/reference_images/2704_LdLeanColor.JPG")
     return parser.parse_args()
 
 
@@ -72,7 +73,7 @@ def process_image(image_path, args):
 
         # Step 5: Perform color grading
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
-        canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id)
+        canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id, args.reference_path)
 
         # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)

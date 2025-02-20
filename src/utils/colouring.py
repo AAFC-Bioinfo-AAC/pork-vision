@@ -86,8 +86,8 @@ def reference_standardize(image, reference_image):
     #standard_img = cv2.medianBlur(standard_img, 3) #Used just to approximate Category cutoffs
     return standard_img
 
-def execute_color_standardization(image):
-    reference_image = cv2.imread('data/reference_images/2704_LdLeanColor.JPG')
+def execute_color_standardization(image, reference_path):
+    reference_image = cv2.imread(reference_path)
     #reference_image = white_balance(reference_image, "SimpleWB")
 
     #balance = white_balance(image, "SimpleWB")
@@ -136,7 +136,7 @@ def apply_lut(image, category_values, lut_values, mask):
 
     return colored_image
 
-def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
+def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, reference_path):
     """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -153,7 +153,7 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id):
     canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
     
     # Creates a standardization for the image
-    standard_img = execute_color_standardization(image)
+    standard_img = execute_color_standardization(image, reference_path)
     canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask) 
     japanese_classified_standard = classify_rgb_vectorized(standard_img, japanese_rgb_standard, lean_mask)
 
