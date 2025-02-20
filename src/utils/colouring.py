@@ -1,4 +1,4 @@
-from imports import *
+from utils.imports import *
 
 # RGB values for Canadian and Japanese lean color standards
 canadian_rgb_standard = np.array([
