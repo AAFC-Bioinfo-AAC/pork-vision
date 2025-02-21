@@ -278,8 +278,17 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 ---
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
-**Index**
 - [Index.md](docs/index.md) [Contains documentation and additional installation instructions]
+- [Ultralytics YOLOv8](https://docs.ultralytics.com/)
+- [Segment Anything](https://github.com/facebookresearch/segment-anything)
+- [matplotlib](https://matplotlib.org/stable/index.html)
+- [NumPy](https://numpy.org/doc/stable/)
+- [OpenCV](https://docs.opencv.org/4.x/index.html)
+- [pandas](https://pandas.pydata.org/docs/)
+- [SciPy](https://scipy.org/)
+- [Shapely](https://shapely.readthedocs.io/en/stable/)
+- [scikit-image](https://scikit-image.org/docs/stable/)
+- [tabulate](https://pypi.org/project/tabulate/)
 
 ---
 
