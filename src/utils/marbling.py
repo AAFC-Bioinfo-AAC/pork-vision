@@ -201,7 +201,7 @@ def calculate_marbling_percentage(marbling_mask, muscle_mask):
 # =============================================================================
 # Full Marbling Processing Pipeline
 # =============================================================================
-def process_marbling(rotated_image, muscle_mask, output_dir="output/marbling", base_filename=None):
+def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None):
     """
     Full pipeline to extract marbling from the rotated muscle image.
     This pipeline uses the pseudo‑colour image (from COLORMAP_JET) and extracts its blue channel,

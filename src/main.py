@@ -40,6 +40,7 @@ def parse_args():
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
     parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
     parser.add_argument("--reference_path", type=str, default="data/reference_images/2704_LdLeanColor.JPG")
+    parser.add_argument("--marbling_path", type=str, default="output/marbling")
     return parser.parse_args()
 
 
@@ -69,7 +70,7 @@ def process_image(image_path, args):
 
         # Step 4: Marbling Extraction
         image_id = extract_image_id(image_path)
-        marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, base_filename=image_id)
+        marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
 
         # Step 5: Perform color grading
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
@@ -113,7 +114,7 @@ def process_image(image_path, args):
             fat_depth_start,
             fat_depth_end,
             image_id=extract_image_id(image_path),
-            rois_folder="output/rois"
+            rois_folder=args.rois_path
         )
 
         return image_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
