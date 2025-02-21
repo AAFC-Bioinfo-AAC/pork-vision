@@ -58,7 +58,7 @@ def process_image(image_path, args):
         # Step 2: Preprocessing
         muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
         if muscle_bbox is None or fat_bbox is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
 
         muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
         fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
@@ -79,25 +79,25 @@ def process_image(image_path, args):
         # Step 6: Measurement
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
         if muscle_width_start is None or muscle_width_end is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
         muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
 
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
 
         angle = get_muscle_rotation_angle(rotated_muscle_mask)
         if angle is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
 
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
         if muscle_depth_start is None or muscle_depth_end is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
 
         fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
         if fat_depth_start is None or fat_depth_end is None:
-            return extract_image_id(image_path), None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
         # Step 7: Save annotated image
@@ -121,7 +121,7 @@ def process_image(image_path, args):
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
-        return extract_image_id(image_path), None, None, None
+        return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
 
 
 def main():
