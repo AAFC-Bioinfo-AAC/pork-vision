@@ -44,16 +44,22 @@ def parse_args():
     return parser.parse_args()
 
 
-def process_image(image_path, args):
+def process_image(model, image_path, args):
     """Process an image: Run YOLO inference, extract measurements, and save annotated output."""
     try:
         print("\nProcessing:", image_path)
 
         # Each process gets its own YOLO model instance (avoids multi-threading issues)
-        model = YOLO(args.model_path)
-
+        #model = YOLO(args.model_path)
+        
         # Step 1: YOLO Inference
-        results = model(image_path, save=True, project=args.segment_path)[0]
+        
+        results = model(image_path, save=False)[0]  # This disables automatic saving into subfolders
+
+        # Save the result manually to the 'predict' folder
+        save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
+        results.save(save_path)  # Save the annotated image to the specified path
+
 
         # Step 2: Preprocessing
         muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
@@ -135,9 +141,11 @@ def main():
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
     canadian_classified_list, japanese_classified_list, canadian_classified_standard_list, japanese_classified_standard_list, lean_mask_list = [], [], [], [], []
     max_workers = min(4, os.cpu_count() // 2)
+    model = YOLO(args.model_path)
+    os.makedirs(f'{args.segment_path}/predict', exist_ok=True)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(process_image, img_path, args): img_path for img_path in image_paths}
+        futures = {executor.submit(process_image, model, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
             img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = result
