@@ -62,6 +62,7 @@ def process_image(image_path, args):
 
         muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
         fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
+        #cv2.imwrite("muscle_binary", muscle_mask)
 
         # Step 3: Orientation
         rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle = orient_muscle_and_fat_using_adjacency(
