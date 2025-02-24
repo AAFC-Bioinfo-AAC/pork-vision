@@ -163,6 +163,7 @@ def measure_vertical_segment(muscle_mask, midline_side, rotation_angle, cm_to_pi
     best_distance = 0
     best_endpoints = None
 
+
     # Iterate over candidate base x positions in the valid range.
     for candidate_x in range(base_min, base_max + 1):
         candidate_base = (candidate_x, mid_y)
@@ -204,6 +205,8 @@ def measure_vertical_segment(muscle_mask, midline_side, rotation_angle, cm_to_pi
             best_endpoints = (endpoint1, endpoint2)
 
     if best_endpoints is None:
+        print(base_min)
+        print(base_max)
         print("measure_vertical_segment: No valid segment found.")
         return None, None
 
