@@ -1,6 +1,6 @@
 from utils.imports import *
 
-def dilate_mask(binary_mask, kernel_size=15):
+def dilate_mask(binary_mask, kernel_size=31):
     """
     Dilates the given binary mask to create a 'band' around the object.
 
@@ -75,7 +75,7 @@ def rotate_image(image, angle):
     rotated_image = cv2.warpAffine(image, rot_matrix, (new_w, new_h))
     return rotated_image
 
-def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
+def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=31, min_area=500):
     """
     Extracts only the portion of fat that lies adjacent (within 'dilation_size' pixels) to the muscle.
 
@@ -102,7 +102,6 @@ def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
 
     # 3. Smooth the adjacent fat region
     adjacent_fat = preprocess_mask(adjacent_fat)
-
     # 4. Find largest valid contour
     return find_largest_contour(adjacent_fat, min_area=min_area)
 
@@ -137,7 +136,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     muscle_center_y = my + mh / 2
 
     # 2. Isolate adjacent portion of the fat
-    adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500)
+    adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=31, min_area=500)
 
     # 3. Check if fat is already on top (when adjacent_fat_box is missing)
     if adjacent_fat_box is None:
