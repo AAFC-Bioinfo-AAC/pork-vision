@@ -92,6 +92,8 @@ def process_image(image_path, args):
 
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
         if muscle_depth_start is None or muscle_depth_end is None:
+            print(muscle_depth_start)
+            print(muscle_depth_end)
             return extract_image_id(image_path), muscle_width, None, None, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
 
