@@ -117,27 +117,38 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 ---
 
 ## **Measurement Parameters**
-| **Parameter**        | **Description**                                        | **Default Value** |
+| **Parameter**      | **Description**                                  | **Default Value**|
 |--------------------|--------------------------------------------------|------------------|
-| `cm_to_pixels`    | Conversion factor for cm to pixels.              | `140` px/cm |
-| `step` | Step size in pixels to sample along line | `1.0` px |
-| `max_iter` | Maximum iterations to avoid infinite loops | `10000` iterations|
+| `cm_to_pixels`     | Conversion factor for cm to pixels.              | `140` px/cm      |
+| `step`             | Step size in pixels to sample along line         | `1.0` px         |
+| `max_iter`         | Maximum iterations to avoid infinite loops       |`10000` iterations|
 
 ---
 
 ## **Orientation Parameters**
-| **Parameter** | **Description** | **Default Value** |
-| ------------- | --------------- | ----------------- |
-| `min_area`    | Minimum area to be considered valid | `500` px |
-| `kernel_size` | Size of the dilation kernel | `15` px |
-| `dilation_size` | Pixel size for dilation to define adjacency | `15` px |
+| **Parameter** | **Description** | **Default Value**                     |
+| ------------- | --------------- | ------------------------------------- |
+| `min_area`    | Minimum area to be considered valid         | `500` px  |
+| `kernel_size` | Size of the dilation kernel                 | `15` px   |
+|`dilation_size`| Pixel size for dilation to define adjacency | `10` px   |
 
 ---
 
 ## **Image Processing Parameters**
 | **Parameter**         | **Description**                                      | **Default Value** |
-|----------------------|------------------------------------------------|------------------|
+|-----------------------|------------------------------------------------------|-------------------|
 | `confidence_threshold` | Minimum confidence score for valid detection | `0.5` |
+
+---
+
+## **Marbling Parameters**
+| **Parameter** | **Description**                     | **Default Value**          |
+|---------------|-------------------------------------|----------------------------|
+| `kernel_size` | Size of the Gaussian kernel         | `11`                       |
+| `lut`         | The colormap that is used           | `COLORMAP_JET`             |
+| `kernel_size` | Size of the Gaussian kernel         | `(5, 5)`                   |
+| `gamma`       | Gamma correction factor             | `0.3`                      |
+| `min_area`    | Min area to be considered           | `5` px                     |
 
 ---
 
