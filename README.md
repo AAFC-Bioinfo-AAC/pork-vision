@@ -11,7 +11,7 @@ c)	The fat depth: the portion of the vertical line segment defined in (b) that e
 We use an object detection model in order to automate this. All images used are similar to the one shown below, with the carcass contained in a white tray, as well as 3 color palettes (on the left, above, and below the carcass), there is a ruler that is consistently besides the pork loin carcass.
 
 <p align="center">
-    <img src="./data/raw_images/1701_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
+    <img src="./data/raw_images/reference.jpg" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
 We wish to automate this tedious process while retaining acceptable accuracy.
@@ -72,9 +72,12 @@ Using geometric analysis of the muscle mask, we compute:
        A{Input: Raw Images and Neural Network}-->B[Select Mask]
             B-->C(Convert Contours to Images)
             C-->D[Correct Image Orientation]
-            D-->E(Measure Muscle Width and Depth and Fat Depth)
-            E-->F(Draw Lines on Images Using Measurements)
-            F-->G{Output: Processed Images and CSV}
+            D-->E[Find Marbling]
+            E-->F[Standardize LAB channels]
+            F-->G[Find colouring]
+            G-->H(Measure Muscle Width and Depth and Fat Depth)
+            H-->I(Draw Lines on Images Using Measurements)
+            I-->J{Output: Processed Images and CSV}
 
 
 ```
@@ -93,14 +96,23 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 ## PARAMETERS
 
 ## **General Parameters**
-| **Parameter**           | **Description**                                           | **Default Value** |
-|------------------------|------------------------------------------------------|------------------|
-| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"` |
-| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"` |
-| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"` |
-| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"` |
-| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"` |
-| `--rois_path`      | Directory where .roi files are saved.        | `"output/rois/"` |
+| **Parameter**         | **Description**                                      | **Default Value**                  |
+|-----------------------|------------------------------------------------------|------------------------------------|
+| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"`               |
+| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"`       |
+| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"`             |
+| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"`             |
+| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"`                |
+| `--rois_path`         | Directory where .roi files are saved.                | `"output/rois/"`                   |
+| `--marbling_csv`      | CSV file where the marbling results are stored.      | `"output/marbling_percentage.csv"` |
+| `--colouring_path`    | Directory where the colouring LUTS are stored.       | `"output/colouring"`               |
+| `--colouring_csv`     | CSV file containing colouring results.               | `"output/colour_summary.csv"`      |
+| `--standard_color_csv`| CSV file containing colouring standardized results.  | `"output/colour_standardized_summary.csv"`|
+| `--reference_path`    | Directory where the reference image is stored        | `"output/reference_images/2705_LdLeanColor.JPG"`|
+| `--marbling_path`     | Directory where the marbling images are stored       | `"output/marbling"`               |
+
+
+
 
 ---
 
