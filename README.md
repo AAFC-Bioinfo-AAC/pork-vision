@@ -155,18 +155,16 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 ## USAGE
 ### Pre-requisites
 **Programming Languages, Libraries, and frameworks**
-   - python=3.9
-   - ultralytics
-   - segment-anything
-   - numpy
-   - opencv
-   - matplotlib
-   - shapely
-   - scikit-image
-   - pandas
-   - scipy
-   - tabulate
-   - lsq-ellipse
+  - python=3.9
+  - ultralytics=8.2.34
+  - segment-anything=1.0.1
+  - numpy=2.0.0
+  - pandas=2.2.3
+  - pytorch=2.5.1
+  - scikit-image=0.24.0
+  - roifile
+  - tabulate
+  - opencv
 
 **Installation** \
     1. Make sure to have conda installed and that you are in the project's repository. \
@@ -176,7 +174,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ``` \
     3.
     ```
-    conda activate yolosam_env
+    conda activate porkvision-1.0.0
     ``` 
 
 ### Instructions
@@ -186,40 +184,23 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ```
     python src/main.py
     ```
-4. The results can be found in the annotated_images, segment, and rois subdirectories in the output folder.
-
-### Notes
-IF the environment cannot be created using environment.yml. \
-TRY:
-```
-conda create -n yolosam_env python=3.9 -c conda-forge \
-ultralytics segment-anything \
-numpy opencv matplotlib \
-shapely scikit-image pandas scipy
-
-conda activate yolosam_env
-
-pip install lsq-ellipse
-pip install tabulate
-```
-
-### Instructions
-1. Ensure everything is contained to it's proper location.
-2. Make sure to have last.pt in this directory.
-3. Run normally.
-4. The results can be found in the runs subdirectory.
+4. The results can be found in the annotated_images, segment, marbling, colouring, and rois subdirectories in the output folder.
 
 ---
 
 ## OUTPUT
 ```
 |-- config
-|   `--environment.yml
-|-- data/raw_images                              [4 test images in different orientations]
-|   |-- 1701_LdLeanColor.JPG
-|   |-- 1704_LdLeanColor.JPG
-|   |-- 2401_LdLeanColor.JPG
-|   `-- 724_LDLeanColour.JPG
+|   |-- environment.yml
+|   `-- requirements.txt
+|-- data
+|   |-- raw_images                              [4 test images in different orientations]
+|   |   |-- 1701_LdLeanColor.JPG
+|   |   |-- 1704_LdLeanColor.JPG
+|   |   |-- 2401_LdLeanColor.JPG
+|   |   `-- 724_LDLeanColour.JPG
+|   |-- reference_images
+|       `--reference.jpg
 |-- docs
 |    |-- index.md
 |    |-- loin_segmentation_project_report.docx   [Older version report by Edward/Fatima]
@@ -243,8 +224,15 @@ pip install tabulate
 |    |   |-- 2401_LDLeanColour_horizontal.roi
 |    |   |-- 2401_LDLeanColour_vertical.roi
 |    |-- results.csv
+|    |-- colour_summary.csv
+|    |-- marbling_percentage.csv
+|    |-- colour_standardized_summary.csv
+|    |-- colouring
+|    |   `-- Folders for each image containing LUTs + Standardized image
+|    |-- marbling
+|    |   `-- Folders for each image containing marbling masks, muscle region + overlay
 |    `-- segment
-|        |-- predict
+|        `-- predict
 |            |-- 1701_LdLeanColor.jpg
 |            |-- 1704_LdLeanColor.jpg
 |            |-- 2401_LdLeanColor.jpg
@@ -255,7 +243,7 @@ pip install tabulate
 |    |   |-- measurement.py
 |    |   |-- orientation.py
 |    |   |-- postprocess.py
-|    |   |-- preprocess.py
+|    |   `-- preprocess.py
 |    `-- main.py
 |-- tests
 |-- CITATION.cff
@@ -264,9 +252,6 @@ pip install tabulate
 |-- README.md
 `-- requirements.txt
 ```
-NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
-For example another run with the file structure above would create a predict2 folder.
-
 ## KNOWN ISSUES
 N/A
 
