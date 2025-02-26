@@ -158,7 +158,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
         # Get the maximum y value at this x position in the fat mask
         faty_value = np.max(faty_values_at_musclex)
         if faty_value>muscley_value:
-            adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=30, min_area=500)
+            adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) #Changed to 45 to test
         else:
             adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
         
