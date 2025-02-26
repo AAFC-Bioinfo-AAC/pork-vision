@@ -165,7 +165,7 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut.png"), japanese_lut_image)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut_STANDARDIZED.png"), japanese_lut_image_standard)
 
