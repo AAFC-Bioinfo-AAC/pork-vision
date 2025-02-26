@@ -11,7 +11,7 @@ c)	The fat depth: the portion of the vertical line segment defined in (b) that e
 We use an object detection model in order to automate this. All images used are similar to the one shown below, with the carcass contained in a white tray, as well as 3 color palettes (on the left, above, and below the carcass), there is a ruler that is consistently besides the pork loin carcass.
 
 <p align="center">
-    <img src="./data/raw_images/1701_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
+    <img src="./data/reference_images/2704_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
 We wish to automate this tedious process while retaining acceptable accuracy.
@@ -72,9 +72,12 @@ Using geometric analysis of the muscle mask, we compute:
        A{Input: Raw Images and Neural Network}-->B[Select Mask]
             B-->C(Convert Contours to Images)
             C-->D[Correct Image Orientation]
-            D-->E(Measure Muscle Width and Depth and Fat Depth)
-            E-->F(Draw Lines on Images Using Measurements)
-            F-->G{Output: Processed Images and CSV}
+            D-->E[Find Marbling]
+            E-->F[Standardize LAB channels]
+            F-->G[Find colouring]
+            G-->H(Measure Muscle Width and Depth and Fat Depth)
+            H-->I(Draw Lines on Images Using Measurements)
+            I-->J{Output: Processed Images and CSV}
 
 
 ```
@@ -93,57 +96,75 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 ## PARAMETERS
 
 ## **General Parameters**
-| **Parameter**           | **Description**                                           | **Default Value** |
-|------------------------|------------------------------------------------------|------------------|
-| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"` |
-| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"` |
-| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"` |
-| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"` |
-| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"` |
-| `--rois_path`      | Directory where .roi files are saved.        | `"output/rois/"` |
+| **Parameter**         | **Description**                                      | **Default Value**                  |
+|-----------------------|------------------------------------------------------|------------------------------------|
+| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"`               |
+| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"`       |
+| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"`             |
+| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"`             |
+| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"`                |
+| `--rois_path`         | Directory where .roi files are saved.                | `"output/rois/"`                   |
+| `--marbling_csv`      | CSV file where the marbling results are stored.      | `"output/marbling_percentage.csv"` |
+| `--colouring_path`    | Directory where the colouring LUTS are stored.       | `"output/colouring"`               |
+| `--colouring_csv`     | CSV file containing colouring results.               | `"output/colour_summary.csv"`      |
+| `--standard_color_csv`| CSV file containing colouring standardized results.  | `"output/colour_standardized_summary.csv"`|
+| `--reference_path`    | Directory where the reference image is stored        | `"output/reference_images/2705_LdLeanColor.JPG"`|
+| `--marbling_path`     | Directory where the marbling images are stored       | `"output/marbling"`               |
+
+
+
 
 ---
 
 ## **Measurement Parameters**
-| **Parameter**        | **Description**                                        | **Default Value** |
+| **Parameter**      | **Description**                                  | **Default Value**|
 |--------------------|--------------------------------------------------|------------------|
-| `cm_to_pixels`    | Conversion factor for cm to pixels.              | `140` px/cm |
-| `step` | Step size in pixels to sample along line | `1.0` px |
-| `max_iter` | Maximum iterations to avoid infinite loops | `10000` iterations|
+| `cm_to_pixels`     | Conversion factor for cm to pixels.              | `140` px/cm      |
+| `step`             | Step size in pixels to sample along line         | `1.0` px         |
+| `max_iter`         | Maximum iterations to avoid infinite loops       |`10000` iterations|
 
 ---
 
 ## **Orientation Parameters**
-| **Parameter** | **Description** | **Default Value** |
-| ------------- | --------------- | ----------------- |
-| `min_area`    | Minimum area to be considered valid | `500` px |
-| `kernel_size` | Size of the dilation kernel | `15` px |
-| `dilation_size` | Pixel size for dilation to define adjacency | `15` px |
+| **Parameter** | **Description** | **Default Value**                     |
+| ------------- | --------------- | ------------------------------------- |
+| `min_area`    | Minimum area to be considered valid         | `500` px  |
+| `kernel_size` | Size of the dilation kernel                 | `15` px   |
+|`dilation_size`| Pixel size for dilation to define adjacency | `10` px   |
 
 ---
 
 ## **Image Processing Parameters**
 | **Parameter**         | **Description**                                      | **Default Value** |
-|----------------------|------------------------------------------------|------------------|
+|-----------------------|------------------------------------------------------|-------------------|
 | `confidence_threshold` | Minimum confidence score for valid detection | `0.5` |
+
+---
+
+## **Marbling Parameters**
+| **Parameter** | **Description**                     | **Default Value**          |
+|---------------|-------------------------------------|----------------------------|
+| `kernel_size` | Size of the Gaussian kernel         | `11`                       |
+| `lut`         | The colormap that is used           | `COLORMAP_JET`             |
+| `kernel_size` | Size of the Gaussian kernel         | `(5, 5)`                   |
+| `gamma`       | Gamma correction factor             | `0.3`                      |
+| `min_area`    | Min area to be considered           | `5` px                     |
 
 ---
 
 ## USAGE
 ### Pre-requisites
 **Programming Languages, Libraries, and frameworks**
-   - python=3.9
-   - ultralytics
-   - segment-anything
-   - numpy
-   - opencv
-   - matplotlib
-   - shapely
-   - scikit-image
-   - pandas
-   - scipy
-   - tabulate
-   - lsq-ellipse
+  - python=3.9
+  - ultralytics=8.2.34
+  - segment-anything=1.0.1
+  - numpy=2.0.0
+  - pandas=2.2.3
+  - pytorch=2.5.1
+  - scikit-image=0.24.0
+  - roifile
+  - tabulate
+  - opencv
 
 **Installation** \
     1. Make sure to have conda installed and that you are in the project's repository. \
@@ -153,7 +174,7 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ``` \
     3.
     ```
-    conda activate yolosam_env
+    conda activate porkvision-1.0.0
     ``` 
 
 ### Instructions
@@ -163,40 +184,23 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
     ```
     python src/main.py
     ```
-4. The results can be found in the annotated_images, segment, and rois subdirectories in the output folder.
-
-### Notes
-IF the environment cannot be created using environment.yml. \
-TRY:
-```
-conda create -n yolosam_env python=3.9 -c conda-forge \
-ultralytics segment-anything \
-numpy opencv matplotlib \
-shapely scikit-image pandas scipy
-
-conda activate yolosam_env
-
-pip install lsq-ellipse
-pip install tabulate
-```
-
-### Instructions
-1. Ensure everything is contained to it's proper location.
-2. Make sure to have last.pt in this directory.
-3. Run normally.
-4. The results can be found in the runs subdirectory.
+4. The results can be found in the annotated_images, segment, marbling, colouring, and rois subdirectories in the output folder.
 
 ---
 
 ## OUTPUT
 ```
 |-- config
-|   `--environment.yml
-|-- data/raw_images                              [4 test images in different orientations]
-|   |-- 1701_LdLeanColor.JPG
-|   |-- 1704_LdLeanColor.JPG
-|   |-- 2401_LdLeanColor.JPG
-|   `-- 724_LDLeanColour.JPG
+|   |-- environment.yml
+|   `-- requirements.txt
+|-- data
+|   |-- raw_images                              [4 test images in different orientations]
+|   |   |-- 1701_LdLeanColor.JPG
+|   |   |-- 1704_LdLeanColor.JPG
+|   |   |-- 2401_LdLeanColor.JPG
+|   |   `-- 724_LDLeanColour.JPG
+|   |-- reference_images
+|       `--reference.jpg
 |-- docs
 |    |-- index.md
 |    |-- loin_segmentation_project_report.docx   [Older version report by Edward/Fatima]
@@ -220,8 +224,15 @@ pip install tabulate
 |    |   |-- 2401_LDLeanColour_horizontal.roi
 |    |   |-- 2401_LDLeanColour_vertical.roi
 |    |-- results.csv
+|    |-- colour_summary.csv
+|    |-- marbling_percentage.csv
+|    |-- colour_standardized_summary.csv
+|    |-- colouring
+|    |   `-- Folders for each image containing LUTs + Standardized image
+|    |-- marbling
+|    |   `-- Folders for each image containing marbling masks, muscle region + overlay
 |    `-- segment
-|        |-- predict
+|        `-- predict
 |            |-- 1701_LdLeanColor.jpg
 |            |-- 1704_LdLeanColor.jpg
 |            |-- 2401_LdLeanColor.jpg
@@ -232,7 +243,7 @@ pip install tabulate
 |    |   |-- measurement.py
 |    |   |-- orientation.py
 |    |   |-- postprocess.py
-|    |   |-- preprocess.py
+|    |   `-- preprocess.py
 |    `-- main.py
 |-- tests
 |-- CITATION.cff
@@ -241,9 +252,6 @@ pip install tabulate
 |-- README.md
 `-- requirements.txt
 ```
-NOTE: A new predict Directory is created per run labelled predict**i** where **i** is an increasing integer. \
-For example another run with the file structure above would create a predict2 folder.
-
 ## KNOWN ISSUES
 N/A
 
