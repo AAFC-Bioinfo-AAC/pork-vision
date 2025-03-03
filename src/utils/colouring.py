@@ -201,7 +201,7 @@ def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_li
     all_data = []
     
     for image_id, canadian_classified, japanese_classified, lean_mask in zip(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list):
-        if lean_mask == None:
+        if lean_mask.all() == None:
             continue
         total_pixels = np.count_nonzero(lean_mask)  # Total number of lean pixels
 
