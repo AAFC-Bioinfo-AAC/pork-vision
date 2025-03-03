@@ -1,7 +1,7 @@
 from skimage.draw import polygon2mask
 from ultralytics.data.utils import polygon2mask
 
-def mask_selector(current_image, confidence_threshold=0.5):
+def mask_selector(current_image, confidence_threshold=0.4):
     """
     Selects the best masks for muscle and fat classes based on confidence scores.
 
