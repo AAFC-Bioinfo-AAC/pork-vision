@@ -1,0 +1,7 @@
+The AI model requires quite a bit of memory to run.
+For every 100 images it is recommended you request 16GB of memory.
+So for 200 images request 32 GB and so on.
+Running on SIP_Primal dataset (255 images) required nearly 36 GB of memory and
+the runtime was around 25 mins.
+Running on SIP2024 dataset (800 images) required nearly 85 GB of memory
+and the runtime was 70 minutes.
