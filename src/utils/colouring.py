@@ -201,16 +201,18 @@ def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_li
     all_data = []
     
     for image_id, canadian_classified, japanese_classified, lean_mask in zip(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list):
-        if lean_mask.all() == None:
-            continue
-        total_pixels = np.count_nonzero(lean_mask)  # Total number of lean pixels
+        try:
+            if lean_mask == None:
+                continue
+        except:    
+            total_pixels = np.count_nonzero(lean_mask)  # Total number of lean pixels
 
-        # Calculate statistics for Canadian and Japanese standards
-        canadian_stats = generate_pixel_stats(canadian_classified, lean_mask, total_pixels, "Cdn", image_id)
-        japanese_stats = generate_pixel_stats(japanese_classified, lean_mask, total_pixels, "Jpn", image_id)
-        
-        # Add both sets of statistics to the final data list
-        all_data.extend(canadian_stats + japanese_stats)
+            # Calculate statistics for Canadian and Japanese standards
+            canadian_stats = generate_pixel_stats(canadian_classified, lean_mask, total_pixels, "Cdn", image_id)
+            japanese_stats = generate_pixel_stats(japanese_classified, lean_mask, total_pixels, "Jpn", image_id)
+            
+            # Add both sets of statistics to the final data list
+            all_data.extend(canadian_stats + japanese_stats)
 
     # Convert all data to a DataFrame
     df = pd.DataFrame(all_data)
