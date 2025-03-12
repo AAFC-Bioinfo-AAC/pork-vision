@@ -1,22 +1,110 @@
 from utils.imports import *
 import math
 
-def measure_longest_horizontal_segment(muscle_mask):
+def measure_longest_horizontal_segment(muscle_mask, rotation_angle, step=1):
     """
-    Finds the longest horizontal segment in the muscle mask and returns its start & end points.
-
+    Finds the longest segment across the muscle mask along the width direction,
+    defined as the direction perpendicular to the muscles rotation angle.
+    
+    Parameters:
+    - muscle_mask (numpy.ndarray): A binary image where nonzero pixels indicate muscle.
+    - rotation_angle (float): The rotation angle in degrees, as computed from get_muscle_rotation_angle.
+    - step (int, optional): Step size (in pixels along the major axis) when iterating candidate base points.
+    
     Returns:
-    - tuple: ((x1, y1), (x2, y2)) representing the longest horizontal segment.
+    - tuple: ((x_start, y_start), (x_end, y_end)) representing the endpoints of the measured segment.
+             The endpoints are ordered such that the first has the lower projection value along the width direction.
+             Returns (None, None) if no valid segment is found.
     """
+    # Find contours and select the largest by area.
     contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not contours:
-        return None, None  # Return None if no contour is found
+        print("measure_longest_horizontal_segment: No contours found.")
+        return None, None
 
     muscle_contour = max(contours, key=cv2.contourArea)
-    leftmost = tuple(muscle_contour[muscle_contour[:, :, 0].argmin()][0])
-    rightmost = tuple(muscle_contour[muscle_contour[:, :, 0].argmax()][0])
 
-    return leftmost, rightmost  # Return exact coordinates
+    # Compute the center of the muscle contour.
+    contour_points = muscle_contour.reshape(-1, 2)
+    center = np.mean(contour_points, axis=0)
+
+    # Convert the rotation angle to radians and compute unit vector along the muscle's long axis.
+    angle_rad = np.deg2rad(rotation_angle)
+    d = (np.cos(angle_rad), np.sin(angle_rad))
+    
+    # Compute the perpendicular direction (width direction).
+    d_perp = (-np.sin(angle_rad), np.cos(angle_rad))
+    # Ensure the x-component of d_perp is nonnegative.
+    if d_perp[0] < 0:
+        d_perp = (-d_perp[0], -d_perp[1])
+
+    # Project contour points onto the major axis (d) to determine candidate base positions.
+    # The projection scalar for a point p is: (p - center) dot d.
+    projections = [(pt[0] - center[0]) * d[0] + (pt[1] - center[1]) * d[1] for pt in contour_points]
+    min_t = int(np.floor(min(projections)))
+    max_t = int(np.ceil(max(projections)))
+
+    height, width = muscle_mask.shape
+
+    best_distance = 0
+    best_endpoints = None
+
+    # Iterate over candidate base positions along the muscle's long axis.
+    for t in range(min_t, max_t + 1, step):
+        # Candidate base is moved along the major axis from the center.
+        candidate_base = (center[0] + t * d[0], center[1] + t * d[1])
+
+        # Walk in the positive direction along d_perp.
+        t_pos = 0
+        while True:
+            t_candidate = t_pos + 1
+            x_new = candidate_base[0] + t_candidate * d_perp[0]
+            y_new = candidate_base[1] + t_candidate * d_perp[1]
+            x_idx = int(round(x_new))
+            y_idx = int(round(y_new))
+            if x_idx < 0 or x_idx >= width or y_idx < 0 or y_idx >= height:
+                break
+            if muscle_mask[y_idx, x_idx] == 0:
+                break
+            t_pos = t_candidate
+
+        # Walk in the negative direction along d_perp.
+        t_neg = 0
+        while True:
+            t_candidate = t_neg - 1
+            x_new = candidate_base[0] + t_candidate * d_perp[0]
+            y_new = candidate_base[1] + t_candidate * d_perp[1]
+            x_idx = int(round(x_new))
+            y_idx = int(round(y_new))
+            if x_idx < 0 or x_idx >= width or y_idx < 0 or y_idx >= height:
+                break
+            if muscle_mask[y_idx, x_idx] == 0:
+                break
+            t_neg = t_candidate
+
+        # Total segment length is the difference between the positive and negative extents.
+        distance = t_pos - t_neg
+        if distance > best_distance:
+            endpoint1 = (candidate_base[0] + t_neg * d_perp[0],
+                         candidate_base[1] + t_neg * d_perp[1])
+            endpoint2 = (candidate_base[0] + t_pos * d_perp[0],
+                         candidate_base[1] + t_pos * d_perp[1])
+            best_distance = distance
+            best_endpoints = (endpoint1, endpoint2)
+
+    if best_endpoints is None:
+        print("measure_longest_horizontal_segment: No valid segment found.")
+        return None, None
+
+    # Order the endpoints by their projection onto d_perp so that the first is the 'start'.
+    proj1 = best_endpoints[0][0] * d_perp[0] + best_endpoints[0][1] * d_perp[1]
+    proj2 = best_endpoints[1][0] * d_perp[0] + best_endpoints[1][1] * d_perp[1]
+    if proj1 <= proj2:
+        start_point, end_point = best_endpoints
+    else:
+        start_point, end_point = best_endpoints[1], best_endpoints[0]
+
+    return start_point, end_point
 
 def find_midline_using_fat_extremes(fat_mask):
     """

@@ -84,17 +84,17 @@ def process_image(model, image_path, args):
         canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id, args.reference_path)
 
         # Step 6: Measurement
-        muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask)
+        angle = get_muscle_rotation_angle(rotated_muscle_mask)
+        if angle is None:
+            return extract_image_id(image_path), None, None, None, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
+
+        muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
         if muscle_width_start is None or muscle_width_end is None:
             return extract_image_id(image_path), None, None, None, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
         muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
 
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
-            return extract_image_id(image_path), muscle_width, None, None, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
-
-        angle = get_muscle_rotation_angle(rotated_muscle_mask)
-        if angle is None:
             return extract_image_id(image_path), muscle_width, None, None, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
 
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
