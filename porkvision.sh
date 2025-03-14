@@ -11,4 +11,5 @@
 #SBATCH --comment="registry.maze.science.gc.ca/ssc-hpcs/generic-job:ubuntu22.04,tmpfs_size=2G"
 #SBATCH --mail-type=END,FAIL,BEGIN
 
-./src/main.py
+conda activate porkvision-1.0.0
+python ./src/main.py
