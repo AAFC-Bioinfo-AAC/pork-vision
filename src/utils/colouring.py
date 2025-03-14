@@ -158,46 +158,22 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
 
 def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""
-
-    def generate_pixel_stats(classified_image, lean_mask, total_pixels, standard_type, image_id):
-        """Generate pixel counts and percentages for each standard, ensuring all standards are represented."""
-        if standard_type == "Cdn":
-            standards = [f"CdnStd{i}" for i in range(7)]  # Canadian standards: CdnStd0 to CdnStd6
-
-        # Count pixels for each classification
-        unique, counts = np.unique(classified_image[lean_mask > 0], return_counts=True)
-        pixel_counts = dict(zip(unique, counts))  # Maps unique classifications to their counts
-        
-        # Generate data for all standards, filling missing ones with 0
-        data = []
+    standards = [f"CdnStd{i}" for i in range(7)]
+    all_data = []
+    
+    for image_id, classified, mask in zip(id_list, canadian_classified_list, lean_mask_list):
+        if mask is None:
+            continue
+        total_pixels = np.count_nonzero(mask)
+        counts = dict(zip(*np.unique(classified[mask > 0], return_counts=True))) if total_pixels else {}
         for i, standard in enumerate(standards):
-            count = pixel_counts.get(i, 0)
-            percentage = round((count / total_pixels) * 100, 2) if total_pixels > 0 else 0.00
-            data.append({
+            count = counts.get(i, 0)
+            all_data.append({
                 "image_id": image_id,
                 "standard": standard,
                 "pixel_count": count,
-                "percentage": percentage
+                "total_pixel_count": total_pixels,
+                "percentage": round((count / total_pixels) * 100, 2) if total_pixels else 0.00
             })
-        return data
-
-    all_data = []
     
-    for image_id, canadian_classified, lean_mask in zip(id_list, canadian_classified_list, lean_mask_list):
-        try:
-            if lean_mask == None:
-                continue
-        except:    
-            total_pixels = np.count_nonzero(lean_mask)  # Total number of lean pixels
-
-            # Calculate statistics for Canadian and Japanese standards
-            canadian_stats = generate_pixel_stats(canadian_classified, lean_mask, total_pixels, "Cdn", image_id)
-            
-            # Add both sets of statistics to the final data list
-            all_data.extend(canadian_stats)
-
-    # Convert all data to a DataFrame
-    df = pd.DataFrame(all_data)
-
-    # Save to CSV (overwrite each time)
-    df.to_csv(output_csv_path, index=False)
+    pd.DataFrame(all_data).to_csv(output_csv_path, index=False)
