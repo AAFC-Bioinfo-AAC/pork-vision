@@ -89,7 +89,7 @@ def perform_preprocessing(image, kernel_size=11, lut=cv2.COLORMAP_JET):
 def contour_detection(marbling_mask):
     """ Removes the contour line from the marbling mask. """
     contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=1)  # Fill the contour with black
+    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=12)  # Fill the contour with black
     return marbling_mask
 
 def convert_fat_color(image):
@@ -241,7 +241,7 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=70)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=85)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
 
     # Smooth the marbling mask
@@ -251,17 +251,18 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
     
     # Create an overlay for visualization
-    overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
-    overlay_yellow = convert_fat_color(overlay)
+    #overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
+    #overlay_yellow = convert_fat_color(overlay)
     
     # Save images in a subfolder
     base_output_dir = os.path.join(output_dir, base_filename)
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg"), muscle_region)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
-    #cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow) These images tend to be big so keep them commented unless testing
     
+    #cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow) These images tend to be big so keep them commented unless testing
     # print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
+
     return refined_marbling_mask, marbling_percentage
 
 # ==============================
