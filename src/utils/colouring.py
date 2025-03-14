@@ -1,6 +1,6 @@
 from utils.imports import *
 
-# RGB values for Canadian and Japanese lean color standards
+# RGB values for Canadian lean color standards
 canadian_rgb_standard = np.array([
     (213, 183, 164), # C0
     (209, 172, 159), # C1
@@ -9,15 +9,6 @@ canadian_rgb_standard = np.array([
     (191, 122, 122), # C4
     (182, 102, 107), # C5
     (171, 88, 96),   # C6
-], dtype=np.float32)
-
-japanese_rgb_standard = np.array([
-    (190, 138, 100),  # J1
-    (185, 117, 86),   # J2
-    (173, 96, 74),    # J3
-    (154, 75, 59),    # J4
-    (144, 57, 48),    # J5
-    (127, 39, 38),    # J6
 ], dtype=np.float32)
 
 #######################################
@@ -144,42 +135,34 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     # Gets the lean mask (muscle area excluding marbling)
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
     
-    # Performs vectorized color analysis for Canadian and Japanese standards
-    japanese_classified = classify_rgb_vectorized(image, japanese_rgb_standard, lean_mask)
+    # Performs vectorized color analysis for Canadian standards
     canadian_classified = classify_rgb_vectorized(image, canadian_rgb_standard, lean_mask)
     
-    # Applies LUTs for visualization with a black background
-    japanese_lut_image = apply_lut(japanese_classified, list(range(6)), japanese_rgb_standard, lean_mask)
+    # Applies LUT for visualization with a black background
     canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
     
     # Creates a standardization for the image
     standard_img = execute_color_standardization(image, reference_path)
-    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask) 
-    japanese_classified_standard = classify_rgb_vectorized(standard_img, japanese_rgb_standard, lean_mask)
+    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask)
 
     canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)
-    japanese_lut_image_standard = apply_lut(japanese_classified_standard, list(range(6)), japanese_rgb_standard, lean_mask)
 
     # Save results
     base_output_dir = os.path.join(output_dir, image_id)
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut.png"), japanese_lut_image)
-    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_japanese_lut_STANDARDIZED.png"), japanese_lut_image_standard)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
 
-    return canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
+    return canadian_classified, canadian_classified_standard, lean_mask
 
-def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, output_csv_path):
+def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""
 
     def generate_pixel_stats(classified_image, lean_mask, total_pixels, standard_type, image_id):
         """Generate pixel counts and percentages for each standard, ensuring all standards are represented."""
         if standard_type == "Cdn":
             standards = [f"CdnStd{i}" for i in range(7)]  # Canadian standards: CdnStd0 to CdnStd6
-        else:
-            standards = [f"JpnStd{i + 1}" for i in range(6)]  # Japanese standards: JpnStd1 to JpnStd6
 
         # Count pixels for each classification
         unique, counts = np.unique(classified_image[lean_mask > 0], return_counts=True)
@@ -200,7 +183,7 @@ def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_li
 
     all_data = []
     
-    for image_id, canadian_classified, japanese_classified, lean_mask in zip(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list):
+    for image_id, canadian_classified, lean_mask in zip(id_list, canadian_classified_list, lean_mask_list):
         try:
             if lean_mask == None:
                 continue
@@ -209,10 +192,9 @@ def save_colouring_csv(id_list, canadian_classified_list, japanese_classified_li
 
             # Calculate statistics for Canadian and Japanese standards
             canadian_stats = generate_pixel_stats(canadian_classified, lean_mask, total_pixels, "Cdn", image_id)
-            japanese_stats = generate_pixel_stats(japanese_classified, lean_mask, total_pixels, "Jpn", image_id)
             
             # Add both sets of statistics to the final data list
-            all_data.extend(canadian_stats + japanese_stats)
+            all_data.extend(canadian_stats)
 
     # Convert all data to a DataFrame
     df = pd.DataFrame(all_data)
