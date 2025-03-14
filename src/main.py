@@ -64,7 +64,7 @@ def process_image(model, image_path, args):
         # Step 2: Preprocessing
         muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
         if muscle_bbox is None or fat_bbox is None:
-            return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
+            return extract_image_id(image_path), None, None, None, None, None, None, None, None
 
         muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
         fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
@@ -81,7 +81,9 @@ def process_image(model, image_path, args):
 
         # Step 5: Perform color grading
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
-        canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = colour_grading(rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id, args.reference_path)
+        canadian_classified, canadian_classified_standard, lean_mask = colour_grading(
+            rotated_image, rotated_muscle_mask, marbling_mask, args.colouring_path, image_id, args.reference_path
+        )
 
         # Step 6: Measurement
         angle = get_muscle_rotation_angle(rotated_muscle_mask)
@@ -124,11 +126,20 @@ def process_image(model, image_path, args):
             rois_folder=args.rois_path
         )
 
-        return image_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask
+        return (
+            image_id,
+            muscle_width,
+            muscle_depth,
+            fat_depth,
+            marbling_percentage,
+            canadian_classified,
+            canadian_classified_standard,
+            lean_mask
+        )
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
-        return extract_image_id(image_path), None, None, None, None, None, None, None, None, None
+        return extract_image_id(image_path), None, None, None, None, None, None, None, None
 
 
 def main():
@@ -139,7 +150,7 @@ def main():
 
     # Step 2: Parallel Processing
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
-    canadian_classified_list, japanese_classified_list, canadian_classified_standard_list, japanese_classified_standard_list, lean_mask_list = [], [], [], [], []
+    canadian_classified_list, canadian_classified_standard_list, lean_mask_list = [], [], []
     max_workers = min(4, os.cpu_count() // 2)
     model = YOLO(args.model_path)
     os.makedirs(f'{args.segment_path}/predict', exist_ok=True)
@@ -148,16 +159,14 @@ def main():
         futures = {executor.submit(process_image, model, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, japanese_classified, canadian_classified_standard, japanese_classified_standard, lean_mask = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, canadian_classified_standard, lean_mask = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
             fat_depth_list.append(fat_depth)
             marbling_percentage_list.append(marbling_percentage)
             canadian_classified_list.append(canadian_classified)
-            japanese_classified_list.append(japanese_classified)
             canadian_classified_standard_list.append(canadian_classified_standard)
-            japanese_classified_standard_list.append(japanese_classified_standard)
             lean_mask_list.append(lean_mask)
 
             
@@ -168,8 +177,8 @@ def main():
     print_table_of_measurements(args.marbling_csv)
     
     # OPTIONAL: Comment these out to improve performance
-    save_colouring_csv(id_list, canadian_classified_list, japanese_classified_list, lean_mask_list, args.colouring_csv)
-    save_colouring_csv(id_list, canadian_classified_standard_list, japanese_classified_standard_list, lean_mask_list, args.standard_color_csv)
+    save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, args.colouring_csv)
+    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.standard_color_csv)
     print_table_of_measurements(args.colouring_csv)
     print_table_of_measurements(args.standard_color_csv)
 

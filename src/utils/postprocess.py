@@ -124,7 +124,7 @@ def print_table_of_measurements(results_csv_path):
         df = pd.read_csv(results_csv_path)
         
         # Print the table using tabulate
-        print("\nMeasurement Results:")
+        print("\nResults:")
         print(tabulate(df, headers="keys", tablefmt="pipe", showindex=False))
 
     except Exception as e:
