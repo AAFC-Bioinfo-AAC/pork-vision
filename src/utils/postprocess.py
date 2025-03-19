@@ -79,7 +79,7 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
 
     print(f"Annotated image saved: {output_file}\n")
 
-def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path):
+def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path, conversion_factor_list):
     """
     Saves the measurement results to a CSV file.
 
@@ -95,16 +95,17 @@ def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth
         "image_id": id_list,
         "muscle_width_px": muscle_width_list,
         "muscle_depth_px": muscle_depth_list,
-        "fat_depth_px": fat_depth_list
+        "fat_depth_px": fat_depth_list,
     })
 
-    # Convert measurements to millimeters (assuming 140 pixels = 1 cm)
-    conversion_factor = 10 / 140  # 10 mm per cm, 140 px per cm
-    df_mm = df.iloc[:, 1:] * conversion_factor
+    df_mm = df.iloc[:, 1:].apply(lambda x, factor: x * factor, axis = 1, result_type="expand", args=(conversion_factor_list))
     df_mm.columns = ["muscle_width_mm", "muscle_depth_mm", "fat_depth_mm"]
 
     # Concatenate pixel and mm measurements
     df = pd.concat([df, df_mm], axis=1)
+    df_conversion = pd.DataFrame({
+        "conversion_factor (mm/px)": conversion_factor_list})
+    df = pd.concat([df, df_conversion], axis=1)
 
     # Save DataFrame to CSV
     df.to_csv(output_csv_path, index=False)

@@ -390,3 +390,49 @@ def extend_vertical_line_to_fat(fat_mask, muscle_depth_line, step=1.0, max_iter=
 
     fat_end = (int(round(last_fat_point[0])), int(round(last_fat_point[1])))
     return fat_start, fat_end
+
+def measure_ruler(image):
+    try:
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 200, 100)
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=1500, maxLineGap=15)
+        pixel_count = 0
+        drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
+
+        if lines is not None:
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                if abs(y1 - y2) > 300:
+                    if abs(y1 - y2) > pixel_count:
+                        pixel_count = abs(y1 - y2)
+                        drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+
+        delta_y = drawn_y2 - drawn_y1
+        delta_x = drawn_x2 - drawn_x1
+        angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
+        if angle < -45:
+            angle += 90
+        center = (image.shape[1] // 2, image.shape[0] // 2)
+        
+        # Rotation matrix
+        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated_image = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
+
+        print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
+
+        points = np.array([[drawn_x1, drawn_y1], [drawn_x2, drawn_y2]], dtype=np.float32)
+        rotated_points = cv2.transform(np.array([points]), rotation_matrix)[0]
+        rotated_x1, rotated_y1 = rotated_points[0]
+        rotated_x2, rotated_y2 = rotated_points[1]
+        print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
+        cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
+        # Save the images
+        pixel_count = abs(int(rotated_y1)-int(rotated_y2))
+        cv2.imwrite(f"{image}_lines.jpg", rotated_image)
+        if abs(int(rotated_y1)-int(rotated_y2)):
+            conversion_factor = 10/(pixel_count/15.6)
+            return conversion_factor
+    except:
+        print("Error in ruler measurement using default conversion")
+        return
