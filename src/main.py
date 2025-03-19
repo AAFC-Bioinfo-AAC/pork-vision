@@ -17,6 +17,7 @@ from utils.measurement import (
     measure_vertical_segment,
     extend_vertical_line_to_fat,
     get_muscle_rotation_angle,
+    measure_ruler
 )
 from utils.postprocess import (
     save_annotated_image,
@@ -55,7 +56,6 @@ def process_image(model, image_path, args):
         # Step 1: YOLO Inference
         
         results = model(image_path, save=False)[0]  # This disables automatic saving into subfolders
-
         # Save the result manually to the 'predict' folder
         save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
         results.save(save_path)  # Save the annotated image to the specified path
@@ -75,6 +75,9 @@ def process_image(model, image_path, args):
             results.orig_img, muscle_binary_mask, fat_binary_mask
         )
 
+        conversion_factor = measure_ruler(rotated_image)
+        if conversion_factor == None:
+            conversion_factor = 10/140
         # Step 4: Marbling Extraction
         image_id = extract_image_id(image_path)
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
@@ -134,7 +137,8 @@ def process_image(model, image_path, args):
             marbling_percentage,
             canadian_classified,
             canadian_classified_standard,
-            lean_mask
+            lean_mask,
+            conversion_factor
         )
 
     except Exception as e:
@@ -149,7 +153,7 @@ def main():
     image_paths = sorted([os.path.join(args.image_path, img) for img in os.listdir(args.image_path)])
 
     # Step 2: Parallel Processing
-    id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list = [], [], [], [], []
+    id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list, conversion_factor_list = [], [], [], [], [], []
     canadian_classified_list, canadian_classified_standard_list, lean_mask_list = [], [], []
     max_workers = min(4, os.cpu_count() // 2)
     model = YOLO(args.model_path)
@@ -159,7 +163,7 @@ def main():
         futures = {executor.submit(process_image, model, img_path, args): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, canadian_classified_standard, lean_mask = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified, canadian_classified_standard, lean_mask, conversion_factor = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
@@ -168,10 +172,12 @@ def main():
             canadian_classified_list.append(canadian_classified)
             canadian_classified_standard_list.append(canadian_classified_standard)
             lean_mask_list.append(lean_mask)
+            conversion_factor_list.append(conversion_factor)
+
 
             
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv)
+    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv, conversion_factor_list)
     save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
     print_table_of_measurements(args.results_csv)
     print_table_of_measurements(args.marbling_csv)
