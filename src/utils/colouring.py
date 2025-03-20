@@ -134,27 +134,21 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     
     # Gets the lean mask (muscle area excluding marbling)
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
+    standard_img = execute_color_standardization(image, reference_path)
     
     # Performs vectorized color analysis for Canadian standards
-    canadian_classified = classify_rgb_vectorized(image, canadian_rgb_standard, lean_mask)
-    
-    # Applies LUT for visualization with a black background
-    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_rgb_standard, lean_mask)
-    
-    # Creates a standardization for the image
-    standard_img = execute_color_standardization(image, reference_path)
     canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask)
+    # Applies LUT for visualization with a black background  
+    canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)  
 
-    canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)
 
     # Save results
     base_output_dir = os.path.join(output_dir, image_id)
     os.makedirs(base_output_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
     #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
 
-    return canadian_classified, canadian_classified_standard, lean_mask
+    return canadian_classified_standard, lean_mask
 
 def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""

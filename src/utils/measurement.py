@@ -412,7 +412,6 @@ def measure_ruler(image, image_id):
             delta_y = drawn_y2 - drawn_y1
         delta_x = drawn_x2 - drawn_x1
         angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
-        print(f"Angle: {angle}")
         if angle < -45:
             angle += 90
         center = (image.shape[1] // 2, image.shape[0] // 2)
