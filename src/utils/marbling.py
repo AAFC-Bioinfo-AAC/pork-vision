@@ -7,8 +7,10 @@ def extract_muscle_region(rotated_image, muscle_mask):
     """
     Extracts the muscle portion of the image using the provided mask.
     """
-    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=muscle_mask)
-    return muscle_region
+    shrink_kernel = np.ones((2, 2), np.uint8)
+    eroded_mask = cv2.erode(muscle_mask, shrink_kernel, iterations=35)
+    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=eroded_mask)
+    return muscle_region, eroded_mask
 
 def background_subtraction(image, kernel_size=11):
     """
@@ -35,8 +37,8 @@ def clean_specks(marbling_mask):
     Removes noisy speckles of detected fat from the image
     Ensures only significant areas remain.
     """
-    kernel = np.ones((2, 2), np.uint8)    
-    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=5)
+    kernel = np.ones((100, 100), np.uint8)    
+    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=20)
     return marbling_mask
 
 def dynamic_contrast_stretch(image):
@@ -196,7 +198,7 @@ def calculate_marbling_percentage(marbling_mask, muscle_mask):
         return 0.0
     
     percentage = (marbling_area / muscle_area) * 100.0
-    return percentage
+    return percentage, muscle_area
 
 # =============================================================================
 # Full Marbling Processing Pipeline
@@ -222,7 +224,7 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
         base_filename = "marbling_result"
     
     # Extract the muscle region
-    muscle_region = extract_muscle_region(rotated_image, muscle_mask)
+    muscle_region, eroded_mask = extract_muscle_region(rotated_image, muscle_mask)
     
     # Obtain the pseudo‑colour image from enhanced preprocessing
     _, pseudo_color = perform_preprocessing(muscle_region, kernel_size=11, lut=cv2.COLORMAP_JET)
@@ -238,17 +240,17 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     ret, thresh_blue = cv2.threshold(enhanced_blue, 50, 255, cv2.THRESH_BINARY)
     
     # Restrict the threshold result to the muscle region (masking out any areas outside).
-    raw_marbling_mask = cv2.bitwise_and(thresh_blue, muscle_mask)
+    raw_marbling_mask = cv2.bitwise_and(thresh_blue, eroded_mask)
     
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=85)
+    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=110)
     refined_marbling_mask = contour_detection(refined_marbling_mask)
 
     # Smooth the marbling mask
     refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(7, 7))
-    
+
     # Calculate marbling percentage relative to the muscle area
-    marbling_percentage = calculate_marbling_percentage(refined_marbling_mask, muscle_mask)
+    marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, eroded_mask)
     
     # Create an overlay for visualization
     #overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
@@ -259,11 +261,12 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg"), muscle_region)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
+    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_borderless_mask.jpg"), eroded_mask)
     
     #cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow) These images tend to be big so keep them commented unless testing
     # print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
 
-    return refined_marbling_mask, marbling_percentage
+    return refined_marbling_mask, eroded_mask, marbling_percentage, area_px
 
 # ==============================
 # Saving results
