@@ -98,7 +98,7 @@ def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth
         "fat_depth_px": fat_depth_list,
     })
 
-    df_mm = df.iloc[:, 1:].apply(lambda x, factor: x * factor, axis = 1, result_type="expand", args=(conversion_factor_list))
+    df_mm = df.iloc[:, 1:].multiply(conversion_factor_list, axis=0)
     df_mm.columns = ["muscle_width_mm", "muscle_depth_mm", "fat_depth_mm"]
 
     # Concatenate pixel and mm measurements
