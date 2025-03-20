@@ -75,11 +75,12 @@ def process_image(model, image_path, args):
             results.orig_img, muscle_binary_mask, fat_binary_mask
         )
 
-        conversion_factor = measure_ruler(rotated_image)
-        if conversion_factor == None:
-            conversion_factor = 10/140
+
         # Step 4: Marbling Extraction
         image_id = extract_image_id(image_path)
+        conversion_factor = measure_ruler(rotated_image, image_id)
+        if conversion_factor == None:
+            conversion_factor = 10/140
         marbling_mask, marbling_percentage = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
 
         # Step 5: Perform color grading
