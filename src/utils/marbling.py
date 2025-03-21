@@ -12,6 +12,26 @@ def extract_muscle_region(rotated_image, muscle_mask):
     muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=eroded_mask)
     return muscle_region, eroded_mask
 
+def clahe_contrast_enhancement(image, clip_limit=2.0, tile_grid_size=(8, 8)):
+    # If image is single-channel (grayscale), apply CLAHE directly
+    if len(image.shape) == 2:  # Grayscale image
+        clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+        enhanced_image = clahe.apply(image)
+    else:  # Color image
+        # Convert to LAB color space to enhance the L channel (luminance)
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        
+        # Apply CLAHE to the L channel
+        clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
+        cl = clahe.apply(l)
+        
+        # Merge the CLAHE-enhanced L channel back with the A and B channels
+        enhanced_lab = cv2.merge((cl, a, b))
+        enhanced_image = cv2.cvtColor(enhanced_lab, cv2.COLOR_LAB2BGR)
+        
+    return enhanced_image
+
 def background_subtraction(image, kernel_size=11):
     """
     Performs background subtraction using a Gaussian blur.
@@ -25,11 +45,13 @@ def background_subtraction(image, kernel_size=11):
       subtracted: The background-subtracted image.
     """
     if len(image.shape) == 3:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        enhanced = clahe_contrast_enhancement(image)
+        gray = cv2.cvtColor(enhanced, cv2.COLOR_BGR2GRAY)
     else:
         gray = image.copy()
     bg = cv2.GaussianBlur(gray, (kernel_size, kernel_size), 0)
     subtracted = cv2.subtract(gray, bg)
+    subtracted = contour_detection(subtracted)
     return subtracted
 
 def clean_specks(marbling_mask):
@@ -91,7 +113,7 @@ def perform_preprocessing(image, kernel_size=11, lut=cv2.COLORMAP_JET):
 def contour_detection(marbling_mask):
     """ Removes the contour line from the marbling mask. """
     contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=12)  # Fill the contour with black
+    cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=6)  # Fill the contour with black
     return marbling_mask
 
 def convert_fat_color(image):
@@ -237,17 +259,13 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     enhanced_blue = contrast_enhancement(pseudo_blue, gamma=0.4)
     
     # Use a low fixed threshold on the enhanced blue channel so that every bright fat pixel is captured.
-    ret, thresh_blue = cv2.threshold(enhanced_blue, 50, 255, cv2.THRESH_BINARY)
-    
-    # Restrict the threshold result to the muscle region (masking out any areas outside).
-    raw_marbling_mask = cv2.bitwise_and(thresh_blue, eroded_mask)
-    
+    ret, thresh_blue = cv2.threshold(enhanced_blue, 70, 255, cv2.THRESH_BINARY)
+    refined_marbling_mask = smooth_marbling_mask(thresh_blue, kernel_size=(7, 7))
     # Refine the marbling mask
-    refined_marbling_mask, _ = particle_analysis(raw_marbling_mask, min_area=110)
-    refined_marbling_mask = contour_detection(refined_marbling_mask)
+    refined_marbling_mask, _ = particle_analysis(refined_marbling_mask, min_area=60)
 
     # Smooth the marbling mask
-    refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(7, 7))
+    #refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(7, 7))
 
     # Calculate marbling percentage relative to the muscle area
     marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, eroded_mask)
