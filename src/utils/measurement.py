@@ -436,6 +436,7 @@ def measure_ruler(image, image_id):
                 print(image_id)
                 print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
                 print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
+                os.makedirs('lines', exist_ok=True)
                 cv2.imwrite(f"lines/{image_id}_lines.jpg", image)
                 return None
             else:
@@ -443,6 +444,7 @@ def measure_ruler(image, image_id):
                 cv2.imwrite(f"output/ruler_measurement/{image_id}_{mm_line/10}cm.jpg", image)
                 return conversion_factor
     except:
+        os.makedirs('nolines', exist_ok=True)
         cv2.imwrite(f"nolines/{image_id}_NOLINE.jpg", image)
         print("Error in ruler measurement using default conversion")
         return
