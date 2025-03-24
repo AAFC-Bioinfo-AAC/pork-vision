@@ -418,8 +418,6 @@ def measure_ruler(image, image_id):
         
         # Rotation matrix
         rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated_image = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
-
 
         points = np.array([[drawn_x1, drawn_y1], [drawn_x2, drawn_y2]], dtype=np.float32)
         rotated_points = cv2.transform(np.array([points]), rotation_matrix)[0]
@@ -428,15 +426,23 @@ def measure_ruler(image, image_id):
         #cv2.line(image, (int(drawn_x1), int(drawn_y1)), (int(drawn_x2), int(drawn_y2)), (0, 0, 255), 2)
         # Save the images
         pixel_count = abs(int(rotated_y1)-int(rotated_y2))
+
         if abs(int(rotated_y1)-int(rotated_y2)):
-            conversion_factor = 10/(pixel_count/15.5)
-            if conversion_factor > 0.074 or conversion_factor < 0.066:
+            mm_per_px = 13.87096774 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2150px)
+            mm_line = round(pixel_count/mm_per_px) # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
+            conversion_factor = mm_line/pixel_count
+            if conversion_factor > 0.074 or conversion_factor < 0.070:
                 cv2.line(image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x1), int(rotated_y2)), (0, 0, 255), 2)
+                print(image_id)
                 print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
                 print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
-                cv2.imwrite(f"{image_id}_lines.jpg", image)
-
-            return conversion_factor
+                cv2.imwrite(f"lines/{image_id}_lines.jpg", image)
+                return None
+            else:
+                os.makedirs('output/ruler_measurement')
+                cv2.imwrite(f"output/ruler_measurement/{image_id}_{mm_line/10}cm.jpg", image)
+                return conversion_factor
     except:
+        cv2.imwrite(f"nolines/{image_id}_NOLINE.jpg", image)
         print("Error in ruler measurement using default conversion")
         return
