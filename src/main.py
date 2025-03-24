@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument("--colouring_path", type=str, default="output/colouring")
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
     parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
-    parser.add_argument("--reference_path", type=str, default="data/reference_images/2704_LdLeanColor.JPG")
+    parser.add_argument("--reference_path", type=str, default="data/reference_images/103_LdLeanColor.JPG")
     parser.add_argument("--marbling_path", type=str, default="output/marbling")
     return parser.parse_args()
 
