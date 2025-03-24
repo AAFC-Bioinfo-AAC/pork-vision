@@ -439,7 +439,7 @@ def measure_ruler(image, image_id):
                 cv2.imwrite(f"lines/{image_id}_lines.jpg", image)
                 return None
             else:
-                os.makedirs('output/ruler_measurement')
+                os.makedirs('output/ruler_measurement', exist_ok=True)
                 cv2.imwrite(f"output/ruler_measurement/{image_id}_{mm_line/10}cm.jpg", image)
                 return conversion_factor
     except:
