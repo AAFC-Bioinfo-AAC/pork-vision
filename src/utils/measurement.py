@@ -428,11 +428,11 @@ def measure_ruler(image, image_id):
         pixel_count = abs(int(rotated_y1)-int(rotated_y2))
 
         if abs(int(rotated_y1)-int(rotated_y2)):
-            mm_per_px = 13.87096774 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2150px)
+            mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2150px)
             mm_line = round(pixel_count/mm_per_px) # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
             conversion_factor = mm_line/pixel_count
+            cv2.line(image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x1), int(rotated_y2)), (0, 0, 255), 2)
             if conversion_factor > 0.074 or conversion_factor < 0.070:
-                cv2.line(image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x1), int(rotated_y2)), (0, 0, 255), 2)
                 print(image_id)
                 print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
                 print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
@@ -440,6 +440,9 @@ def measure_ruler(image, image_id):
                 cv2.imwrite(f"lines/{image_id}_lines.jpg", image)
                 return None
             else:
+                print(image_id)
+                print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
+                print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
                 os.makedirs('output/ruler_measurement', exist_ok=True)
                 cv2.imwrite(f"output/ruler_measurement/{image_id}_{mm_line/10}cm.jpg", image)
                 return conversion_factor
@@ -447,4 +450,4 @@ def measure_ruler(image, image_id):
         os.makedirs('nolines', exist_ok=True)
         cv2.imwrite(f"nolines/{image_id}_NOLINE.jpg", image)
         print("Error in ruler measurement using default conversion")
-        return
+        return None
