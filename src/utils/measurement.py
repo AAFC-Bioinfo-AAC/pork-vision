@@ -395,7 +395,7 @@ def measure_ruler(image, image_id):
     try:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 70, 100)
+        edges = cv2.Canny(blurred, 50, 175)
         lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=1500, maxLineGap=15)
         pixel_count = 0
         drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
@@ -418,6 +418,7 @@ def measure_ruler(image, image_id):
         
         # Rotation matrix
         rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated_image = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
 
         points = np.array([[drawn_x1, drawn_y1], [drawn_x2, drawn_y2]], dtype=np.float32)
         rotated_points = cv2.transform(np.array([points]), rotation_matrix)[0]
@@ -434,18 +435,18 @@ def measure_ruler(image, image_id):
                 mm_per_px = 13.76774194 * (pixel_count/2137)
                 mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
             conversion_factor = mm_line/pixel_count
-            cv2.line(image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x1), int(rotated_y2)), (0, 0, 255), 2)
-            if pixel_count > 2160 or pixel_count < 2100:
+            cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
+            if pixel_count > 2300 or pixel_count < 1800:
                 print(image_id)
                 print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
                 print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
                 os.makedirs('lines', exist_ok=True)
-                cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px.jpg", image)
+                cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px.jpg", rotated_image)
             print(image_id)
             print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
             print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
             os.makedirs('output/ruler_measurement', exist_ok=True)
-            cv2.imwrite(f"output/ruler_measurement/{image_id}_{round(mm_line/10, 1)}cm.jpg", image)
+            cv2.imwrite(f"output/ruler_measurement/{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
             return conversion_factor
     except:
         os.makedirs('nolines', exist_ok=True)
