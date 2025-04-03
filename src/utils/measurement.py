@@ -396,16 +396,34 @@ def measure_ruler(image, image_id):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
         edges = cv2.Canny(blurred, 50, 175)
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=1500, maxLineGap=15)
+        minlength=1500
+        maxlength=2400
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=minlength, maxLineGap=15)
         pixel_count = 0
         drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
         if lines is not None:
             for line in lines:
                 x1, y1, x2, y2 = line[0]
-                if abs(y1 - y2) > 300:
-                    if abs(y1 - y2) > pixel_count:
-                        pixel_count = abs(y1 - y2)
+                length = math.sqrt((x2-x1)**2+(y2-y1)**2)
+                if length>maxlength:
+                    continue
+                if length > pixel_count:
+                    pixel_count = length
+                    drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+
+        if pixel_count < 2000:
+            edges = cv2.Canny(blurred, 50, 100)
+            lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=pixel_count, maxLineGap=20)
+            if lines is not None:
+                for line in lines:
+                    x1, y1, x2, y2 = line[0]
+                    length = math.sqrt((x2-x1)**2+(y2-y1)**2)
+                    if length>maxlength:
+                        continue
+                    if length > pixel_count:
+                        pixel_count = length
                         drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+
         if drawn_y1<drawn_y2:
             delta_y = drawn_y1 - drawn_y2
         else:
@@ -429,17 +447,17 @@ def measure_ruler(image, image_id):
         pixel_count = abs(int(rotated_y1)-int(rotated_y2))
 
         if abs(int(rotated_y1)-int(rotated_y2)):
-            mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
+            if pixel_count > 2100 and pixel_count<2200:
+                mm_per_px = pixel_count/155
+            else:    
+                mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
             mm_line = pixel_count/mm_per_px # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
             if mm_line > 157:
-                mm_per_px = 13.76774194 * (pixel_count/2137)
+                mm_per_px = mm_per_px * (pixel_count/2137)
                 mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
             conversion_factor = mm_line/pixel_count
             cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
-            if pixel_count > 2300 or pixel_count < 1800:
-                print(image_id)
-                print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
-                print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
+            if pixel_count > 2300 or pixel_count < 2000:
                 os.makedirs('lines', exist_ok=True)
                 cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px.jpg", rotated_image)
             print(image_id)

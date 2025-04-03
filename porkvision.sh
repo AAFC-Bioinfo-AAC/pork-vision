@@ -1,10 +1,10 @@
 #!/bin/bash -l
 #SBATCH --job-name=porkvision
 #SBATCH --output=porkvision.out
-#SBATCH --cluster=gpsc8
+#SBATCH --cluster=gpsc7
 #SBATCH --partition=standard
 #SBATCH --account=aafc_aac
-#SBATCH --time=02:30:00
+#SBATCH --time=02:00:00
 #SBATCH --mem=100GB
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
