@@ -31,6 +31,7 @@ from utils.postprocess import (
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
     parser.add_argument("--model_path", type=str, default="src/models/last.pt")
+    parser.add_argument("--color_model_path", type=str, default="src/models/color_detection(best).pt")
     parser.add_argument("--image_path", type=str, default="data/raw_images/")
     parser.add_argument("--segment_path", type=str, default="output/segment")
     parser.add_argument("--output_path", type=str, default="output/annotated_images")
@@ -84,9 +85,10 @@ def process_image(model, image_path, args):
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
 
         # Step 5: Perform color grading
+        
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
         canadian_classified_standard, lean_mask = colour_grading(
-            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, args.reference_path
+            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, args.reference_path, args.color_model_path
         )
 
         # Step 6: Measurement
