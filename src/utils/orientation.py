@@ -105,6 +105,53 @@ def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
     # 4. Find largest valid contour
     return find_largest_contour(adjacent_fat, min_area=min_area)
 
+def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=0, rotation=cv2.ROTATE_90_CLOCKWISE):
+    height, width, _ = original_image.shape
+    if depth>=4:
+        return original_image,muscle_mask,fat_mask
+    if width<height:
+        print(f"Height before rotation = {height}, width before rotation = {width}")
+        rotated_image = cv2.rotate(original_image, rotation)
+        rotated_muscle_mask = cv2.rotate(muscle_mask, rotation)
+        rotated_fat_mask = cv2.rotate(fat_mask, rotation)
+        height, width, _ = rotated_image.shape
+        print(f"Height after rotation {height}, width after rotation {width}")
+        cv2.imwrite("Test_image.JPG", rotated_image)
+        cv2.imwrite("Test_muscle.JPG", rotated_muscle_mask)
+        cv2.imwrite("Test_fat_mask.JPG", rotated_fat_mask)
+    else:
+        rotated_image = original_image
+        rotated_muscle_mask = muscle_mask
+        rotated_fat_mask = fat_mask
+    fat_pixels = np.where(rotated_fat_mask == 255)
+    muscle_pixels = np.where(rotated_muscle_mask == 255)
+
+
+    # Get the maximum y value for the muscle mask
+    muscley_value = np.max(muscle_pixels[0])
+
+    # Get the x values where y = muscley_value
+    musclex_values = muscle_pixels[1][muscle_pixels[0] == muscley_value]
+
+    # If multiple x values exist at this y, choosing the first one:
+    musclex_value = musclex_values[0]
+
+    # Get the y values where x = musclex_value in fat mask
+    faty_values_at_musclex = fat_pixels[0][fat_pixels[1] == musclex_value]
+
+    # Get the maximum y value at this x position in the fat mask
+    faty_value = np.max(faty_values_at_musclex)
+    if faty_value > muscley_value:
+        depth += 1
+        print(f"Bottom Fat detected at {faty_value} while the bottom muscle is {muscley_value}, so fat is below muscle.")
+        rotated_image, rotated_muscle_mask, rotated_fat_mask = initial_orientation_correction(original_image, muscle_mask, fat_mask, depth, rotation=cv2.ROTATE_90_COUNTERCLOCKWISE)
+    print(f"Fat detected at {faty_value} while muscle is at {muscley_value} so Fat above muscle")
+    return rotated_image, rotated_muscle_mask, rotated_fat_mask
+    
+
+
+
+
 def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask):
     """
     Orients the image so that the thin strip of fat adjacent to the muscle is on top.
@@ -134,34 +181,30 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     mx, my, mw, mh = cv2.boundingRect(muscle_contour)
     muscle_center_x = mx + mw / 2
     muscle_center_y = my + mh / 2
-    height, width, _ = original_image.shape
+    original_image, muscle_mask, fat_mask = initial_orientation_correction(original_image, muscle_mask, fat_mask)
+    fat_pixels = np.where(fat_mask == 255)
+    muscle_pixels = np.where(muscle_mask == 255)
 
-    # 2. Isolate adjacent portion of the fat
-    if width < height:
-        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=50, min_area=500)
+    # Get the maximum y value for the muscle mask
+    muscley_value = np.max(muscle_pixels[0])
+
+    # Get the x values where y = muscley_value
+    musclex_values = muscle_pixels[1][muscle_pixels[0] == muscley_value]
+
+    # If multiple x values exist at this y, choosing the first one:
+    musclex_value = musclex_values[0]
+
+    # Get the y values where x = musclex_value in fat mask
+    faty_values_at_musclex = fat_pixels[0][fat_pixels[1] == musclex_value]
+
+    # Get the maximum y value at this x position in the fat mask
+    faty_value = np.max(faty_values_at_musclex)
+
+    if faty_value>muscley_value:
+        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) #Changed to 45 to test
     else:
-        fat_pixels = np.where(fat_mask == 255)
-        muscle_pixels = np.where(muscle_mask == 255)
+        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
 
-        # Get the maximum y value for the muscle mask
-        muscley_value = np.max(muscle_pixels[0])
-
-        # Get the x values where y = muscley_value
-        musclex_values = muscle_pixels[1][muscle_pixels[0] == muscley_value]
-
-        # If multiple x values exist at this y, choosing the first one:
-        musclex_value = musclex_values[0]
-
-        # Get the y values where x = musclex_value in fat mask
-        faty_values_at_musclex = fat_pixels[0][fat_pixels[1] == musclex_value]
-
-        # Get the maximum y value at this x position in the fat mask
-        faty_value = np.max(faty_values_at_musclex)
-        if faty_value>muscley_value:
-            adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) #Changed to 45 to test
-        else:
-            adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
-        
     # 3. Check if fat is already on top (when adjacent_fat_box is missing)
     if adjacent_fat_box is None:
         # Compare muscle bounding box position with fat bounding box
@@ -172,7 +215,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
             fat_center_y = fy + fh / 2
 
             if fat_center_y < muscle_center_y:
-                #print("Fat already correctly positioned on top. No rotation needed.")
+                print("Fat already correctly positioned on top. No rotation needed.")
                 return original_image, muscle_mask, fat_mask, 0
         print("No valid adjacent fat region detected. Skipping orientation.")
         return original_image, muscle_mask, fat_mask, 0
