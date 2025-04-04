@@ -116,9 +116,6 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=
         rotated_fat_mask = cv2.rotate(fat_mask, rotation)
         height, width, _ = rotated_image.shape
         print(f"Height after rotation {height}, width after rotation {width}")
-        cv2.imwrite("Test_image.JPG", rotated_image)
-        cv2.imwrite("Test_muscle.JPG", rotated_muscle_mask)
-        cv2.imwrite("Test_fat_mask.JPG", rotated_fat_mask)
     else:
         rotated_image = original_image
         rotated_muscle_mask = muscle_mask
@@ -203,7 +200,8 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     if faty_value>muscley_value:
         adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) #Changed to 45 to test
     else:
-        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
+        adjacent_fat_box = None
+        #adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
 
     # 3. Check if fat is already on top (when adjacent_fat_box is missing)
     if adjacent_fat_box is None:
