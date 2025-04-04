@@ -447,19 +447,29 @@ def measure_ruler(image, image_id):
         pixel_count = abs(int(rotated_y1)-int(rotated_y2))
 
         if abs(int(rotated_y1)-int(rotated_y2)):
-            if pixel_count > 2100 and pixel_count<2200:
+            if pixel_count>1750 and pixel_count<=1825:
+                mm_per_px = pixel_count/130
+            elif pixel_count > 1825 and pixel_count<=1900:
+                mm_per_px = pixel_count/135  
+            elif pixel_count > 1900 and pixel_count<=1975:
+                mm_per_px = pixel_count/140  
+            elif pixel_count > 1975 and pixel_count<=2050:
+                mm_per_px = pixel_count/145  
+            elif pixel_count > 2050 and pixel_count<=2125:
+                mm_per_px = pixel_count/150    
+            elif pixel_count > 2125 and pixel_count<=2200:
                 mm_per_px = pixel_count/155
             else:    
                 mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
             mm_line = pixel_count/mm_per_px # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
-            if mm_line > 157:
-                mm_per_px = mm_per_px * (pixel_count/2137)
-                mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
+            if mm_line > 156:
+                    mm_per_px = mm_per_px * (pixel_count/2137)
+                    mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
             conversion_factor = mm_line/pixel_count
             cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
             if pixel_count > 2300 or pixel_count < 2000:
                 os.makedirs('lines', exist_ok=True)
-                cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px.jpg", rotated_image)
+                cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
             print(image_id)
             print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
             print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
