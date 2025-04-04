@@ -38,21 +38,21 @@ def get_mode_rgb(image, bbox):
 def insertion_sort(canadian_standard_unsorted):
     for i in range(1, len(canadian_standard_unsorted)):
         key = canadian_standard_unsorted[i]
-        print(f"Current key is {key}")
+        #print(f"Current key is {key}")
         index = i - 1
-        print(f"Key - 1 (index) is {index}")
+        #print(f"Key - 1 (index) is {index}")
 
         while index >= 0 and key[0]<canadian_standard_unsorted[index][0]:
-            print(f"Swapping since index is {index} and key ({key}) is less than Canadian_Unsorted[index][0]: {canadian_standard_unsorted[index][0]}")
+            #print(f"Swapping since index is {index} and key ({key}) is less than Canadian_Unsorted[index][0]: {canadian_standard_unsorted[index][0]}")
             canadian_standard_unsorted[index + 1] = canadian_standard_unsorted[index]
             index = index - 1
-        print(f"Setting unsorted canadian_standard index+1[0] ({canadian_standard_unsorted[index+1][0]} to key ({key}))")
+        #print(f"Setting unsorted canadian_standard index+1[0] ({canadian_standard_unsorted[index+1][0]} to key ({key}))")
         canadian_standard_unsorted[index+1] = key
-    print()
-    print(f"Sorted array in Ascending order {canadian_standard_unsorted}")
+    #print()
+    #print(f"Sorted array in Ascending order {canadian_standard_unsorted}")
     for sublist in canadian_standard_unsorted:
         del sublist[0]
-    print(canadian_standard_unsorted)
+    #print(canadian_standard_unsorted)
     return canadian_standard_unsorted
 
 #######################################
@@ -171,7 +171,7 @@ def apply_lut(image, category_values, lut_values, mask):
 
     return colored_image
 
-def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, reference_path, color_model):
+def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, reference_path, model):
     """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -189,37 +189,28 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     # Save results
     base_output_dir = os.path.join(output_dir, image_id)
     os.makedirs(base_output_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut_STANDARDIZED.png"), canadian_lut_image_standard)
+    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image_standard)
     #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
-    """image_paths = sorted([os.path.join("confirmed_data/", img) for img in os.listdir("confirmed_data/")])
-print(image_paths)
-model = YOLO("color_grading_best.pt")
-
-for img in image_paths:
-    print(img)
     canadian_standard_unsorted = []
-    results = model.predict(img, save=True)
-    for result in results:
-        for box in result.boxes:
-            class_id = int(box.cls[0])
-            confidence = box.conf[0]
-            print(f"Class ID: {class_id}, Confidence: {confidence}")
-            image = cv2.imread(f"./{img}")
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            mode_rgb = get_mode_rgb(image, box)
-            id_rgb = [class_id, mode_rgb]
-            print(f"The mode rgb for {class_to_std[class_id]} is {mode_rgb}")
-            print(id_rgb)
-            canadian_standard_unsorted.append(id_rgb)
+    result = model.predict(image, save=False)[0]
+    save_path = f'{base_output_dir}/{image_id}_LdLeanColor_Detect.jpg'
+    result.save(save_path)
+        #print(f"{image_id}_LdLeanColor.JPG")
+    for box in result.boxes:
+        class_id = int(box.cls[0])
+        confidence = box.conf[0]
+        #print(f"Class ID: {class_id}, Confidence: {confidence}")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mode_rgb = get_mode_rgb(image, box)
+        id_rgb = [class_id, mode_rgb]
+        #print(f"The mode rgb for {class_to_std[class_id]} is {mode_rgb}")
+        #print(id_rgb)
+        canadian_standard_unsorted.append(id_rgb)
 
-    print(canadian_standard_unsorted)
-    print()
-    print()
+    #print(canadian_standard_unsorted)
     canadian_standard_sorted = insertion_sort(canadian_standard_unsorted)
     canadian_array = np.array([item[0] for item in canadian_standard_sorted], dtype=np.float32)
-    print()
-
-    print(f"Image = {canadian_array}")"""
+    print(f"{image_id}_LdLeanColor.JPG = {canadian_array}")
 
     return canadian_classified_standard, lean_mask
 

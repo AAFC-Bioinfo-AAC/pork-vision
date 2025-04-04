@@ -46,7 +46,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def process_image(model, image_path, args):
+def process_image(model, image_path, args, color_model):
     """Process an image: Run YOLO inference, extract measurements, and save annotated output."""
     try:
         print("\nProcessing:", image_path)
@@ -88,7 +88,7 @@ def process_image(model, image_path, args):
         
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
         canadian_classified_standard, lean_mask = colour_grading(
-            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, args.reference_path, args.color_model_path
+            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, args.reference_path, color_model
         )
 
         # Step 6: Measurement
@@ -160,10 +160,11 @@ def main():
     canadian_classified_standard_list, lean_mask_list = [], []
     max_workers = min(4, os.cpu_count() // 2)
     model = YOLO(args.model_path)
+    color_model = YOLO(args.color_model_path)
     os.makedirs(f'{args.segment_path}/predict', exist_ok=True)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(process_image, model, img_path, args): img_path for img_path in image_paths}
+        futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
             img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px = result
