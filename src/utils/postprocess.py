@@ -79,7 +79,7 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
 
     print(f"Annotated image saved: {output_file}\n")
 
-def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path, conversion_factor_list, area_px_list):
+def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path, conversion_factor_list, area_px_list, outlier_list):
     """
     Saves the measurement results to a CSV file.
 
@@ -106,16 +106,15 @@ def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth
     # Concatenate pixel and mm measurements
     df = pd.concat([df, df_mm], axis=1)
     df_conversion = pd.DataFrame({
-        "Conversion Factor (mm/px)": conversion_factor_list})
+        "Conversion Factor (mm/px)": conversion_factor_list,
+        "Area (px^2)": area_px_list,
+        "Outlier?": outlier_list
+        })
     df = pd.concat([df, df_conversion], axis=1)
-    df_areapx = pd.DataFrame({
-        "Area (px^2)": area_px_list
-    })
-    df = pd.concat([df,df_areapx], axis=1)
     # Save DataFrame to CSV
     df.to_csv(output_csv_path, index=False)
 
-    #print(f"Results saved to: {output_csv_path}")
+    print(f"Results saved to: {output_csv_path}")
 
 def print_table_of_measurements(results_csv_path):
     """

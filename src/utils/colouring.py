@@ -99,8 +99,14 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, mode
     result = model.predict(image, save=False)[0]
         #print(f"{image_id}_LdLeanColor.JPG")
     for box in result.boxes:
+        duplicate = False
         class_id = int(box.cls[0])
-        confidence = box.conf[0]
+        for items in canadian_standard_unsorted:
+            if items[0] == class_id:
+                duplicate = True
+        if duplicate == True:
+            continue
+        #confidence = box.conf[0]
         #print(f"Class ID: {class_id}, Confidence: {confidence}")
         detection_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         mode_rgb = get_mode_rgb(detection_image, box)
@@ -108,7 +114,8 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, mode
         #print(f"The mode rgb for {class_to_std[class_id]} is {mode_rgb}")
         #print(id_rgb)
         canadian_standard_unsorted.append(id_rgb)
-
+    if len(canadian_standard_unsorted) != 7:
+       return None, lean_mask, 'Y'
     #print(canadian_standard_unsorted)
     canadian_standard_sorted = insertion_sort(canadian_standard_unsorted)
     canadian_array = np.array([item[0] for item in canadian_standard_sorted], dtype=np.float32)
@@ -128,15 +135,23 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, mode
     save_path = f'{base_output_dir}/{image_id}_LdLeanColor_Detect.jpg'
     result.save(save_path)
 
-    return canadian_classified, lean_mask
+    return canadian_classified, lean_mask, None
 
-def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path):
+def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path, colour_outlier_list):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""
     standards = [f"CdnStd{i}" for i in range(7)]
     all_data = []
     
-    for image_id, classified, mask in zip(id_list, canadian_classified_list, lean_mask_list):
-        if mask is None:
+    for image_id, classified, mask, outlier in zip(id_list, canadian_classified_list, lean_mask_list, colour_outlier_list):
+        if mask is None or outlier is not None:
+            all_data.append({
+                    "image_id": image_id,
+                    "standard": '?',
+                    "pixel_count": '?',
+                    "total_pixel_count": '?',
+                    "percentage": '?',
+                    "outlier?": outlier
+                })
             continue
         total_pixels = np.count_nonzero(mask)
         counts = dict(zip(*np.unique(classified[mask > 0], return_counts=True))) if total_pixels else {}
@@ -149,5 +164,5 @@ def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output
                 "total_pixel_count": total_pixels,
                 "percentage": round((count / total_pixels) * 100, 2) if total_pixels else 0.00
             })
-    
+
     pd.DataFrame(all_data).to_csv(output_csv_path, index=False)
