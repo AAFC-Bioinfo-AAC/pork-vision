@@ -1,18 +1,8 @@
 from utils.imports import *
 from scipy import stats
-from ultralytics import YOLO
 import numpy as np
 
 # RGB values for Canadian lean color standards made from 102,103,104,105,107,109,110 2024 images
-canadian_rgb_standard = np.array([
-    ((218+219+217+217+216+217+219)/7, (186+188+186+185+185+186+188)/7, (168+169+167+166+166+167+170)/7), # C0
-    ((211+212+210+210+210+211+213)/7, (173+174+172+172+172+173+175)/7, (160+160+159+159+157+160+164)/7), # C1
-    ((207+208+207+206+206+207+210)/7, (160+161+159+159+159+159+163)/7, (150+151+149+149+149+149+153)/7), # C2
-    ((198+198+196+197+197+197+201)/7, (141+142+139+140+140+140+145)/7, (135+136+133+135+134+135+139)/7), # C3
-    ((192+192+190+190+191+191+194)/7, (123+124+121+121+122+122+126)/7, (122+123+121+121+121+122+126)/7), # C4
-    ((184+183+182+182+184+184+185)/7, (103+103+101+101+103+103+106)/7, (109+109+107+108+108+108+111)/7), # C5
-    ((172+171+169+170+172+172+174)/7, (90+90+87+88+89+89+92)/7, (98+98+96+96+97+96+101)/7),   # C6
-], dtype=np.float32)
 
 class_to_std = {0: "Canadian_Std6",
                 1 : "Canadian_Std5",
@@ -178,30 +168,18 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     
     # Gets the lean mask (muscle area excluding marbling)
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
-    standard_img = execute_color_standardization(image, reference_path)
-    
-    # Performs vectorized color analysis for Canadian standards
-    canadian_classified_standard = classify_rgb_vectorized(standard_img, canadian_rgb_standard, lean_mask)
-    # Applies LUT for visualization with a black background  
-    canadian_lut_image_standard = apply_lut(canadian_classified_standard, list(range(7)), canadian_rgb_standard, lean_mask)  
+    #standard_img = execute_color_standardization(image, reference_path)
 
 
-    # Save results
-    base_output_dir = os.path.join(output_dir, image_id)
-    os.makedirs(base_output_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image_standard)
-    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
     canadian_standard_unsorted = []
     result = model.predict(image, save=False)[0]
-    save_path = f'{base_output_dir}/{image_id}_LdLeanColor_Detect.jpg'
-    result.save(save_path)
         #print(f"{image_id}_LdLeanColor.JPG")
     for box in result.boxes:
         class_id = int(box.cls[0])
         confidence = box.conf[0]
         #print(f"Class ID: {class_id}, Confidence: {confidence}")
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        mode_rgb = get_mode_rgb(image, box)
+        detection_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mode_rgb = get_mode_rgb(detection_image, box)
         id_rgb = [class_id, mode_rgb]
         #print(f"The mode rgb for {class_to_std[class_id]} is {mode_rgb}")
         #print(id_rgb)
@@ -211,8 +189,23 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, refe
     canadian_standard_sorted = insertion_sort(canadian_standard_unsorted)
     canadian_array = np.array([item[0] for item in canadian_standard_sorted], dtype=np.float32)
     print(f"{image_id}_LdLeanColor.JPG = {canadian_array}")
+    
 
-    return canadian_classified_standard, lean_mask
+    # Performs vectorized color analysis for Canadian standards
+    canadian_classified = classify_rgb_vectorized(image, canadian_array, lean_mask)
+    # Applies LUT for visualization with a black background  
+    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_array, lean_mask)  
+
+
+    # Save results
+    base_output_dir = os.path.join(output_dir, image_id)
+    os.makedirs(base_output_dir, exist_ok=True)
+    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
+    save_path = f'{base_output_dir}/{image_id}_LdLeanColor_Detect.jpg'
+    result.save(save_path)
+    #cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_STANDARDIZED.png"), standard_img) These images tend to use a lot of storage so keep them commented unless testing.
+
+    return canadian_classified, lean_mask
 
 def save_colouring_csv(id_list, canadian_classified_list, lean_mask_list, output_csv_path):
     """Save the color analysis results for multiple images to a CSV file, ensuring all standards are represented."""
