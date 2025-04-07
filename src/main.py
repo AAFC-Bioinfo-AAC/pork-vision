@@ -32,7 +32,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
     parser.add_argument("--model_path", type=str, default="src/models/new_seg_model(last).pt")
     parser.add_argument("--color_model_path", type=str, default="src/models/color_detection(best).pt")
-    parser.add_argument("--image_path", type=str, default="data/raw_images/")
+    parser.add_argument("--image_path", type=str, default="data/")
     parser.add_argument("--segment_path", type=str, default="output/segment")
     parser.add_argument("--output_path", type=str, default="output/annotated_images")
     parser.add_argument("--results_csv", type=str, default="output/measurement_summary.csv")
@@ -41,7 +41,6 @@ def parse_args():
     parser.add_argument("--colouring_path", type=str, default="output/colouring")
     parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
     parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
-    parser.add_argument("--reference_path", type=str, default="data/reference_images/103_LdLeanColor.JPG")
     parser.add_argument("--marbling_path", type=str, default="output/marbling")
     return parser.parse_args()
 
@@ -56,7 +55,7 @@ def process_image(model, image_path, args, color_model):
         
         # Step 1: YOLO Inference
         
-        results = model(image_path, save=False, retina_masks=True)[0]  # This disables automatic saving into subfolders
+        results = model(image_path, save=False, retina_masks=False)[0]  # This disables automatic saving into subfolders
         # Save the result manually to the 'predict' folder
         save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
         results.save(save_path)  # Save the annotated image to the specified path
@@ -88,7 +87,7 @@ def process_image(model, image_path, args, color_model):
         
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
         canadian_classified_standard, lean_mask = colour_grading(
-            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, args.reference_path, color_model
+            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, color_model
         )
 
         # Step 6: Measurement
