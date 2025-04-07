@@ -8,7 +8,7 @@ def extract_muscle_region(rotated_image, muscle_mask):
     Extracts the muscle portion of the image using the provided mask.
     """
     shrink_kernel = np.ones((2, 2), np.uint8)
-    eroded_mask = cv2.erode(muscle_mask, shrink_kernel, iterations=35)
+    eroded_mask = cv2.erode(muscle_mask, shrink_kernel, iterations=40)
     muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=eroded_mask)
     return muscle_region, eroded_mask
 
