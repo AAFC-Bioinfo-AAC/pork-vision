@@ -11,7 +11,7 @@ c)	The fat depth: the portion of the vertical line segment defined in (b) that e
 We use an object detection model in order to automate this. All images used are similar to the one shown below, with the carcass contained in a white tray, as well as 3 color palettes (on the left, above, and below the carcass), there is a ruler that is consistently besides the pork loin carcass.
 
 <p align="center">
-    <img src="./data/reference_images/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
+    <img src="./data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
 We wish to automate this tedious process while retaining acceptable accuracy.
