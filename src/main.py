@@ -30,7 +30,7 @@ from utils.postprocess import (
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
-    parser.add_argument("--model_path", type=str, default="src/models/last.pt")
+    parser.add_argument("--model_path", type=str, default="src/models/new_seg_model(last).pt")
     parser.add_argument("--color_model_path", type=str, default="src/models/color_detection(best).pt")
     parser.add_argument("--image_path", type=str, default="data/raw_images/")
     parser.add_argument("--segment_path", type=str, default="output/segment")
@@ -56,7 +56,7 @@ def process_image(model, image_path, args, color_model):
         
         # Step 1: YOLO Inference
         
-        results = model(image_path, save=False)[0]  # This disables automatic saving into subfolders
+        results = model(image_path, save=False, retina_masks=True)[0]  # This disables automatic saving into subfolders
         # Save the result manually to the 'predict' folder
         save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
         results.save(save_path)  # Save the annotated image to the specified path
