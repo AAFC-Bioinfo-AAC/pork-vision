@@ -54,15 +54,6 @@ def background_subtraction(image, kernel_size=11):
     subtracted = contour_detection(subtracted)
     return subtracted
 
-def clean_specks(marbling_mask):
-    """
-    Removes noisy speckles of detected fat from the image
-    Ensures only significant areas remain.
-    """
-    kernel = np.ones((100, 100), np.uint8)    
-    marbling_mask = cv2.morphologyEx(marbling_mask, cv2.MORPH_OPEN, kernel, iterations=20)
-    return marbling_mask
-
 def dynamic_contrast_stretch(image):
     """
     Stretches the contrast of the input 8-bit grayscale image dynamically
@@ -115,14 +106,6 @@ def contour_detection(marbling_mask):
     contours, _ = cv2.findContours(marbling_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(marbling_mask, contours, -1, color=0, thickness=6)  # Fill the contour with black
     return marbling_mask
-
-def convert_fat_color(image):
-    """ Converts white pixels in the overlay to yellow for fat regions. """
-    lab_image = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    white_mask = (lab_image[:, :, 0] == 255) & (lab_image[:, :, 1] == 128) & (lab_image[:, :, 2] == 128)
-    lab_image[white_mask, 2] = lab_image[white_mask, 2] + 100
-    lab_image = np.clip(lab_image, 0, 255)
-    return cv2.cvtColor(lab_image.astype(np.uint8), cv2.COLOR_LAB2BGR)
 
 def smooth_marbling_mask(marbling_mask, kernel_size=(5, 5)):
     """
@@ -270,10 +253,6 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     # Calculate marbling percentage relative to the muscle area
     marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, eroded_mask)
     
-    # Create an overlay for visualization
-    #overlay = cv2.addWeighted(rotated_image, 1.0, cv2.cvtColor(refined_marbling_mask, cv2.COLOR_GRAY2BGR), 1.0, 0)
-    #overlay_yellow = convert_fat_color(overlay)
-    
     # Save images in a subfolder
     base_output_dir = os.path.join(output_dir, base_filename)
     os.makedirs(base_output_dir, exist_ok=True)
@@ -281,7 +260,6 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_borderless_mask.jpg"), eroded_mask)
     
-    #cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_overlay.jpg"), overlay_yellow) These images tend to be big so keep them commented unless testing
     # print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
 
     return refined_marbling_mask, eroded_mask, marbling_percentage, area_px
