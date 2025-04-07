@@ -48,6 +48,8 @@ def parse_args():
 def process_image(model, image_path, args, color_model):
     """Process an image: Run YOLO inference, extract measurements, and save annotated output."""
     try:
+        outlier = None
+        color_outlier = None
         print("\nProcessing:", image_path)
 
         # Each process gets its own YOLO model instance (avoids multi-threading issues)
@@ -55,7 +57,7 @@ def process_image(model, image_path, args, color_model):
         
         # Step 1: YOLO Inference
         
-        results = model(image_path, save=False, retina_masks=False)[0]  # This disables automatic saving into subfolders
+        results = model(image_path, save=False, retina_masks=True)[0]  # This disables automatic saving into subfolders
         # Save the result manually to the 'predict' folder
         save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
         results.save(save_path)  # Save the annotated image to the specified path
@@ -64,7 +66,8 @@ def process_image(model, image_path, args, color_model):
         # Step 2: Preprocessing
         muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
         if muscle_bbox is None or fat_bbox is None:
-            return extract_image_id(image_path), None, None, None, None, None, None, None, None
+            outlier = "Y"
+            return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier
 
         muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
         fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
@@ -80,38 +83,43 @@ def process_image(model, image_path, args, color_model):
         image_id = extract_image_id(image_path)
         conversion_factor = measure_ruler(rotated_image, image_id)
         if conversion_factor == None:
+            outlier = "Y"
             conversion_factor = 10/140
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
 
         # Step 5: Perform color grading
         
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
-        canadian_classified_standard, lean_mask = colour_grading(
+        canadian_classified_standard, lean_mask, color_outlier = colour_grading(
             rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, color_model
         )
 
         # Step 6: Measurement
         angle = get_muscle_rotation_angle(rotated_muscle_mask)
         if angle is None:
-            return extract_image_id(image_path), None, None, None, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, None
+            outlier = "Y"
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
 
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
         if muscle_width_start is None or muscle_width_end is None:
-            return extract_image_id(image_path), None, None, None, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, None
+            outlier = "Y"
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
         muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
 
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
-            return extract_image_id(image_path), muscle_width, None, None, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, None
+            outlier = "Y"
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
 
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
         if muscle_depth_start is None or muscle_depth_end is None:
-            return extract_image_id(image_path), muscle_width, None, None, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, None
+            outlier = "Y"
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
 
         fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
         if fat_depth_start is None or fat_depth_end is None:
-            return extract_image_id(image_path), muscle_width, muscle_depth, None, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, None
+            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
         # Step 7: Save annotated image
@@ -133,19 +141,21 @@ def process_image(model, image_path, args, color_model):
 
         return (
             image_id,
-            muscle_width,
-            muscle_depth,
-            fat_depth,
+            int(round(muscle_width)),
+            int(round(muscle_depth)),
+            int(round(fat_depth)),
             marbling_percentage,
             canadian_classified_standard,
             lean_mask,
             conversion_factor,
-            area_px
+            area_px,
+            outlier,
+            color_outlier
         )
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
-        return extract_image_id(image_path), None, None, None, None, None, None, None, None
+        return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y"
 
 
 def main():
@@ -156,7 +166,8 @@ def main():
 
     # Step 2: Parallel Processing
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list, conversion_factor_list, area_px_list = [], [], [], [], [], [], []
-    canadian_classified_standard_list, lean_mask_list = [], []
+    canadian_classified_standard_list, lean_mask_list, outlier_list, colour_outlier_list = [], [], [], []
+
     max_workers = min(4, os.cpu_count() // 2)
     model = YOLO(args.model_path)
     color_model = YOLO(args.color_model_path)
@@ -166,7 +177,7 @@ def main():
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
@@ -176,17 +187,17 @@ def main():
             lean_mask_list.append(lean_mask)
             conversion_factor_list.append(conversion_factor)
             area_px_list.append(area_px)
+            outlier_list.append(outlier)
+            colour_outlier_list.append(colour_outlier)
 
 
             
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv, conversion_factor_list, area_px_list)
+    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv, conversion_factor_list, area_px_list, outlier_list)
     save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
     print_table_of_measurements(args.results_csv)
     print_table_of_measurements(args.marbling_csv)
-    
-    # OPTIONAL: Comment these out to improve performance
-    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.standard_color_csv)
+    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.standard_color_csv, colour_outlier_list)
     print_table_of_measurements(args.standard_color_csv)
 
 if __name__ == "__main__":
