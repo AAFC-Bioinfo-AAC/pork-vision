@@ -30,7 +30,7 @@ from utils.postprocess import (
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
-    parser.add_argument("--model_path", type=str, default="src/models/new_seg_model(last).pt")
+    parser.add_argument("--model_path", type=str, default="src/models/Yolo_MuscleFat_Segment_98epoch.pt")
     parser.add_argument("--color_model_path", type=str, default="src/models/color_detection(best).pt")
     parser.add_argument("--image_path", type=str, default="data/")
     parser.add_argument("--segment_path", type=str, default="output/segment")
