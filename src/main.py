@@ -33,15 +33,7 @@ def parse_args():
     parser.add_argument("--model_path", type=str, default="src/models/Yolo_MuscleFat_Segment_98epoch.pt")
     parser.add_argument("--color_model_path", type=str, default="src/models/color_detection(best).pt")
     parser.add_argument("--image_path", type=str, default="data/")
-    parser.add_argument("--segment_path", type=str, default="output/segment")
-    parser.add_argument("--output_path", type=str, default="output/annotated_images")
-    parser.add_argument("--results_csv", type=str, default="output/measurement_summary.csv")
-    parser.add_argument("--rois_path", type=str, default="output/rois")
-    parser.add_argument("--marbling_csv", type=str, default="output/marbling_summary.csv")
-    parser.add_argument("--colouring_path", type=str, default="output/colouring")
-    parser.add_argument("--colouring_csv", type=str, default="output/colour_summary.csv")
-    parser.add_argument("--standard_color_csv", type=str, default="output/colour_standardized_summary.csv")
-    parser.add_argument("--marbling_path", type=str, default="output/marbling")
+    parser.add_argument("--output_path", type=str, default="output/")
     return parser.parse_args()
 
 
@@ -59,7 +51,7 @@ def process_image(model, image_path, args, color_model):
         
         results = model(image_path, save=False, retina_masks=True)[0]  # This disables automatic saving into subfolders
         # Save the result manually to the 'predict' folder
-        save_path = f'{args.segment_path}/predict/{extract_image_id(image_path)}.jpg'
+        save_path = f'{args.output_path}/segment/{extract_image_id(image_path)}.jpg'
         results.save(save_path)  # Save the annotated image to the specified path
 
 
@@ -85,13 +77,14 @@ def process_image(model, image_path, args, color_model):
         if conversion_factor == None:
             outlier = "Y"
             conversion_factor = 10/140
-        marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.marbling_path, base_filename=image_id)
+        marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', base_filename=image_id)
 
         # Step 5: Perform color grading
         
         # NOTE results.orig_image is used in favor against rotated image to solve issues with Standardization.
+        print(image_id)
         canadian_classified_standard, lean_mask, color_outlier = colour_grading(
-            rotated_image, eroded_mask, marbling_mask, args.colouring_path, image_id, color_model
+            rotated_image, eroded_mask, marbling_mask, args.output_path+'/colouring', image_id, color_model
         )
 
         # Step 6: Measurement
@@ -125,7 +118,7 @@ def process_image(model, image_path, args, color_model):
         # Step 7: Save annotated image
         save_annotated_image(
             rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
-            (fat_depth_start, fat_depth_end), image_path, args.output_path
+            (fat_depth_start, fat_depth_end), image_path, args.output_path+'/annotated_images'
         )
 
         save_to_roi(
@@ -136,7 +129,7 @@ def process_image(model, image_path, args, color_model):
             fat_depth_start,
             fat_depth_end,
             image_id=extract_image_id(image_path),
-            rois_folder=args.rois_path
+            rois_folder=args.output_path+'/rois'
         )
 
         return (
@@ -171,7 +164,7 @@ def main():
     max_workers = min(4, os.cpu_count() // 2)
     model = YOLO(args.model_path)
     color_model = YOLO(args.color_model_path)
-    os.makedirs(f'{args.segment_path}/predict', exist_ok=True)
+    os.makedirs(f'{args.output_path}/predict', exist_ok=True)
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
@@ -193,12 +186,12 @@ def main():
 
             
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.results_csv, conversion_factor_list, area_px_list, outlier_list)
-    save_marbling_csv(id_list, marbling_percentage_list, args.marbling_csv)
-    print_table_of_measurements(args.results_csv)
-    print_table_of_measurements(args.marbling_csv)
-    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.standard_color_csv, colour_outlier_list)
-    print_table_of_measurements(args.standard_color_csv)
+    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list)
+    save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
+    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
+    print_table_of_measurements(args.output_path+'measurement.csv')
+    print_table_of_measurements(args.output_path+'marbling.csv')
+    print_table_of_measurements(args.output_path+'colouring.csv')
 
 if __name__ == "__main__":
     main()
