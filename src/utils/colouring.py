@@ -63,13 +63,7 @@ def classify_rgb_vectorized(image, standards, lean_mask):
     """Vectorized classification of RGB pixels using Euclidean distance."""
     # Convert the image to RGB (if it's in BGR)
     image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    standard_0 = standards[-1]
-    print(f"Canadian Standard 0 is: {standard_0}")
-    cutoff = standard_0 + 0.2
-    print(f"The cutoff is {cutoff}")
-    array = np.vstack([standards, cutoff])
-    print(f"The new array is {array}")
-    
+
     # Reshape the image to a (h*w, 3) matrix of RGB values
     h, w, _ = image.shape
     image_rgb_reshaped = image_rgb.reshape(-1, 3)
@@ -78,7 +72,7 @@ def classify_rgb_vectorized(image, standards, lean_mask):
     mask = lean_mask.reshape(-1) > 0
 
     # Compute the distances between each pixel and each standard
-    distances = np.linalg.norm(image_rgb_reshaped[mask][:, np.newaxis] - array, axis=2)
+    distances = np.linalg.norm(image_rgb_reshaped[mask][:, np.newaxis] - standards, axis=2)
 
     # Find the index of the closest standard for each pixel
     closest_indices = np.argmin(distances, axis=1)
@@ -87,7 +81,7 @@ def classify_rgb_vectorized(image, standards, lean_mask):
     classified_image = np.zeros((h, w), dtype=np.uint8)
     classified_image.reshape(-1)[mask] = closest_indices
 
-    return classified_image,array
+    return classified_image
 
 
 def apply_lut(image, category_values, lut_values, mask):
@@ -97,10 +91,6 @@ def apply_lut(image, category_values, lut_values, mask):
     lut_values = enumerate(lut_values)
     print(lut_values)
     for i, (r, g, b) in lut_values:
-        print(f"INDEX {i} : RGB {r, g, b}")
-        if i == 7:
-            lut[category_values[i]] = [0,0,0]
-            continue
         lut[category_values[i]] = [b, g, r]
 
     colored_image = cv2.LUT(cv2.merge([image] * 3), lut)
@@ -109,21 +99,15 @@ def apply_lut(image, category_values, lut_values, mask):
 
     return colored_image
 
-def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, model):
-    """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
+def create_coloring_standards(image, model, image_id, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    
-    # Gets the lean mask (muscle area excluding marbling)
-    lean_mask = cv2.subtract(muscle_mask, marbling_mask)
-
 
     canadian_standard_unsorted = []
     result = model.predict(image, save=False)[0]
     detection_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        #print(f"{image_id}_LdLeanColor.JPG")
     if result == None:
-        return None, lean_mask, 'Y'
+        return None, 'Y'
     for box in result.boxes:
         duplicate = False
         class_id = int(box.cls[0])
@@ -132,31 +116,40 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, mode
                 duplicate = True
         if duplicate == True:
             continue
-        #confidence = box.conf[0]
-        #print(f"Class ID: {class_id}, Confidence: {confidence}")
         mode_rgb = get_mode_rgb(detection_image, box)
         id_rgb = [class_id, mode_rgb]
-        #print(f"The mode rgb for {class_to_std[class_id]} is {mode_rgb}")
-        #print(id_rgb)
         canadian_standard_unsorted.append(id_rgb)
-    if len(canadian_standard_unsorted) != 7:
-       return None, lean_mask, 'Y'
-    #print(canadian_standard_unsorted)
+
     canadian_standard_sorted = insertion_sort(canadian_standard_unsorted)
     canadian_array = np.array([item[0] for item in canadian_standard_sorted], dtype=np.float32)
     print(f"{image_id}_LdLeanColor.JPG = {canadian_array}")
+    base_output_dir = os.path.join(output_dir, image_id)
+    os.makedirs(base_output_dir, exist_ok=True)
+    save_path = f'{base_output_dir}/{image_id}_Color_Detect.jpg'
+    result.save(save_path)
+    return canadian_array
+
+def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, canadian_array):
+    """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # Gets the lean mask (muscle area excluding marbling)
+    lean_mask = cv2.subtract(muscle_mask, marbling_mask)
+
+    
     
     # Performs vectorized color analysis for Canadian standards
-    canadian_classified,canadian_array = classify_rgb_vectorized(image, canadian_array, lean_mask)
+    canadian_classified = classify_rgb_vectorized(image, canadian_array, lean_mask)
+    if len(canadian_array) != 7:
+        return canadian_classified, lean_mask, 'Y'
     # Applies LUT for visualization with a black background  
-    canadian_lut_image = apply_lut(canadian_classified, list(range(8)), canadian_array, lean_mask)  
+    canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_array, lean_mask)  
 
     # Save results
     base_output_dir = os.path.join(output_dir, image_id)
     os.makedirs(base_output_dir, exist_ok=True)
     cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
-    save_path = f'{base_output_dir}/{image_id}_Color_Detect.jpg'
-    result.save(save_path)
 
     return canadian_classified, lean_mask, None
 
