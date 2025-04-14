@@ -106,10 +106,15 @@ def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
     return find_largest_contour(adjacent_fat, min_area=min_area)
 
 def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=0, rotation=cv2.ROTATE_90_CLOCKWISE):
+    '''
+    Corrects the initial orientation (if the image is upside down or sideways relative to the fat up).
+    Input: Original_image, muscle_mask, fat_mask.
+    Output: Rotated_image, muscle_mask, fat_mask
+    '''
     height, width, _ = original_image.shape
     if depth>=4:
         return original_image,muscle_mask,fat_mask
-    if width<height:
+    if width<height: # If the image is vertical.
         print(f"Height before rotation = {height}, width before rotation = {width}")
         rotated_image = cv2.rotate(original_image, rotation)
         rotated_muscle_mask = cv2.rotate(muscle_mask, rotation)
@@ -130,7 +135,7 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=
     # Get the x values where y = muscley_value
     musclex_values = muscle_pixels[1][muscle_pixels[0] == muscley_value]
 
-    # If multiple x values exist at this y, choosing the first one:
+    # If multiple x values exist at this y, choose the first one:
     musclex_value = musclex_values[0]
 
     # Get the y values where x = musclex_value in fat mask
@@ -138,11 +143,12 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=
 
     # Get the maximum y value at this x position in the fat mask
     faty_value = np.max(faty_values_at_musclex)
+    #If the fat is below the muscle rotate to fix.
     if faty_value > muscley_value:
         depth += 1
-        print(f"Bottom Fat detected at {faty_value} while the bottom muscle is {muscley_value}, so fat is below muscle.")
+        #print(f"Bottom Fat detected at {faty_value} while the bottom muscle is {muscley_value}, so fat is below muscle.")
         rotated_image, rotated_muscle_mask, rotated_fat_mask = initial_orientation_correction(original_image, muscle_mask, fat_mask, depth, rotation=cv2.ROTATE_90_COUNTERCLOCKWISE)
-    print(f"Fat detected at {faty_value} while muscle is at {muscley_value} so Fat above muscle")
+    #print(f"Fat detected at {faty_value} while muscle is at {muscley_value} so Fat above muscle")
     return rotated_image, rotated_muscle_mask, rotated_fat_mask
     
 
@@ -198,7 +204,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     faty_value = np.max(faty_values_at_musclex)
 
     if faty_value>muscley_value:
-        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) #Changed to 45 to test
+        adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=45, min_area=500) # Greater dilation size to force correction.
     else:
         adjacent_fat_box = None
         #adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
