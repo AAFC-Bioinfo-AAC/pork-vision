@@ -128,6 +128,11 @@ def process_image(model, image_path, args, color_model):
             rois_folder=args.output_path+'/rois'
         )
 
+        if outlier == "Y" or color_outlier == "Y":
+            os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
+            cv2.imwrite(f"{args.output_path}/outlier/{image_id}.jpg", image_outlier)
+            cv2.imwrite(f"{image_id}.jpg", image_outlier)
+
         return (
             image_id,
             int(round(muscle_width)),
@@ -141,9 +146,13 @@ def process_image(model, image_path, args, color_model):
             outlier,
             color_outlier
         )
+            
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
+        os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
+        image_outlier = cv2.imread(image_path)
+        cv2.imwrite(f"{args.output_path}/outlier/{image_id}.jpg", image_outlier)
         return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y"
 
 
