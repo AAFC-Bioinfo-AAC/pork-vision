@@ -8,6 +8,10 @@ from utils.imports import *
 def extract_muscle_region(rotated_image, muscle_mask):
     """
     Extracts the muscle portion of the image using the provided mask.
+    Creates a kernel and fits the perimeter of the muscle mask onto it.
+    Finds the light areas in the perimeter (likely fat going into the mask).
+    Removes the perimeter fat and blood.
+    Returns a muscle mask with the interfering regions removed.
     """
     kernel = np.ones((1,1), np.uint8)
     perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
@@ -34,16 +38,20 @@ def extract_muscle_region(rotated_image, muscle_mask):
     return muscle_region, muscle_mask, selective_mask
 
 def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
-
+  '''
+  Using the Canadian standards color chart, we remove any areas that were mistakenly
+  left over (more likely fat than muscle).
+  Returns filtered muscle region.
+  '''
 
   std_0 = canadian_standards[-1]
   std_0 -= 10
   print(std_0)
-  kernel = np.ones((31,31), np.uint8)
+  kernel = np.ones((1,1), np.uint8)
   perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
   perimeter_inv = cv2.bitwise_not(perimeter)
   muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2RGB)
-  lower_white = np.array(std_0, dtype=np.uint8) # +5 -- -8
+  lower_white = np.array(std_0, dtype=np.uint8)
   upper_white = np.array([255,255,255], dtype=np.uint8)
   white_mask = cv2.inRange(muscle_region, lower_white, upper_white).astype(np.uint8)
   target_areas = cv2.bitwise_and(perimeter_inv,white_mask)
@@ -51,7 +59,10 @@ def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
   return muscle_region
 
 def clahe_contrast_enhancement(image, clip_limit=2.0, tile_grid_size=(8, 8)):
-    # If image is single-channel (grayscale), apply CLAHE directly
+    '''
+    Apply CLAHE in order to better increase the accuracy of results. 
+    '''
+    # Image is single-channel (grayscale), apply CLAHE directly
     if len(image.shape) == 2:  # Grayscale image
         clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
         enhanced_image = clahe.apply(image)
@@ -83,8 +94,8 @@ def background_subtraction(image, kernel_size=11):
       subtracted: The background-subtracted image.
     """
     if len(image.shape) == 3:
-        enhanced = clahe_contrast_enhancement(image)
-        gray = cv2.cvtColor(enhanced, cv2.COLOR_BGR2GRAY)
+        enhanced_image = clahe_contrast_enhancement(image)
+        gray = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2GRAY)
     else:
         gray = image.copy()
     bg = cv2.GaussianBlur(gray, (kernel_size, kernel_size), 0)

@@ -6,6 +6,13 @@ import argparse
 
 
 def parse_args():
+    '''
+    Standard argument parser
+    model_path: Path to the fat segmentation model
+    color_model_path: Path to the Canadian Standard detection model
+    image_path: Path to the image folder (data)
+    output_path: Path to output.
+    '''
     parser = argparse.ArgumentParser(description="Run PorkVision Inference and Analysis")
     parser.add_argument("--model_path", type=str, default="src/models/Yolo_MuscleFat_Segment_98epoch.pt")
     parser.add_argument("--color_model_path", type=str, default="src/models/color_100_last.pt")
