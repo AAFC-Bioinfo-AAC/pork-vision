@@ -392,16 +392,23 @@ def extend_vertical_line_to_fat(fat_mask, muscle_depth_line, step=1.0, max_iter=
     return fat_start, fat_end
 
 def measure_ruler(image, image_id):
+    '''
+    (Experimental) Attempts to find the ruler in an image and then calculates the length in pixels.
+    Ideally measures 15.5cm (the measurement of the ruler).
+    Finds the centimeter to pixel conversion factor.
+    If the Length measured is below/over a certain threshold utilizes hardcoded measurements.
+    '''
     try:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 50, 175)
+        edges = cv2.Canny(blurred, 50, 175) #Finds the edges/lines in the image.
         minlength=1500
         maxlength=2400
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=minlength, maxLineGap=15)
+        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=minlength, maxLineGap=15) #Finds straight lines using the Canny detected lines.
         pixel_count = 0
         drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
         if lines is not None:
+            #Finds the biggest straight line detected.
             for line in lines:
                 x1, y1, x2, y2 = line[0]
                 length = math.sqrt((x2-x1)**2+(y2-y1)**2)
@@ -411,23 +418,27 @@ def measure_ruler(image, image_id):
                     pixel_count = length
                     drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
 
-        if pixel_count < 2000:
+        line_gap = 21
+        #Repeats the above if the likelihood of non-15.5 cm line is high.
+        while pixel_count < 2100 and line_gap < 40:
             edges = cv2.Canny(blurred, 50, 100)
-            lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=pixel_count, maxLineGap=20)
+            lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=pixel_count, maxLineGap=line_gap)
             if lines is not None:
                 for line in lines:
                     x1, y1, x2, y2 = line[0]
                     length = math.sqrt((x2-x1)**2+(y2-y1)**2)
-                    if length>maxlength:
+                    if length>maxlength or length<pixel_count:
                         continue
                     if length > pixel_count:
                         pixel_count = length
                         drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+            line_gap += 1
 
         if drawn_y1<drawn_y2:
             delta_y = drawn_y1 - drawn_y2
         else:
             delta_y = drawn_y2 - drawn_y1
+        #Corrects for any potential angling of the ruler/line.
         delta_x = drawn_x2 - drawn_x1
         angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
         if angle < -45:
@@ -443,21 +454,10 @@ def measure_ruler(image, image_id):
         rotated_x1, rotated_y1 = rotated_points[0]
         rotated_x2, rotated_y2 = rotated_points[1]
         #cv2.line(image, (int(drawn_x1), int(drawn_y1)), (int(drawn_x2), int(drawn_y2)), (0, 0, 255), 2)
-        # Save the images
         pixel_count = abs(int(rotated_y1)-int(rotated_y2))
 
-        if abs(int(rotated_y1)-int(rotated_y2)):
-            if pixel_count>1750 and pixel_count<=1825:
-                mm_per_px = pixel_count/130
-            elif pixel_count > 1825 and pixel_count<=1900:
-                mm_per_px = pixel_count/135  
-            elif pixel_count > 1900 and pixel_count<=1975:
-                mm_per_px = pixel_count/140  
-            elif pixel_count > 1975 and pixel_count<=2050:
-                mm_per_px = pixel_count/145  
-            elif pixel_count > 2050 and pixel_count<=2125:
-                mm_per_px = pixel_count/150    
-            elif pixel_count > 2125 and pixel_count<=2200:
+        if abs(int(rotated_y1)-int(rotated_y2)): 
+            if pixel_count > 2125 and pixel_count<=2200:
                 mm_per_px = pixel_count/155
             else:    
                 mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
@@ -470,6 +470,7 @@ def measure_ruler(image, image_id):
             if pixel_count > 2300 or pixel_count < 2000:
                 os.makedirs('lines', exist_ok=True)
                 cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
+                return None
             print(image_id)
             print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
             print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
