@@ -50,7 +50,7 @@ def process_image(model, image_path, args, color_model):
         if muscle_bbox is None or fat_bbox is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Did not detect a muscle/fat bounding box.")
-            return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier
+            return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier, image_path
 
         muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
         fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
@@ -71,6 +71,7 @@ def process_image(model, image_path, args, color_model):
         canadian_standards = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring')
         # Step 7: Find Marbling
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, base_filename=image_id)
+        cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask", rotated_fat_mask)
 
         # Step 8: Perform color grading
         canadian_classified_standard, lean_mask, color_outlier = colour_grading(
@@ -82,33 +83,33 @@ def process_image(model, image_path, args, color_model):
         if angle is None:
             outlier = "Y"
             print(f"ERROR {image_id}: ANGLE is None")
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier, image_path
 
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
         if muscle_width_start is None or muscle_width_end is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Muscle width is None")
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier, image_path
         muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
 
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Midline position is None")
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier, image_path
 
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
         if muscle_depth_start is None or muscle_depth_end is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Muscle Depth is None")
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier, image_path
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
 
         fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
         if fat_depth_start is None or fat_depth_end is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Fat depth is None")
-            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier
+            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, 0, outlier, color_outlier, image_path
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
 
         # Step 7: Save annotated image
@@ -128,11 +129,6 @@ def process_image(model, image_path, args, color_model):
             rois_folder=args.output_path+'/rois'
         )
 
-        if outlier == "Y" or color_outlier == "Y":
-            os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
-            cv2.imwrite(f"{args.output_path}/outlier/{image_id}.jpg", image_outlier)
-            cv2.imwrite(f"{image_id}.jpg", image_outlier)
-
         return (
             image_id,
             int(round(muscle_width)),
@@ -144,16 +140,14 @@ def process_image(model, image_path, args, color_model):
             conversion_factor,
             area_px,
             outlier,
-            color_outlier
+            color_outlier,
+            image_path
         )
             
 
     except Exception as e:
         print(f"Error processing {image_path}: {e}")
-        os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
-        image_outlier = cv2.imread(image_path)
-        cv2.imwrite(f"{args.output_path}/outlier/{image_id}.jpg", image_outlier)
-        return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y"
+        return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y", image_path
 
 
 def main():
@@ -175,7 +169,7 @@ def main():
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier, image_path = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
@@ -187,6 +181,10 @@ def main():
             area_px_list.append(area_px)
             outlier_list.append(outlier)
             colour_outlier_list.append(colour_outlier)
+            if outlier == "Y" or colour_outlier == "Y":
+                os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
+                image_outlier = cv2.imread(f"{image_path}")
+                cv2.imwrite(f"{args.output_path}/outlier/{img_id}.jpg", image_outlier)
 
 
             
