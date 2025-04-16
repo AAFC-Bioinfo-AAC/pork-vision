@@ -13,7 +13,7 @@ def extract_muscle_region(rotated_image, muscle_mask):
     Removes the perimeter fat and blood.
     Returns a muscle mask with the interfering regions removed.
     """
-    kernel = np.ones((1,1), np.uint8)
+    kernel = np.ones((15,15), np.uint8)
     perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
     gray = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
     _, light_areas = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
@@ -47,7 +47,7 @@ def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
   std_0 = canadian_standards[-1]
   std_0 -= 10
   print(std_0)
-  kernel = np.ones((1,1), np.uint8)
+  kernel = np.ones((15,15), np.uint8)
   perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
   perimeter_inv = cv2.bitwise_not(perimeter)
   muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2RGB)
@@ -308,7 +308,6 @@ def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards,
     # Save images in a subfolder
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
     cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_selective_mask.jpg"), selective_mask)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_filtered_muscle_region.jpg"), muscle_region)
 
     return refined_marbling_mask, selective_mask, marbling_percentage, area_px,
 
