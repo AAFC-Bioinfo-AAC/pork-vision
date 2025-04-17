@@ -59,6 +59,13 @@ Using the binary muscle mask from our model, we:
 - Threshhold further in order to capture the marbling regions within the mask.
 - Compare mask px to marbling px in order to determine marbling percentage.
 
+### **4. Image Analysis - Color Grading**
+We use a YOLOv11 model to detect the Canadian Color Standard and:
+- Capture the lean muscle utilizing the muscle mask.
+- Find the euclidean distances between a pixel and it's closest colour standard.
+- Use this data to convert the colors of the lean muscle into their closest standard.
+- Calculate the percentage of each standard in the muscle region.
+
 ### **5. Image Analysis – Muscle Measurement**  
 Using geometric analysis of the muscle mask, we compute:  
 - **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
