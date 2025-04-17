@@ -50,23 +50,30 @@ The steps this code performs can be split into smaller processes.
 ### **2. Orientation**  
 Some images may be captured in different orientations (fat on the left, right, or bottom). To standardize inputs:  
 - The fat and muscle masks are analyzed to determine their relative positions.  
-- The image is rotated until the fat is positioned **on top** of the muscle.    
+- The image is rotated until the fat is positioned **on top** of the muscle.
 
-### **3. Image Analysis - Marbling Measurement**
+### **3. Image Analysis - Conversion Factor Calculation**
+Using OpenCV's Canny and HoughLinesP, we
+- Search for any straight lines in the image focusing on lines larger than 2000px (near the size of a ruler).
+- Using an estimation of 2137px for a 15.5cm ruler; we calculate the approximate cm value of the line and we get our conversion factor (mm/px).
+- Find the total area of the muscle in px^2, and we convert into mm^2.
+- Use the value of 10mm/140px if we are having difficulty finding a proper line.
+
+### **4. Image Analysis - Marbling Measurement**
 Using the binary muscle mask from our model, we:
 - Cut out potential fat that may exist in the perimeter of our image/mask region.
 - Preprocess the image to subtract the background, apply dynamic contrast stretch, and apply a LUT.
 - Threshhold further in order to capture the marbling regions within the mask.
 - Compare mask px to marbling px in order to determine marbling percentage.
 
-### **4. Image Analysis - Color Grading**
+### **5. Image Analysis - Color Grading**
 We use a YOLOv11 model to detect the Canadian Color Standard and:
 - Capture the lean muscle utilizing the muscle mask.
 - Find the euclidean distances between a pixel and it's closest colour standard.
 - Use this data to convert the colors of the lean muscle into their closest standard.
 - Calculate the percentage of each standard in the muscle region.
 
-### **5. Image Analysis – Muscle Measurement**  
+### **6. Image Analysis – Muscle Measurement**  
 Using geometric analysis of the muscle mask, we compute:  
 - **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
 - **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
@@ -74,7 +81,7 @@ Using geometric analysis of the muscle mask, we compute:
 - The **fat depth** is computed as the **distance between the topmost and bottommost points of the fat mask** at the selected x-coordinate.  
 
 
-### **6. Post-Processing & Output**  
+### **7. Post-Processing & Output**  
 - Measurements are saved to a CSV file (`output/results.csv`).    
 - Annotated images with width, depth, and fat measurements drawn as overlay lines are saved to `output/annotated_images/`.
 - .roi files are saved to `output/rois/` incase a technician would like to manually verify measurements.    
@@ -91,18 +98,16 @@ Using geometric analysis of the muscle mask, we compute:
             G-->H(Measure Muscle Width and Depth and Fat Depth)
             H-->I(Draw Lines on Images Using Measurements)
             I-->J{Output: Processed Images and CSV}
-
-
 ```
 
 ---
 
 ## DATA
 
-The dataset that was used was obtained from a 2019 study of 209 pork loin carcasses. These were used to train the neural network that is used within this project; only 4 out of the 209 images are made available within this project itself, and all are in a JPG format with a resolution of 5184x3456p. The images can be found under the raw_images directory and are named similarly. 
+The dataset that was used was obtained from studies of pork loin carcasses throughout the years. These were used to train the neural network that is used within this project. All are in a JPG format with a resolution of 5184x3456p or 3456px5184p. The images should be stored under the data directory and are named similarly. 
 
 **Example:**
-- **724_LDLeanColour.JPG**
+- **103_LdLeanColor.JPG**
 
 ---
 
@@ -111,18 +116,10 @@ The dataset that was used was obtained from a 2019 study of 209 pork loin carcas
 ## **General Parameters**
 | **Parameter**         | **Description**                                      | **Default Value**                  |
 |-----------------------|------------------------------------------------------|------------------------------------|
-| `--image_path`        | Path to input image(s) for processing.               | `"data/raw_images/"`               |
-| `--output_path`       | Directory where annotated images are saved.          | `"output/annotated_images/"`       |
-| `--results_csv`       | CSV file where measurement results are stored.       | `"output/results.csv"`             |
-| `--model_path`        | Path to the trained YOLO segmentation model.         | `"src/models/last.pt"`             |
-| `--segment_path`      | Directory where segmentation masks are saved.        | `"output/segment/"`                |
-| `--rois_path`         | Directory where .roi files are saved.                | `"output/rois/"`                   |
-| `--marbling_csv`      | CSV file where the marbling results are stored.      | `"output/marbling_percentage.csv"` |
-| `--colouring_path`    | Directory where the colouring LUTS are stored.       | `"output/colouring"`               |
-| `--colouring_csv`     | CSV file containing colouring results.               | `"output/colour_summary.csv"`      |
-| `--standard_color_csv`| CSV file containing colouring standardized results.  | `"output/colour_standardized_summary.csv"`|
-| `--reference_path`    | Directory where the reference image is stored        | `"output/reference_images/2705_LdLeanColor.JPG"`|
-| `--marbling_path`     | Directory where the marbling images are stored       | `"output/marbling"`               |
+| `--image_path`        | Path to input image(s) for processing.               | `"data/"`               |
+| `--output_path`       | Directory where results are saved.          | `"output/"`       |
+| `--model_path`        | Path to the trained YOLOv11 segmentation model.         | `"src/models/last.pt"`             |
+| `--color_model_path` | Path to the trained YOLOv11 detection model. | `"src/models/color_100_last.pt"` |
 
 
 
