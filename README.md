@@ -52,8 +52,14 @@ Some images may be captured in different orientations (fat on the left, right, o
 - The fat and muscle masks are analyzed to determine their relative positions.  
 - The image is rotated until the fat is positioned **on top** of the muscle.    
 
+### **3. Image Analysis - Marbling Measurement**
+Using the binary muscle mask from our model, we:
+- Cut out potential fat that may exist in the perimeter of our image/mask region.
+- Preprocess the image to subtract the background, apply dynamic contrast stretch, and apply a LUT.
+- Threshhold further in order to capture the marbling regions within the mask.
+- Compare mask px to marbling px in order to determine marbling percentage.
 
-### **3. Image Analysis – Muscle Measurement**  
+### **5. Image Analysis – Muscle Measurement**  
 Using geometric analysis of the muscle mask, we compute:  
 - **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
 - **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
@@ -61,7 +67,7 @@ Using geometric analysis of the muscle mask, we compute:
 - The **fat depth** is computed as the **distance between the topmost and bottommost points of the fat mask** at the selected x-coordinate.  
 
 
-### **4. Post-Processing & Output**  
+### **6. Post-Processing & Output**  
 - Measurements are saved to a CSV file (`output/results.csv`).    
 - Annotated images with width, depth, and fat measurements drawn as overlay lines are saved to `output/annotated_images/`.
 - .roi files are saved to `output/rois/` incase a technician would like to manually verify measurements.    
