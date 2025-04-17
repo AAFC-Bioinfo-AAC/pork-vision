@@ -391,93 +391,110 @@ def extend_vertical_line_to_fat(fat_mask, muscle_depth_line, step=1.0, max_iter=
     fat_end = (int(round(last_fat_point[0])), int(round(last_fat_point[1])))
     return fat_start, fat_end
 
-def measure_ruler(image, image_id):
+def line_parse(lines, pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2, maxlength=2300, ):
+    if lines is not None:
+        #Finds the biggest straight line detected.
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            if abs(x2-x1) > abs(y2-y1): # If the line is horizontal.
+                continue
+            length = math.sqrt((x2-x1)**2+(y2-y1)**2)
+            if length>maxlength:
+                continue
+            if length > pixel_count or pixel_count>maxlength:
+                pixel_count = int(length)
+                drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+    return pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2
+
+def find_most_accurate_line(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    maxlength=2300 # Adjust this if there is a significant difference in images (taking image from further away)
+    pixel_count = 0
+    drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
+    offset_edge = 0
+    offset_linegap = 0
+    while pixel_count<=2300 and offset_edge <= 49:
+        if pixel_count > 2000 and pixel_count <= maxlength:
+            break
+        edges = cv2.Canny(gray, 50 - offset_edge, 175) #Finds the edges/lines in the image.
+        while pixel_count<=2300 and offset_linegap <= 85:
+            if pixel_count>2000 and pixel_count <= maxlength:
+                break
+            if offset_linegap == 0:
+                lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=1500, maxLineGap=15) #Finds straight lines using the Canny detected lines.
+            else:
+                lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=2000, maxLineGap=15+offset_linegap) #Finds straight lines using the Canny detected lines.
+            pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2 = line_parse(lines, pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2)
+            offset_linegap += 1
+        offset_edge +=1
+    return pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2
+
+def correct_rotation_pixel_count(image, drawn_x1, drawn_x2, drawn_y1, drawn_y2, pixel_count):
+    '''
+    (Experimental) Attempts to find the ruler in an image and then calculates the length in pixels.
+    Ideally measures 15.5cm (the measurement of the ruler).
+    Finds the centimeter to pixel conversion factor.
+    If the Length measured is below/over a certain threshold utilizes hardcoded measurements.
+    '''
+    delta_y = -(abs(drawn_y1-drawn_y2))
+    #Corrects for any potential angling of the ruler/line.
+    delta_x = drawn_x2 - drawn_x1
+    if abs(delta_x) <= 50: # If the x is near 0 then the ruler should be near straight.
+        cv2.line(image, (int(drawn_x1), int(drawn_y1)), (int(drawn_x2), int(drawn_y2)), (0, 0, 255), 2)
+        return image, pixel_count
+    angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
+    if angle < -45:
+        angle += 90
+    center = (image.shape[1] // 2, image.shape[0] // 2)
+
+    # Rotation matrix
+    rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
+    rotated_image = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
+
+    points = np.array([[drawn_x1, drawn_y1], [drawn_x2, drawn_y2]], dtype=np.float32)
+    rotated_points = cv2.transform(np.array([points]), rotation_matrix)[0]
+    rotated_x1, rotated_y1 = rotated_points[0]
+    rotated_x2, rotated_y2 = rotated_points[1]
+    cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
+    pixel_count = int(math.sqrt((rotated_x2-rotated_x1)**2+(rotated_y2-rotated_y1)**2))
+
+    #print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
+    #print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
+    return rotated_image, pixel_count
+
+
+def measure_ruler(image, image_id, outlier, minimal):
+    '''
+    (Experimental) Attempts to find the ruler in an image and then calculates the length in pixels.
+    Ideally measures 15.5cm (the measurement of the ruler).
+    Finds the centimeter to pixel conversion factor.
+    If the Length measured is below/over a certain threshold utilizes hardcoded measurements.
+    '''
     try:
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 50, 175)
-        minlength=1500
-        maxlength=2400
-        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=minlength, maxLineGap=15)
-        pixel_count = 0
-        drawn_x1 = drawn_y1 = drawn_x2 = drawn_y2 = 0  # initialize the coordinates of the line
-        if lines is not None:
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                length = math.sqrt((x2-x1)**2+(y2-y1)**2)
-                if length>maxlength:
-                    continue
-                if length > pixel_count:
-                    pixel_count = length
-                    drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
+        pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2 = find_most_accurate_line(image)
+        rotated_image, pixel_count = correct_rotation_pixel_count(image, drawn_x1,drawn_x2,drawn_y1,drawn_y2, pixel_count)
 
-        if pixel_count < 2000:
-            edges = cv2.Canny(blurred, 50, 100)
-            lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 100, minLineLength=pixel_count, maxLineGap=20)
-            if lines is not None:
-                for line in lines:
-                    x1, y1, x2, y2 = line[0]
-                    length = math.sqrt((x2-x1)**2+(y2-y1)**2)
-                    if length>maxlength:
-                        continue
-                    if length > pixel_count:
-                        pixel_count = length
-                        drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
-
-        if drawn_y1<drawn_y2:
-            delta_y = drawn_y1 - drawn_y2
-        else:
-            delta_y = drawn_y2 - drawn_y1
-        delta_x = drawn_x2 - drawn_x1
-        angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
-        if angle < -45:
-            angle += 90
-        center = (image.shape[1] // 2, image.shape[0] // 2)
-        
-        # Rotation matrix
-        rotation_matrix = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated_image = cv2.warpAffine(image, rotation_matrix, (image.shape[1], image.shape[0]))
-
-        points = np.array([[drawn_x1, drawn_y1], [drawn_x2, drawn_y2]], dtype=np.float32)
-        rotated_points = cv2.transform(np.array([points]), rotation_matrix)[0]
-        rotated_x1, rotated_y1 = rotated_points[0]
-        rotated_x2, rotated_y2 = rotated_points[1]
-        #cv2.line(image, (int(drawn_x1), int(drawn_y1)), (int(drawn_x2), int(drawn_y2)), (0, 0, 255), 2)
-        # Save the images
-        pixel_count = abs(int(rotated_y1)-int(rotated_y2))
-
-        if abs(int(rotated_y1)-int(rotated_y2)):
-            if pixel_count>1750 and pixel_count<=1825:
-                mm_per_px = pixel_count/130
-            elif pixel_count > 1825 and pixel_count<=1900:
-                mm_per_px = pixel_count/135  
-            elif pixel_count > 1900 and pixel_count<=1975:
-                mm_per_px = pixel_count/140  
-            elif pixel_count > 1975 and pixel_count<=2050:
-                mm_per_px = pixel_count/145  
-            elif pixel_count > 2050 and pixel_count<=2125:
-                mm_per_px = pixel_count/150    
-            elif pixel_count > 2125 and pixel_count<=2200:
-                mm_per_px = pixel_count/155
-            else:    
-                mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
-            mm_line = pixel_count/mm_per_px # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
-            if mm_line > 156:
-                    mm_per_px = mm_per_px * (pixel_count/2137)
-                    mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
-            conversion_factor = mm_line/pixel_count
-            cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
-            if pixel_count > 2300 or pixel_count < 2000:
-                os.makedirs('lines', exist_ok=True)
-                cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
-            print(image_id)
-            print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
-            print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
+        if pixel_count > 2125 and pixel_count<=2300:
+            mm_per_px = pixel_count/155
+        else:    
+            mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
+        mm_line = pixel_count/mm_per_px # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
+        if mm_line > 156:
+                mm_per_px = mm_per_px * (pixel_count/2137)
+                mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
+        conversion_factor = mm_line/pixel_count
+        if pixel_count > 2300 or pixel_count < 2000:
+            outlier = "Y"
+            os.makedirs('lines', exist_ok=True)
+            cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
+            return None, outlier
+        if minimal==False:
             os.makedirs('output/ruler_measurement', exist_ok=True)
             cv2.imwrite(f"output/ruler_measurement/{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
-            return conversion_factor
+        return conversion_factor, outlier
     except:
+        outlier = "Y"
         os.makedirs('nolines', exist_ok=True)
         cv2.imwrite(f"nolines/{image_id}_NOLINE.jpg", image)
         print("Error in ruler measurement using default conversion")
-        return None
+        return None, outlier

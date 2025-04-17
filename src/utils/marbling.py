@@ -1,19 +1,68 @@
 from utils.imports import *
 
+
+
 # =============================================================================
 # Helper Functions
 # =============================================================================
 def extract_muscle_region(rotated_image, muscle_mask):
     """
     Extracts the muscle portion of the image using the provided mask.
+    Creates a kernel and fits the perimeter of the muscle mask onto it.
+    Finds the light areas in the perimeter (likely fat going into the mask).
+    Removes the perimeter fat and blood.
+    Returns a muscle mask with the interfering regions removed.
     """
-    shrink_kernel = np.ones((2, 2), np.uint8)
-    eroded_mask = cv2.erode(muscle_mask, shrink_kernel, iterations=40)
-    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=eroded_mask)
-    return muscle_region, eroded_mask
+    kernel = np.ones((1,1), np.uint8)
+    perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
+    gray = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
+    _, light_areas = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
+
+    target_areas = cv2.bitwise_and(perimeter, light_areas)
+    
+    selective_mask = np.where(target_areas == 255, 0, muscle_mask)
+    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=selective_mask).astype(np.uint8)
+
+    upper_red = np.array([100,100, 255], dtype=np.uint8)
+    lower_red = np.array([0,0,50], dtype=np.uint8)
+    blood_mask = cv2.inRange(muscle_region, lower_red, upper_red)
+    perimeter = cv2.morphologyEx(selective_mask, cv2.MORPH_GRADIENT, kernel)
+
+    target_areas = cv2.bitwise_and(perimeter, blood_mask)
+    selective_mask = np.where(target_areas == 255, 0, selective_mask)
+    muscle_region = cv2.bitwise_and(rotated_image, rotated_image, mask=selective_mask).astype(np.uint8)
+
+
+
+
+    return muscle_region, selective_mask
+
+def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
+  '''
+  Using the Canadian standards color chart, we remove any areas that were mistakenly
+  left over (more likely fat than muscle).
+  Returns filtered muscle region.
+  '''
+
+  std_0 = canadian_standards[-1]
+  std_0 -= 10
+  print(std_0)
+  kernel = np.ones((1,1), np.uint8)
+  perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
+  perimeter_inv = cv2.bitwise_not(perimeter)
+  muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2RGB)
+  lower_white = np.array(std_0, dtype=np.uint8)
+  upper_white = np.array([255,255,255], dtype=np.uint8)
+  white_mask = cv2.inRange(muscle_region, lower_white, upper_white).astype(np.uint8)
+  target_areas = cv2.bitwise_and(perimeter_inv,white_mask)
+  muscle_region[target_areas == 255] = [0, 0, 0]
+  return muscle_region
 
 def clahe_contrast_enhancement(image, clip_limit=2.0, tile_grid_size=(8, 8)):
-    # If image is single-channel (grayscale), apply CLAHE directly
+    '''
+    Apply CLAHE in order to better increase the accuracy of results. 
+    '''
+    # Image is single-channel (grayscale), apply CLAHE directly
     if len(image.shape) == 2:  # Grayscale image
         clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=tile_grid_size)
         enhanced_image = clahe.apply(image)
@@ -45,8 +94,8 @@ def background_subtraction(image, kernel_size=11):
       subtracted: The background-subtracted image.
     """
     if len(image.shape) == 3:
-        enhanced = clahe_contrast_enhancement(image)
-        gray = cv2.cvtColor(enhanced, cv2.COLOR_BGR2GRAY)
+        enhanced_image = clahe_contrast_enhancement(image)
+        gray = cv2.cvtColor(enhanced_image, cv2.COLOR_BGR2GRAY)
     else:
         gray = image.copy()
     bg = cv2.GaussianBlur(gray, (kernel_size, kernel_size), 0)
@@ -208,7 +257,7 @@ def calculate_marbling_percentage(marbling_mask, muscle_mask):
 # =============================================================================
 # Full Marbling Processing Pipeline
 # =============================================================================
-def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None):
+def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards, minimal, base_filename=None):
     """
     Full pipeline to extract marbling from the rotated muscle image.
     This pipeline uses the pseudo‑colour image (from COLORMAP_JET) and extracts its blue channel,
@@ -225,12 +274,9 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
       refined_marbling_mask: Final refined marbling mask (a single‑channel image).
       marbling_percentage: Marbling area as a percentage of the muscle area.
     """
-    if base_filename is None:
-        base_filename = "marbling_result"
-    
     # Extract the muscle region
-    muscle_region, eroded_mask = extract_muscle_region(rotated_image, muscle_mask)
-    
+    muscle_region, selective_mask= extract_muscle_region(rotated_image, muscle_mask)
+
     # Obtain the pseudo‑colour image from enhanced preprocessing
     _, pseudo_color = perform_preprocessing(muscle_region, kernel_size=11, lut=cv2.COLORMAP_JET)
     
@@ -246,23 +292,25 @@ def process_marbling(rotated_image, muscle_mask, output_dir, base_filename=None)
     refined_marbling_mask = smooth_marbling_mask(thresh_blue, kernel_size=(7, 7))
     # Refine the marbling mask
     refined_marbling_mask, _ = particle_analysis(refined_marbling_mask, min_area=60)
-
-    # Smooth the marbling mask
-    #refined_marbling_mask = smooth_marbling_mask(refined_marbling_mask, kernel_size=(7, 7))
+    muscle_region = filter_muscle_region(muscle_region, selective_mask, canadian_standards)
+    gray_muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2GRAY)
+    condition_mask = (selective_mask == 255) & (gray_muscle_region == 0)
+    refined_marbling_mask[condition_mask] = 255
 
     # Calculate marbling percentage relative to the muscle area
-    marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, eroded_mask)
+    marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, selective_mask)
     
     # Save images in a subfolder
-    base_output_dir = os.path.join(output_dir, base_filename)
-    os.makedirs(base_output_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_muscle_region.jpg"), muscle_region)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_borderless_mask.jpg"), eroded_mask)
-    
-    # print(f"Processed marbling for {base_filename}: Marbling Percentage = {marbling_percentage:.2f}%")
+    if minimal == False:
+      if base_filename is None:
+        base_filename = "marbling_result"
+      base_output_dir = os.path.join(output_dir, base_filename)
+      os.makedirs(base_output_dir, exist_ok=True)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_selective_muscle_mask.jpg"), selective_mask)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_original_muscle_mask.jpg"), muscle_mask)
 
-    return refined_marbling_mask, eroded_mask, marbling_percentage, area_px
+    return refined_marbling_mask, selective_mask, marbling_percentage, area_px,
 
 # ==============================
 # Saving results
