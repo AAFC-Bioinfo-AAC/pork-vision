@@ -99,10 +99,7 @@ def apply_lut(image, category_values, lut_values, mask):
 
     return colored_image
 
-def create_coloring_standards(image, model, image_id, output_dir):
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
+def create_coloring_standards(image, model, image_id, output_dir, minimal):
     canadian_standard_unsorted = []
     result = model.predict(image, save=False)[0]
     detection_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -123,17 +120,16 @@ def create_coloring_standards(image, model, image_id, output_dir):
     canadian_standard_sorted = insertion_sort(canadian_standard_unsorted)
     canadian_array = np.array([item[0] for item in canadian_standard_sorted], dtype=np.float32)
     print(f"{image_id}_LdLeanColor.JPG = {canadian_array}")
-    base_output_dir = os.path.join(output_dir, image_id)
-    os.makedirs(base_output_dir, exist_ok=True)
-    save_path = f'{base_output_dir}/{image_id}_Color_Detect.jpg'
-    result.save(save_path)
+    if minimal == False:
+        os.makedirs(output_dir, exist_ok=True)
+        base_output_dir = os.path.join(output_dir, image_id)
+        os.makedirs(base_output_dir, exist_ok=True)
+        save_path = f'{base_output_dir}/{image_id}_Color_Detect.jpg'
+        result.save(save_path)
     return canadian_array
 
-def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, canadian_array):
+def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, canadian_array, minimal):
     """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-    
     # Gets the lean mask (muscle area excluding marbling)
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
 
@@ -147,9 +143,12 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, cana
     canadian_lut_image = apply_lut(canadian_classified, list(range(7)), canadian_array, lean_mask)  
 
     # Save results
-    base_output_dir = os.path.join(output_dir, image_id)
-    os.makedirs(base_output_dir, exist_ok=True)
-    cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
+    if minimal == False:
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+        base_output_dir = os.path.join(output_dir, image_id)
+        os.makedirs(base_output_dir, exist_ok=True)
+        cv2.imwrite(os.path.join(base_output_dir, f"{image_id}_canadian_lut.png"), canadian_lut_image)
 
     return canadian_classified, lean_mask, None
 

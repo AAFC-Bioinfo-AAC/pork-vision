@@ -34,7 +34,7 @@ def process_image(model, image_path, args, color_model):
         image_id = extract_image_id(image_path)
         if args.debug == True:
             debug_messages = []
-            print("\nProcessing:", image_id)
+        print("\nProcessing:", image_id)
         
         # Step 1: YOLO Inference
         
@@ -64,7 +64,7 @@ def process_image(model, image_path, args, color_model):
         conversion_factor, outlier = measure_ruler(rotated_image, image_id, outlier, args.minimal)
         if conversion_factor == None:
             print(f"ERROR {image_id}: Conversion Factor calculation, using default.")
-            conversion_factor = 10/140
+            conversion_factor = 10/140 #mm/px
         # Step 6: Create Canadian Standard chart using A.I model.
         canadian_standards = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', args.minimal)
         # Step 7: Find Marbling
@@ -98,7 +98,8 @@ def process_image(model, image_path, args, color_model):
             print(f"ERROR {image_id}: Midline position is None")
             return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
 
-        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle)
+
+        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle, conversion_factor/10)
         if muscle_depth_start is None or muscle_depth_end is None:
             outlier = "Y"
             print(f"ERROR {image_id}: Muscle Depth is None")

@@ -1,5 +1,6 @@
 from skimage.draw import polygon2mask
 from ultralytics.data.utils import polygon2mask
+from utils.imports import *
 
 def mask_selector(current_image, confidence_threshold=0.4):
     """
@@ -80,4 +81,16 @@ def convert_contours_to_image(contours, orig_shape):
         color=255,
         downsample_ratio=1,
     )
+    mask = clean_detection(mask)
     return mask
+
+def clean_detection(binary_mask):
+    kernel = np.ones((3, 3), np.uint8)  # You can adjust the kernel size as needed
+    eroded_image = cv2.erode(binary_mask, kernel, iterations=1)
+    contours, _ = cv2.findContours(eroded_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if len(contours)>1:
+        largest_contour = max(contours, key=cv2.contourArea)
+        mask = np.zeros_like(binary_mask)
+        cv2.drawContours(mask, [largest_contour], -1, 255, thickness=cv2.FILLED)
+        binary_mask[mask == 0] = 0
+    return binary_mask
