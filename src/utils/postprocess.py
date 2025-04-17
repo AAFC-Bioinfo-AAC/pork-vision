@@ -21,7 +21,7 @@ def extract_image_id(image_path):
 
     return filename_no_ext
 
-def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_path, output_path):
+def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_path, output_path, minimal):
     """
     Draws measurement lines on the image and saves it.
 
@@ -70,16 +70,17 @@ def save_annotated_image(image, muscle_width, muscle_depth, fat_depth, image_pat
         print("no fat depth")
 
     # Extract filename and define output path
-    os.makedirs(output_path, exist_ok=True)
-    filename = os.path.basename(image_path)
-    output_file = os.path.join(output_path, f"annotated_{filename}")
+    if minimal == False:
+        os.makedirs(output_path, exist_ok=True)
+        filename = os.path.basename(image_path)
+        output_file = os.path.join(output_path, f"annotated_{filename}")
 
-    # Save the annotated image
-    cv2.imwrite(output_file, annotated_image)
+        # Save the annotated image
+        cv2.imwrite(output_file, annotated_image)
 
-    print(f"Annotated image saved: {output_file}\n")
+        print(f"Annotated image saved: {output_file}\n")
 
-def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path, conversion_factor_list, area_px_list, outlier_list):
+def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, output_csv_path, conversion_factor_list, area_px_list, outlier_list,area_mm_list):
     """
     Saves the measurement results to a CSV file.
 
@@ -108,6 +109,7 @@ def save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth
     df_conversion = pd.DataFrame({
         "Conversion Factor (mm/px)": conversion_factor_list,
         "Area (px^2)": area_px_list,
+        "Area (mm^2)": area_mm_list,
         "Outlier?": outlier_list
         })
     df = pd.concat([df, df_conversion], axis=1)
