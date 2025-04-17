@@ -18,5 +18,6 @@ def parse_args():
     parser.add_argument("--color_model_path", type=str, default="src/models/color_100_last.pt")
     parser.add_argument("--image_path", type=str, default="data/")
     parser.add_argument("--output_path", type=str, default="output/")
-    parser.add_argument("--minimal", type=str, default=True)
+    parser.add_argument("--minimal", type=str, default=False)
+    parser.add_argument("--debug", type=str, default=True)
     return parser.parse_args()

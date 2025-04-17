@@ -13,7 +13,7 @@ def extract_muscle_region(rotated_image, muscle_mask):
     Removes the perimeter fat and blood.
     Returns a muscle mask with the interfering regions removed.
     """
-    kernel = np.ones((15,15), np.uint8)
+    kernel = np.ones((1,1), np.uint8)
     perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
     gray = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
     _, light_areas = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
@@ -35,7 +35,7 @@ def extract_muscle_region(rotated_image, muscle_mask):
 
 
 
-    return muscle_region, muscle_mask, selective_mask
+    return muscle_region, selective_mask
 
 def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
   '''
@@ -47,7 +47,7 @@ def filter_muscle_region(muscle_region, muscle_mask, canadian_standards):
   std_0 = canadian_standards[-1]
   std_0 -= 10
   print(std_0)
-  kernel = np.ones((15,15), np.uint8)
+  kernel = np.ones((1,1), np.uint8)
   perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
   perimeter_inv = cv2.bitwise_not(perimeter)
   muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2RGB)
@@ -257,7 +257,7 @@ def calculate_marbling_percentage(marbling_mask, muscle_mask):
 # =============================================================================
 # Full Marbling Processing Pipeline
 # =============================================================================
-def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards, base_filename=None):
+def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards, minimal, base_filename=None):
     """
     Full pipeline to extract marbling from the rotated muscle image.
     This pipeline uses the pseudo‑colour image (from COLORMAP_JET) and extracts its blue channel,
@@ -274,13 +274,8 @@ def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards,
       refined_marbling_mask: Final refined marbling mask (a single‑channel image).
       marbling_percentage: Marbling area as a percentage of the muscle area.
     """
-    if base_filename is None:
-        base_filename = "marbling_result"
-    base_output_dir = os.path.join(output_dir, base_filename)
-    os.makedirs(base_output_dir, exist_ok=True)
-
     # Extract the muscle region
-    muscle_region, muscle_mask, selective_mask= extract_muscle_region(rotated_image, muscle_mask)
+    muscle_region, selective_mask= extract_muscle_region(rotated_image, muscle_mask)
 
     # Obtain the pseudo‑colour image from enhanced preprocessing
     _, pseudo_color = perform_preprocessing(muscle_region, kernel_size=11, lut=cv2.COLORMAP_JET)
@@ -306,8 +301,14 @@ def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards,
     marbling_percentage, area_px = calculate_marbling_percentage(refined_marbling_mask, selective_mask)
     
     # Save images in a subfolder
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
-    cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_selective_mask.jpg"), selective_mask)
+    if minimal == False:
+      if base_filename is None:
+        base_filename = "marbling_result"
+      base_output_dir = os.path.join(output_dir, base_filename)
+      os.makedirs(base_output_dir, exist_ok=True)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_marbling_mask.jpg"), refined_marbling_mask)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_selective_muscle_mask.jpg"), selective_mask)
+      cv2.imwrite(os.path.join(base_output_dir, f"{base_filename}_original_muscle_mask.jpg"), muscle_mask)
 
     return refined_marbling_mask, selective_mask, marbling_percentage, area_px,
 

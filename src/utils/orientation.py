@@ -105,15 +105,13 @@ def isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=15, min_area=500):
     # 4. Find largest valid contour
     return find_largest_contour(adjacent_fat, min_area=min_area)
 
-def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=0, rotation=cv2.ROTATE_90_CLOCKWISE):
+def initial_orientation_correction(original_image, muscle_mask, fat_mask, rotation=cv2.ROTATE_90_CLOCKWISE):
     '''
     Corrects the initial orientation (if the image is upside down or sideways relative to the fat up).
     Input: Original_image, muscle_mask, fat_mask.
     Output: Rotated_image, muscle_mask, fat_mask
     '''
     height, width, _ = original_image.shape
-    if depth>=4:
-        return original_image,muscle_mask,fat_mask
     if width<height: # If the image is vertical.
         print(f"Height before rotation = {height}, width before rotation = {width}")
         rotated_image = cv2.rotate(original_image, rotation)
@@ -145,9 +143,13 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=
     faty_value = np.max(faty_values_at_musclex)
     #If the fat is below the muscle rotate to fix.
     if faty_value > muscley_value:
-        depth += 1
         #print(f"Bottom Fat detected at {faty_value} while the bottom muscle is {muscley_value}, so fat is below muscle.")
-        rotated_image, rotated_muscle_mask, rotated_fat_mask = initial_orientation_correction(original_image, muscle_mask, fat_mask, depth, rotation=cv2.ROTATE_90_COUNTERCLOCKWISE)
+        if width>height:
+            rotated_image = cv2.rotate(rotated_image, cv2.ROTATE_180)
+            rotated_muscle_mask = cv2.rotate(rotated_muscle_mask, cv2.ROTATE_180)
+            rotated_fat_mask = cv2.rotate(rotated_fat_mask, cv2.ROTATE_180)
+            return rotated_image,rotated_muscle_mask,rotated_fat_mask
+
     #print(f"Fat detected at {faty_value} while muscle is at {muscley_value} so Fat above muscle")
     return rotated_image, rotated_muscle_mask, rotated_fat_mask
     
@@ -155,7 +157,7 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, depth=
 
 
 
-def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask):
+def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask, outlier):
     """
     Orients the image so that the thin strip of fat adjacent to the muscle is on top.
 
@@ -187,6 +189,7 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     original_image, muscle_mask, fat_mask = initial_orientation_correction(original_image, muscle_mask, fat_mask)
     fat_pixels = np.where(fat_mask == 255)
     muscle_pixels = np.where(muscle_mask == 255)
+    height,width, _ = original_image.shape
 
     # Get the maximum y value for the muscle mask
     muscley_value = np.max(muscle_pixels[0])
@@ -219,10 +222,16 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
             fat_center_y = fy + fh / 2
 
             if fat_center_y < muscle_center_y:
+                if width<height:
+                    print("ERROR: BAD IMAGE ORIENTATION 1")
+                    outlier = "Y"
                 print("Fat already correctly positioned on top. No rotation needed.")
-                return original_image, muscle_mask, fat_mask, 0
+                return original_image, muscle_mask, fat_mask, 0, outlier
         print("No valid adjacent fat region detected. Skipping orientation.")
-        return original_image, muscle_mask, fat_mask, 0
+        if width<height:
+            print("ERROR: BAD IMAGE ORIENTATION 1")
+            outlier = "Y"
+        return original_image, muscle_mask, fat_mask, 0, outlier
 
     # 4. Normal orientation logic (only if `adjacent_fat_box` was found)
     fx, fy, fw, fh = adjacent_fat_box
@@ -247,5 +256,8 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask)
     rotated_image = rotate_image(original_image, final_angle)
     rotated_muscle_mask = rotate_image(muscle_mask, final_angle)
     rotated_fat_mask = rotate_image(fat_mask, final_angle)
-
-    return rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle
+    height, width, _ = rotated_image.shape
+    if width<height:
+        print("ERROR: BAD IMAGE ORIENTATION 2")
+        outlier = "Y"
+    return rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle,outlier
