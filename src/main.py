@@ -84,7 +84,9 @@ def process_image(model, image_path, args, color_model):
         canadian_standards, outlier = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal)
         # Step 7: Find Marbling
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
+        debug_messages.append(f"area in px^2: {area_px}, conversion factor: {conversion_factor} mm/px")
         area_mm = area_px/((1/(conversion_factor))**2)
+        debug_messages.append(f"Calculated area in mm^2: {area_mm}")
         if args.minimal == False:
             cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
 
@@ -215,7 +217,7 @@ def main():
 
             
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm)
+    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
     save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
     save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
     print_table_of_measurements(args.output_path+'measurement.csv')
