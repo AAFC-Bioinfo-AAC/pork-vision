@@ -406,7 +406,12 @@ def line_parse(lines, pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2, maxle
                 drawn_x1, drawn_y1, drawn_x2, drawn_y2 = x1, y1, x2, y2
     return pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2
 
-def find_most_accurate_line(image):
+def find_most_accurate_line(image, debug_messages):
+    '''
+    Finds the longest (straight) line within the valid pixel length range.
+    Input: Image
+    Returns: Longest line within valid px range and it's x/y coordinates.
+    '''
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     maxlength=2300 # Adjust this if there is a significant difference in images (taking image from further away)
     pixel_count = 0
@@ -427,23 +432,27 @@ def find_most_accurate_line(image):
             pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2 = line_parse(lines, pixel_count, drawn_x1, drawn_y1, drawn_x2, drawn_y2)
             offset_linegap += 1
         offset_edge +=1
-    return pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2
+    debug_messages.append(f"{pixel_count} px Line found at offset_edge of {offset_edge} and offset_linegap of {offset_linegap}")
+    return pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2, debug_messages
 
-def correct_rotation_pixel_count(image, drawn_x1, drawn_x2, drawn_y1, drawn_y2, pixel_count):
+def correct_rotation_pixel_count(image, drawn_x1, drawn_x2, drawn_y1, drawn_y2, pixel_count, debug_messages):
     '''
-    (Experimental) Attempts to find the ruler in an image and then calculates the length in pixels.
-    Ideally measures 15.5cm (the measurement of the ruler).
-    Finds the centimeter to pixel conversion factor.
-    If the Length measured is below/over a certain threshold utilizes hardcoded measurements.
+    Corrects for any any angling in the ruler so the ruler is straight.
+    Input: Image and coordinates/length of the ruler line
+    Output: Rotated image and corrected line coordinates.
     '''
-    delta_y = -(abs(drawn_y1-drawn_y2))
+    delta_y = -(abs(drawn_y1-drawn_y2)) # Negative is necessary here in order to prevent incorrect rotations.
+    debug_messages.append(f"Change in y coordinates is {delta_y}")
     #Corrects for any potential angling of the ruler/line.
     delta_x = drawn_x2 - drawn_x1
     if abs(delta_x) <= 50: # If the x is near 0 then the ruler should be near straight.
+        debug_messages.append(f"Change in x coordinates is {abs(delta_x)} which is <= 50. Skipping angle correction.")
         cv2.line(image, (int(drawn_x1), int(drawn_y1)), (int(drawn_x2), int(drawn_y2)), (0, 0, 255), 2)
-        return image, pixel_count
+        return image, pixel_count, debug_messages
     angle = np.arctan2(delta_y, delta_x) * 180.0 / np.pi
+    debug_messages.append(f"Angle of the line is {angle}.")
     if angle < -45:
+        debug_messages.append(f"Angle of the line is < -45, correcting by adding 90.")
         angle += 90
     center = (image.shape[1] // 2, image.shape[0] // 2)
 
@@ -458,12 +467,11 @@ def correct_rotation_pixel_count(image, drawn_x1, drawn_x2, drawn_y1, drawn_y2, 
     cv2.line(rotated_image, (int(rotated_x1), int(rotated_y1)), (int(rotated_x2), int(rotated_y2)), (0, 0, 255), 2)
     pixel_count = int(math.sqrt((rotated_x2-rotated_x1)**2+(rotated_y2-rotated_y1)**2))
 
-    #print(f"Default line length: {abs(drawn_y2 - drawn_y1)}")
-    #print(f"Adjusted line length: {abs(int(rotated_y1) - int(rotated_y2))}")
-    return rotated_image, pixel_count
+    debug_messages.append(f"Pixel count of ruler line after correcting for angles is: {pixel_count} px")
+    return rotated_image, pixel_count, debug_messages
 
 
-def measure_ruler(image, image_id, outlier, minimal):
+def measure_ruler(image, image_id, outlier, minimal, debug_messages):
     '''
     (Experimental) Attempts to find the ruler in an image and then calculates the length in pixels.
     Ideally measures 15.5cm (the measurement of the ruler).
@@ -471,8 +479,10 @@ def measure_ruler(image, image_id, outlier, minimal):
     If the Length measured is below/over a certain threshold utilizes hardcoded measurements.
     '''
     try:
-        pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2 = find_most_accurate_line(image)
-        rotated_image, pixel_count = correct_rotation_pixel_count(image, drawn_x1,drawn_x2,drawn_y1,drawn_y2, pixel_count)
+        debug_messages.append("Finding most accurate line")
+        pixel_count, drawn_x1,drawn_y1,drawn_x2,drawn_y2, debug_messages = find_most_accurate_line(image, debug_messages)
+        debug_messages.append("Correcting for ruler angling.")
+        rotated_image, pixel_count, debug_messages = correct_rotation_pixel_count(image, drawn_x1,drawn_x2,drawn_y1,drawn_y2, pixel_count, debug_messages)
 
         if pixel_count > 2125 and pixel_count<=2300:
             mm_per_px = pixel_count/155
@@ -480,21 +490,24 @@ def measure_ruler(image, image_id, outlier, minimal):
             mm_per_px = 13.76774194 # approximation of how many pixels there are in a 0.1cm sized line (NOTE: 15.5cm is roughly 2137px)
         mm_line = pixel_count/mm_per_px # Finds the "bin" that the measured line belongs to with each bin being roughly 0.1cm.
         if mm_line > 156:
+                debug_messages.append(f"Line is estimated to be greater than 15.6cm which is outside valid range. Correcting...")
                 mm_per_px = mm_per_px * (pixel_count/2137)
                 mm_line = pixel_count/mm_per_px # For cases were the pic is more out than the usual.
+                debug_messages.append(f"New estimate of line is {mm_line/10}cm")
         conversion_factor = mm_line/pixel_count
-        if pixel_count > 2300 or pixel_count < 2000:
+        if pixel_count > 2300 or pixel_count < 2000: #In outlier range, use defaults.
+            debug_messages.append(f"Pixel count: {pixel_count} which is outside of valid range; using default conversion factor.")
             outlier = "Y"
             os.makedirs('lines', exist_ok=True)
             cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
-            return None, outlier
+            return None, outlier, debug_messages
         if minimal==False:
+            debug_messages.append(f"Saving image to output/ruler_measurement")
             os.makedirs('output/ruler_measurement', exist_ok=True)
             cv2.imwrite(f"output/ruler_measurement/{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
-        return conversion_factor, outlier
+        debug_messages.append(f"conversion_factor: {conversion_factor} mm/px")
+        return conversion_factor, outlier, debug_messages
     except:
         outlier = "Y"
-        os.makedirs('nolines', exist_ok=True)
-        cv2.imwrite(f"nolines/{image_id}_NOLINE.jpg", image)
-        print("Error in ruler measurement using default conversion")
-        return None, outlier
+        debug_messages.append("Error in ruler measurement. NO LINES detected. Using default conversion")
+        return None, outlier, debug_messages

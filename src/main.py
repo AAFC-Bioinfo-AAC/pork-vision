@@ -27,6 +27,10 @@ from utils.postprocess import (
 )
 
 def debug_info(debug_messages,image_id,args):
+    '''
+    If debug=True in args, then output the debug messages collected into a debug folder
+    as .txt files for each image.
+    '''
     if args.debug == True:
         os.makedirs(f"{args.output_path}/debug", exist_ok=True)
         with open(f'{args.output_path}/debug/{image_id}_DEBUGINFO.txt', 'w') as file:
@@ -74,14 +78,14 @@ def process_image(model, image_path, args, color_model):
 
         # Step 4: Conversion Factor Calculation
         debug_messages.append("Measuring Ruler in pixels to determine conversion factor")
-        conversion_factor, outlier = measure_ruler(rotated_image, image_id, outlier, args.minimal)
+        conversion_factor, outlier, debug_messages = measure_ruler(rotated_image, image_id, outlier, args.minimal, debug_messages)
         if conversion_factor == None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Conversion Factor calculation, using default.")
             conversion_factor = 10/140 #mm/px
         # Step 6: Create Canadian Standard chart using A.I model.
         debug_messages.append("Creating color standards using YOLO model.")
-        canadian_standards, outlier = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal)
+        canadian_standards, outlier, debug_messages = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal, debug_messages)
         # Step 7: Find Marbling
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
         debug_messages.append(f"area in px^2: {area_px}, conversion factor: {conversion_factor} mm/px")
