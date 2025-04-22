@@ -319,6 +319,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 - [Shapely](https://shapely.readthedocs.io/en/stable/)
 - [scikit-image](https://scikit-image.org/docs/stable/)
 - [tabulate](https://pypi.org/project/tabulate/)
+- [roifile](https://pypi.org/project/roifile/)
 
 ---
 
