@@ -19,6 +19,18 @@ authors:
 - family-names: Ali
   given-names: Maaz
   orcid: 
+- family-names: Juarez
+  given-names: Manuel
+  orcid:
+- family-names: Zawadski
+  given-names: Sophie
+  orcid:
+- family-names: Uttaro
+  given-names: Bethany
+  orcid:
+- family-names: Hudson
+  given-names: Lacey
+  orcid:
 title: "Porkvision"
 version: "1.0.0"
 doi: 
