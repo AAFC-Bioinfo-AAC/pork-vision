@@ -52,17 +52,19 @@ def process_image(model, image_path, args, color_model):
             os.makedirs(f'{args.output_path}/predict', exist_ok=True)
             save_path = f'{args.output_path}/predict/{extract_image_id(image_path)}.jpg'
             results.save(save_path)  # Save the annotated image to the specified path
+            debug_messages.append(f"Image is saved to {args.output_path}/predict")
 
         # Step 2: Preprocessing
-        muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
+        muscle_bbox, muscle_mask, fat_bbox, fat_mask, debug_messages = mask_selector(results, debug_messages)
         if muscle_bbox is None or fat_bbox is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Did not detect a muscle/fat bounding box.")
             debug_info(debug_messages, image_id, args)
             return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier, image_path, 0
-
-        muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
-        fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
+        debug_messages.append("Converting muscle mask to image")
+        muscle_binary_mask, debug_messages = convert_contours_to_image(muscle_mask, results.orig_shape, debug_messages)
+        debug_messages.append("Converting fat mask to image")
+        fat_binary_mask, debug_messages = convert_contours_to_image(fat_mask, results.orig_shape, debug_messages)
         # Step 3: Orientation
         rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier = orient_muscle_and_fat_using_adjacency(
             results.orig_img, muscle_binary_mask, fat_binary_mask, outlier
