@@ -244,6 +244,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 |    |   `-- Folders for each image containing LUTs + Color_Standard detection image
 |    |-- marbling
 |    |   `-- Folders for each image containing marbling masks, muscle region, fat mask
+|    |-- log.out
 |     `-- predict
 |         `-- 103_LdLeanColor.jpg
 |-- src
@@ -261,7 +262,6 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 |    |   `-- preprocess.py
 |    `-- main.py
 |-- tests
-|    `--testcolors.py [Not for use with the GPSC]
 |-- .gitignore
 |-- CITATION.cff
 |-- CITATIONS.md
@@ -271,7 +271,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 |-- SECURITY.md
 |-- LICENSE
 |-- README.md
-`-- requirements.txt
+ `-- requirements.txt
 ```
 ## KNOWN ISSUES
 N/A
@@ -309,7 +309,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
 - [Index.md](docs/index.md) [Contains documentation and additional installation instructions]
-- [Ultralytics YOLOv8](https://docs.ultralytics.com/)
+- [Ultralytics YOLOv11](https://docs.ultralytics.com/)
 - [Segment Anything](https://github.com/facebookresearch/segment-anything)
 - [matplotlib](https://matplotlib.org/stable/index.html)
 - [NumPy](https://numpy.org/doc/stable/)
@@ -319,6 +319,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 - [Shapely](https://shapely.readthedocs.io/en/stable/)
 - [scikit-image](https://scikit-image.org/docs/stable/)
 - [tabulate](https://pypi.org/project/tabulate/)
+- [roifile](https://pypi.org/project/roifile/)
 
 ---
 

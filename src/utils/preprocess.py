@@ -2,7 +2,7 @@ from skimage.draw import polygon2mask
 from ultralytics.data.utils import polygon2mask
 from utils.imports import *
 
-def mask_selector(current_image, confidence_threshold=0.4):
+def mask_selector(current_image, debug_messages, confidence_threshold=0.4):
     """
     Selects the best masks for muscle and fat classes based on confidence scores.
 
@@ -28,24 +28,27 @@ def mask_selector(current_image, confidence_threshold=0.4):
     # Loop through detections and pick the highest confidence muscle and fat masks
     for j, cls in enumerate(classes):
         if confidences[j] < confidence_threshold:
+            debug_messages.append(f"Confidence {confidences[j]} < {confidence_threshold}. Skipping")
             continue  # Skip detections below the threshold
 
         if cls == 0 and confidences[j] > confidence_muscle:  # Muscle class
             confidence_muscle = confidences[j]
             muscle_bbox = current_image.boxes[j].xyxy  # Bounding box
             muscle_mask = current_image.masks[j].xy if has_masks else None  # Mask contour
+            debug_messages.append(f"Muscle:\n Bbox location: {muscle_bbox}.\n Mask location: {muscle_mask}")
 
         elif cls == 1 and confidences[j] > confidence_fat:  # Fat class
             confidence_fat = confidences[j]
             fat_bbox = current_image.boxes[j].xyxy  # Bounding box
             fat_mask = current_image.masks[j].xy if has_masks else None  # Mask contour
+            debug_messages.append(f"Fat:\n Bbox location: {fat_bbox}.\n Mask location: {fat_mask}")
 
     # If any of the masks are missing, return None
     if muscle_bbox is None or muscle_mask is None or fat_bbox is None or fat_mask is None:
-        print(f"Skipping image - Missing valid muscle or fat mask.")
+        debug_messages.append(f"Skipping image - Missing valid muscle or fat mask.")
         return None, None, None, None
 
-    return muscle_bbox[0], muscle_mask, fat_bbox[0], fat_mask
+    return muscle_bbox[0], muscle_mask, fat_bbox[0], fat_mask, debug_messages
 
 def append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, image_result):
     """
@@ -64,7 +67,7 @@ def append_None_values_to_measurement_lists(id_list, muscle_width_list, muscle_d
     muscle_depth_list.append(None)
     fat_depth_list.append(None)
 
-def convert_contours_to_image(contours, orig_shape):
+def convert_contours_to_image(contours, orig_shape, debug_messages):
     """
     Converts YOLO inferred contours into a binary mask.
 
@@ -81,16 +84,20 @@ def convert_contours_to_image(contours, orig_shape):
         color=255,
         downsample_ratio=1,
     )
-    mask = clean_detection(mask)
-    return mask
+    mask, debug_messages = clean_detection(mask, debug_messages)
+    return mask, debug_messages
 
-def clean_detection(binary_mask):
+def clean_detection(binary_mask, debug_messages):
+    debug_messages.append("Cleaning mask with clean_detection")
     kernel = np.ones((3, 3), np.uint8)  # You can adjust the kernel size as needed
     eroded_image = cv2.erode(binary_mask, kernel, iterations=1)
     contours, _ = cv2.findContours(eroded_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if len(contours)>1:
+        debug_messages.append(f"{len(contours)} Contours detected. Removing.")
         largest_contour = max(contours, key=cv2.contourArea)
         mask = np.zeros_like(binary_mask)
         cv2.drawContours(mask, [largest_contour], -1, 255, thickness=cv2.FILLED)
         binary_mask[mask == 0] = 0
-    return binary_mask
+    else:
+        debug_messages.append(f"1 Contour detected. No cleaning necessary.")
+    return binary_mask, debug_messages

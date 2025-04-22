@@ -99,7 +99,7 @@ def apply_lut(image, category_values, lut_values, mask):
 
     return colored_image
 
-def create_coloring_standards(image, model, image_id, output_dir, minimal):
+def create_coloring_standards(image, model, image_id, output_dir, outlier, minimal):
     canadian_standard_unsorted = []
     result = model.predict(image, save=False)[0]
     detection_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -126,7 +126,7 @@ def create_coloring_standards(image, model, image_id, output_dir, minimal):
         os.makedirs(base_output_dir, exist_ok=True)
         save_path = f'{base_output_dir}/{image_id}_Color_Detect.jpg'
         result.save(save_path)
-    return canadian_array
+    return canadian_array, outlier
 
 def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, canadian_array, minimal):
     """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
