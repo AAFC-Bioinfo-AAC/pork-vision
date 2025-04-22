@@ -52,33 +52,41 @@ def process_image(model, image_path, args, color_model):
             os.makedirs(f'{args.output_path}/predict', exist_ok=True)
             save_path = f'{args.output_path}/predict/{extract_image_id(image_path)}.jpg'
             results.save(save_path)  # Save the annotated image to the specified path
+            debug_messages.append(f"Image is saved to {args.output_path}/predict")
 
         # Step 2: Preprocessing
-        muscle_bbox, muscle_mask, fat_bbox, fat_mask = mask_selector(results)
+        muscle_bbox, muscle_mask, fat_bbox, fat_mask, debug_messages = mask_selector(results, debug_messages)
         if muscle_bbox is None or fat_bbox is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Did not detect a muscle/fat bounding box.")
             debug_info(debug_messages, image_id, args)
             return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier, image_path, 0
-
-        muscle_binary_mask = convert_contours_to_image(muscle_mask, results.orig_shape)
-        fat_binary_mask = convert_contours_to_image(fat_mask, results.orig_shape)
+        debug_messages.append("Converting muscle mask to image")
+        muscle_binary_mask, debug_messages = convert_contours_to_image(muscle_mask, results.orig_shape, debug_messages)
+        debug_messages.append("Converting fat mask to image")
+        fat_binary_mask, debug_messages = convert_contours_to_image(fat_mask, results.orig_shape, debug_messages)
         # Step 3: Orientation
-        rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier = orient_muscle_and_fat_using_adjacency(
-            results.orig_img, muscle_binary_mask, fat_binary_mask, outlier
+        debug_messages.append("Correcting Orientation.")
+        rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier, debug_messages = orient_muscle_and_fat_using_adjacency(
+            results.orig_img, muscle_binary_mask, fat_binary_mask, outlier, debug_messages
         )
 
 
         # Step 4: Conversion Factor Calculation
+        debug_messages.append("Measuring Ruler in pixels to determine conversion factor")
         conversion_factor, outlier = measure_ruler(rotated_image, image_id, outlier, args.minimal)
         if conversion_factor == None:
+            outlier = "Y"
             debug_messages.append(f"ERROR: Conversion Factor calculation, using default.")
             conversion_factor = 10/140 #mm/px
         # Step 6: Create Canadian Standard chart using A.I model.
-        canadian_standards = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', args.minimal)
+        debug_messages.append("Creating color standards using YOLO model.")
+        canadian_standards, outlier = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal)
         # Step 7: Find Marbling
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
+        debug_messages.append(f"area in px^2: {area_px}, conversion factor: {conversion_factor} mm/px")
         area_mm = area_px/((1/(conversion_factor))**2)
+        debug_messages.append(f"Calculated area in mm^2: {area_mm}")
         if args.minimal == False:
             cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
 
@@ -209,7 +217,7 @@ def main():
 
             
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm)
+    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
     save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
     save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
     print_table_of_measurements(args.output_path+'measurement.csv')
