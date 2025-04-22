@@ -66,18 +66,22 @@ def process_image(model, image_path, args, color_model):
         debug_messages.append("Converting fat mask to image")
         fat_binary_mask, debug_messages = convert_contours_to_image(fat_mask, results.orig_shape, debug_messages)
         # Step 3: Orientation
-        rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier = orient_muscle_and_fat_using_adjacency(
-            results.orig_img, muscle_binary_mask, fat_binary_mask, outlier
+        debug_messages.append("Correcting Orientation.")
+        rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier, debug_messages = orient_muscle_and_fat_using_adjacency(
+            results.orig_img, muscle_binary_mask, fat_binary_mask, outlier, debug_messages
         )
 
 
         # Step 4: Conversion Factor Calculation
+        debug_messages.append("Measuring Ruler in pixels to determine conversion factor")
         conversion_factor, outlier = measure_ruler(rotated_image, image_id, outlier, args.minimal)
         if conversion_factor == None:
+            outlier = "Y"
             debug_messages.append(f"ERROR: Conversion Factor calculation, using default.")
             conversion_factor = 10/140 #mm/px
         # Step 6: Create Canadian Standard chart using A.I model.
-        canadian_standards = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', args.minimal)
+        debug_messages.append("Creating color standards using YOLO model.")
+        canadian_standards, outlier = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal)
         # Step 7: Find Marbling
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
         area_mm = area_px/((1/(conversion_factor))**2)
