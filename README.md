@@ -289,6 +289,8 @@ We thank the following people and teams for their assistance in the development 
 - Sophie Zawadski
 - Bethany Uttaro
 - Lacey Hudson
+- Ibrahim Tarik
+- Rhona Thacker
 
 ---
 
