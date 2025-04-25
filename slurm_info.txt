@@ -1,3 +1,7 @@
 
 With 12 CPUS on gpsc7 using the a100 partition.
 40GB of memory was used and runtime was 90 minutes with 2024 dataset (803 images)
+This was with (1,1) kernels in marbling muscle extraction and particle analysis set to 60.
+With 20,20 kernel and partcile analysis set to 5 this added about an hour runtime to 150 minutes.
+
+The lower the amount of cpus, the more memory this program uses. With 4 CPUS it runs out of memory.

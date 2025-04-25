@@ -1,7 +1,5 @@
 from utils.imports import *
 
-
-
 # =============================================================================
 # Helper Functions
 # =============================================================================
@@ -13,7 +11,7 @@ def extract_muscle_region(rotated_image, muscle_mask):
     Removes the perimeter fat and blood.
     Returns a muscle mask with the interfering regions removed.
     """
-    kernel = np.ones((31,31), np.uint8) # Increase kernel to make the perimeter larger and be more "selective"
+    kernel = np.ones((20,20), np.uint8) # Increase kernel to make the perimeter larger and be more "selective"
     perimeter = cv2.morphologyEx(muscle_mask, cv2.MORPH_GRADIENT, kernel)
     gray = cv2.cvtColor(rotated_image, cv2.COLOR_BGR2GRAY)
     _, light_areas = cv2.threshold(gray, 170, 255, cv2.THRESH_BINARY)
@@ -169,7 +167,7 @@ def smooth_marbling_mask(marbling_mask, kernel_size=(5, 5)):
     _, binary_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
     return binary_mask
 
-def contrast_enhancement(image, gamma=0.3):
+def contrast_enhancement(image, gamma=0.4):
     """
     Applies gamma correction to exaggerate brightness differences in the input image.
     
@@ -290,8 +288,8 @@ def process_marbling(rotated_image, muscle_mask, output_dir, canadian_standards,
     refined_marbling_mask = smooth_marbling_mask(thresh_blue, kernel_size=(7, 7))
     # Refine the marbling mask
     refined_marbling_mask, _ = particle_analysis(refined_marbling_mask, min_area=5)
-    muscle_region = filter_muscle_region(muscle_region, selective_mask, canadian_standards)
     # Used to add in any fat that might have been "skipped" because it's close to Canadian standard 0.
+    muscle_region = filter_muscle_region(muscle_region, selective_mask, canadian_standards)
     gray_muscle_region = cv2.cvtColor(muscle_region, cv2.COLOR_BGR2GRAY)
     condition_mask = (selective_mask == 255) & (gray_muscle_region == 0)
     refined_marbling_mask[condition_mask] = 255

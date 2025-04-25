@@ -97,7 +97,6 @@ def apply_lut(image, category_values, lut_values, mask):
     
     lut = np.zeros((256, 1, 3), dtype=np.uint8)
     lut_values = enumerate(lut_values)
-    print(lut_values)
     for i, (r, g, b) in lut_values:
         lut[category_values[i]] = [b, g, r]
 
@@ -151,8 +150,6 @@ def colour_grading(image, muscle_mask, marbling_mask, output_dir, image_id, cana
     """Performs color grading on the lean muscle area (excluding marbling) and saves results."""
     # Gets the lean mask (muscle area excluding marbling)
     lean_mask = cv2.subtract(muscle_mask, marbling_mask)
-
-    
     
     # Performs vectorized color analysis for Canadian standards
     canadian_classified = classify_rgb_vectorized(image, canadian_array, lean_mask)
