@@ -274,7 +274,7 @@ def main():
     minutes,seconds = time_program(start_time)
     print(f"RUNTIME BEFORE PARALLEL PROCESSING/IMAGE ANALYSIS starts: {minutes}:{seconds:02d}")
 
-
+    parallel_start = time.time()
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
@@ -298,7 +298,8 @@ def main():
                 image_outlier = cv2.imread(f"{image_path}")
                 cv2.imwrite(f"{args.output_path}/outlier/{img_id}.jpg", image_outlier)
 
-
+    minutes,seconds = time.time(parallel_start)
+    print(f"TOTAL RUNTIME FOR PARALLEL PROCESSING: {minutes}:{seconds:02d}\n\n")
     post_start = time.time()
     # Step 3: Save and display results
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
