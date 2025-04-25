@@ -257,6 +257,7 @@ def process_image(model, image_path, args, color_model):
 
 
 def main():
+    start_time = time.time()
     args = parse_args()
 
     # Step 1: Get all image paths
@@ -270,6 +271,9 @@ def main():
     model = YOLO(args.model_path)
     color_model = YOLO(args.color_model_path)
     os.makedirs(f'{args.output_path}', exist_ok=True)
+    minutes,seconds = time_program(start_time)
+    print(f"RUNTIME BEFORE PARALLEL PROCESSING/IMAGE ANALYSIS starts: {minutes}:{seconds:02d}")
+
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
@@ -295,7 +299,7 @@ def main():
                 cv2.imwrite(f"{args.output_path}/outlier/{img_id}.jpg", image_outlier)
 
 
-            
+    post_start = time.time()
     # Step 3: Save and display results
     save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
     save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
@@ -303,6 +307,9 @@ def main():
     print_table_of_measurements(args.output_path+'measurement.csv')
     print_table_of_measurements(args.output_path+'marbling.csv')
     print_table_of_measurements(args.output_path+'colouring.csv')
+    minutes,seconds = time_program(post_start)
+    print(f"RUNTIME FOR steps AFTER Image Analysis: {minutes}:{seconds:02d}")
+
 
 if __name__ == "__main__":
     main()
