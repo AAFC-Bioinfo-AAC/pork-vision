@@ -31,6 +31,9 @@ authors:
 - family-names: Hudson
   given-names: Lacey
   orcid:
+- family-names: Thacker
+  given-names: Rhona
+  orcid:
 title: "Porkvision"
 version: "1.0.0"
 doi: 
