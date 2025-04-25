@@ -155,10 +155,6 @@ def initial_orientation_correction(original_image, muscle_mask, fat_mask, debug_
     debug_messages.append(f"GOOD: Fat detected at {faty_value} while muscle is at {muscley_value} so fat above muscle")
     return rotated_image, rotated_muscle_mask, rotated_fat_mask, debug_messages
     
-
-
-
-
 def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask, outlier, debug_messages):
     """
     Orients the image so that the thin strip of fat adjacent to the muscle is on top.
@@ -182,85 +178,12 @@ def orient_muscle_and_fat_using_adjacency(original_image, muscle_mask, fat_mask,
     # 1. Find bounding box of muscle
     muscle_contours, _ = cv2.findContours(muscle_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not muscle_contours:
-        debug_messages.append("No muscle found. Skipping orientation.")
-        return original_image, muscle_mask, fat_mask, 0, "Y", debug_messages
-    muscle_contour = max(muscle_contours, key=cv2.contourArea)
-    mx, my, mw, mh = cv2.boundingRect(muscle_contour)
-    muscle_center_x = mx + mw / 2
-    muscle_center_y = my + mh / 2
-    original_image, muscle_mask, fat_mask, debug_messages = initial_orientation_correction(original_image, muscle_mask, fat_mask, debug_messages)
-    fat_pixels = np.where(fat_mask == 255)
-    muscle_pixels = np.where(muscle_mask == 255)
-    height,width, _ = original_image.shape
-
-    # Get the maximum y value for the muscle mask
-    muscley_value = np.max(muscle_pixels[0])
-
-    # Get the x values where y = muscley_value
-    musclex_values = muscle_pixels[1][muscle_pixels[0] == muscley_value]
-
-    # If multiple x values exist at this y, choosing the first one:
-    musclex_value = musclex_values[0]
-
-    # Get the y values where x = musclex_value in fat mask
-    faty_values_at_musclex = fat_pixels[0][fat_pixels[1] == musclex_value]
-
-    # Get the maximum y value at this x position in the fat mask
-    faty_value = np.max(faty_values_at_musclex)
-
-    if faty_value>muscley_value:
-        debug_messages.append("CORRECTING: Fat is below muscle, isolating adjacent fat.")
-        adjacent_fat_box, debug_messages = isolate_adjacent_fat(muscle_mask, fat_mask, debug_messages, dilation_size=45, min_area=500) # Greater dilation size to force correction.
-    else:
-        adjacent_fat_box = None
-        #adjacent_fat_box = isolate_adjacent_fat(muscle_mask, fat_mask, dilation_size=10, min_area=500)
-
-    # 3. Check if fat is already on top (when adjacent_fat_box is missing)
-    if adjacent_fat_box is None:
-        # Compare muscle bounding box position with fat bounding box
-        fat_contours, _ = cv2.findContours(fat_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        if fat_contours:
-            fat_contour = max(fat_contours, key=cv2.contourArea)
-            fx, fy, fw, fh = cv2.boundingRect(fat_contour)
-            fat_center_y = fy + fh / 2
-
-            if fat_center_y < muscle_center_y:
-                if width<height:
-                    debug_messages.append("ERROR: IMAGE is vertical")
-                    outlier = "Y"
-                debug_messages.append("NORMAL: Fat already correctly positioned on top. No rotation needed.")
-                return original_image, muscle_mask, fat_mask, 0, outlier, debug_messages
-        debug_messages.append("No valid adjacent fat region detected. Skipping orientation.")
-        if width<height:
-            debug_messages.append("ERROR: IMAGE is vertical")
-            outlier = "Y"
-        return original_image, muscle_mask, fat_mask, 0, outlier, debug_messages
-
-    # 4. Normal orientation logic (only if `adjacent_fat_box` was found)
-    fx, fy, fw, fh = adjacent_fat_box
-    fat_center_x = fx + fw / 2
-    fat_center_y = fy + fh / 2
-
-    dx = fat_center_x - muscle_center_x
-    dy = fat_center_y - muscle_center_y
-
-    final_angle = 0
-    if dy > 0 and abs(dy) >= abs(dx):
-        debug_messages.append("Fat (adjacent region) below muscle. Rotating 180°.")
-        final_angle = 180
-    elif dx > 0 and abs(dx) > abs(dy):
-        debug_messages.append("Fat (adjacent region) on the right. Rotating +90°.")
-        final_angle = 90
-    elif dx < 0 and abs(dx) > abs(dy):
-        debug_messages.append("Fat (adjacent region) on the left. Rotating -90°.")
-        final_angle = -90
-
-    # 5. Apply final rotation
-    rotated_image = rotate_image(original_image, final_angle)
-    rotated_muscle_mask = rotate_image(muscle_mask, final_angle)
-    rotated_fat_mask = rotate_image(fat_mask, final_angle)
-    height, width, _ = rotated_image.shape
-    if width<height:
-        debug_messages.append("ERROR: Image is vertical after rotation.")
         outlier = "Y"
-    return rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle,outlier, debug_messages
+        debug_messages.append("No muscle found. Skipping orientation.")
+        return original_image, muscle_mask, fat_mask, 0, outlier, debug_messages
+    rotated_image, rotated_muscle_mask, rotated_fat_mask, debug_messages = initial_orientation_correction(original_image, muscle_mask, fat_mask, debug_messages)
+    height,width, _ = rotated_image.shape
+    if width<height:
+        outlier = "Y"
+        debug_messages.append("ERROR: Image is vertical after rotation.")
+    return rotated_image, rotated_muscle_mask, rotated_fat_mask, 0, outlier, debug_messages

@@ -498,8 +498,6 @@ def measure_ruler(image, image_id, outlier, minimal, debug_messages):
         if pixel_count > 2300 or pixel_count < 2000: #In outlier range, use defaults.
             debug_messages.append(f"Pixel count: {pixel_count} which is outside of valid range; using default conversion factor.")
             outlier = "Y"
-            os.makedirs('lines', exist_ok=True)
-            cv2.imwrite(f"lines/{image_id}_{round(pixel_count)}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
             return None, outlier, debug_messages
         if minimal==False:
             debug_messages.append(f"Saving image to output/ruler_measurement")
