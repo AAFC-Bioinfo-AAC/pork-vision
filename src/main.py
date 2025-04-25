@@ -25,6 +25,17 @@ from utils.postprocess import (
     extract_image_id,
     save_to_roi
 )
+import time
+
+def time_program(start):
+    """
+    Used to time how long certain things took in an image.
+    """
+    end = time.time()
+    elapsed_time = end - start
+    minutes = int(elapsed_time // 60)
+    seconds = int(elapsed_time % 60)
+    return minutes, seconds    
 
 def debug_info(debug_messages,image_id,args):
     '''
@@ -41,6 +52,7 @@ def debug_info(debug_messages,image_id,args):
 def process_image(model, image_path, args, color_model):
     """Process an image: Run YOLO inference, extract measurements, and save annotated output."""
     try:
+        start_time = time.time()
         outlier = None
         color_outlier = None
         image_id = extract_image_id(image_path)
@@ -49,16 +61,22 @@ def process_image(model, image_path, args, color_model):
         print("\nProcessing:", image_id)
         
         # Step 1: YOLO Inference
-        
+        debug_messages.append("SEGMENTATION MODEL:")
+        model_start = time.time() 
         results = model(image_path, save=False, retina_masks=True)[0]  # This disables automatic saving into subfolders
+        minutes, seconds = time_program(model_start)
+        debug_messages.append(f"Segmentation Model Time: {minutes}:{seconds:02d}\n\n")
+        
         # Save the result manually to the 'predict' folder
         if args.minimal == False:
             os.makedirs(f'{args.output_path}/predict', exist_ok=True)
             save_path = f'{args.output_path}/predict/{extract_image_id(image_path)}.jpg'
             results.save(save_path)  # Save the annotated image to the specified path
-            debug_messages.append(f"Image is saved to {args.output_path}/predict")
+            debug_messages.append(f"Image is saved to {args.output_path}predict\n\n")
 
         # Step 2: Preprocessing
+        preprocessing_start = time.time()
+        debug_messages.append("PREPROCESSING:")
         muscle_bbox, muscle_mask, fat_bbox, fat_mask, debug_messages = mask_selector(results, debug_messages)
         if muscle_bbox is None or fat_bbox is None:
             outlier = "Y"
@@ -68,50 +86,87 @@ def process_image(model, image_path, args, color_model):
         muscle_binary_mask, debug_messages = convert_contours_to_image(muscle_mask, results.orig_shape, debug_messages)
         debug_messages.append("Converting fat mask to image")
         fat_binary_mask, debug_messages = convert_contours_to_image(fat_mask, results.orig_shape, debug_messages)
+        minutes,seconds = time_program(preprocessing_start)
+        debug_messages.append("Preprocessing Finished")
+        debug_messages.append(f"Preprocessing Time: {minutes}:{seconds:02d}\n\n")
         # Step 3: Orientation
-        debug_messages.append("Correcting Orientation.")
+
+        orientation_start = time.time()
+        debug_messages.append("ORIENTATION:")
         rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier, debug_messages = orient_muscle_and_fat_using_adjacency(
             results.orig_img, muscle_binary_mask, fat_binary_mask, outlier, debug_messages
         )
-        debug_messages.append("Successfully completed Orientation.")
+        debug_messages.append("Orientation Finished")
+        minutes,seconds = time_program(orientation_start)
+        debug_messages.append(f"Orientation Time: {minutes}:{seconds:02d}\n\n")
+
 
         # Step 4: Conversion Factor Calculation
+        debug_messages.append(f"CONVERSION FACTOR:")
+        conversion_calculation_time = time.time()
         debug_messages.append("Measuring Ruler in pixels to determine conversion factor")
         conversion_factor, outlier, debug_messages = measure_ruler(rotated_image, image_id, outlier, args.minimal, debug_messages)
         if conversion_factor == None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Conversion Factor calculation, using default.")
             conversion_factor = 10/140 #mm/px
+        else:
+            debug_messages.append(f"Success!")
+            debug_messages.append(f"Conversion factor (mm/px) = {conversion_factor}")
+        minutes,seconds = time_program(conversion_calculation_time)
+        debug_messages.append(f"Conversion Factor Finished")
+        debug_messages.append(f"Conversion Calculation Time: {minutes}:{seconds:02d}\n\n")
+
         # Step 6: Create Canadian Standard chart using A.I model.
+        debug_messages.append("COLOR MODEL:")
+        color_model_start = time.time()
         debug_messages.append("Creating color standards using YOLO model.")
         canadian_standards, outlier, debug_messages = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal, debug_messages)
-        debug_messages.append("Standards successfully created (RGB)\n"
-                              f"C6: {canadian_standards[0]}\n"
-                              f"C5: {canadian_standards[1]}\n"
-                              f"C4: {canadian_standards[2]}\n"
-                              f"C3: {canadian_standards[3]}\n"
-                              f"C2: {canadian_standards[4]}\n"
-                              f"C1: {canadian_standards[5]}\n"
-                              f"C0: {canadian_standards[6]}\n"
-        )
+        if len(canadian_standards == 7):
+            debug_messages.append("Standards successfully created (RGB)\n"
+                                f"C6: {canadian_standards[0]}\n"
+                                f"C5: {canadian_standards[1]}\n"
+                                f"C4: {canadian_standards[2]}\n"
+                                f"C3: {canadian_standards[3]}\n"
+                                f"C2: {canadian_standards[4]}\n"
+                                f"C1: {canadian_standards[5]}\n"
+                                f"C0: {canadian_standards[6]}\n"
+            )
+        else:
+             debug_messages.append("Error with finding standards")
+        minutes, seconds = time_program(color_model_start)
+        debug_messages.append(f"Color Model Finished")
+        debug_messages.append(f"Color Model Time: {minutes}:{seconds:02d}\n\n")
+
         # Step 7: Find Marbling
+        debug_messages.append("MARBLING:")
+        marbling_start = time.time()
         debug_messages.append("Processing Marbling")
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
         debug_messages.append("Marbling successfully processed!")
-        debug_messages.append(f"area in px^2: {area_px}, conversion factor: {conversion_factor} mm/px")
+        debug_messages.append(f"area in px^2: {area_px}")
         area_mm = area_px/((1/(conversion_factor))**2)
         debug_messages.append(f"Calculated area in mm^2: {area_mm}")
         if args.minimal == False:
             cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
+        minutes,seconds = time_program(marbling_start)
+        debug_messages.append(f"MARBLING FINISHED")
+        debug_messages.append(f"Marbling Time: {minutes}:{seconds:02d}\n\n")
 
         # Step 8: Perform color grading
+        debug_messages.append("COLOR GRADING:")
+        color_grading_start = time.time()
         debug_messages.append("Performing color grading")
         canadian_classified_standard, lean_mask, color_outlier = colour_grading(
             rotated_image, eroded_mask, marbling_mask, args.output_path+'/colouring', image_id, canadian_standards, args.minimal
         )
-        debug_messages.append("color grading successfully processed!")
+        debug_messages.append("COLOR GRADING FINISHED!")
+        minutes,seconds = time_program(color_grading_start)
+        debug_messages.append(f"Color Grading Time: {minutes}:{seconds:02d}\n\n")
 
         # Step 9: Measurement
+        debug_messages.append("MEASUREMENT:")
+        measurement_start = time.time()
         debug_messages.append("Finding the muscle angle")
         angle = get_muscle_rotation_angle(rotated_muscle_mask)
         if angle is None:
@@ -153,6 +208,9 @@ def process_image(model, image_path, args, color_model):
         debug_messages.append(f"Success!")
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
         debug_messages.append(f"Fat depth in pixels = {fat_depth}")
+        minutes,seconds = time_program(measurement_start)
+        debug_messages.append("MEASUREMENT FINISHED")
+        debug_messages.append(f"Measurement Time: {minutes}:{seconds:02d}\n\n")
         # Step 7: Save annotated image
         if args.minimal == False:
             debug_messages.append("Saving the annotated image")
@@ -171,8 +229,8 @@ def process_image(model, image_path, args, color_model):
                 image_id=extract_image_id(image_path),
                 rois_folder=args.output_path+'/rois'
             )
-        
-        debug_info(debug_messages, image_id, args)
+        minutes,seconds = time_program(start_time)
+        debug_messages.append(f"OVERALL RUNTIME for {image_id}: {minutes}:{seconds:02d}")
         return (
             image_id,
             int(round(muscle_width)),
@@ -186,13 +244,15 @@ def process_image(model, image_path, args, color_model):
             outlier,
             color_outlier,
             image_path,
-            area_mm
+            area_mm,
+            debug_messages
         )
             
 
     except Exception as e:
         debug_messages.append(f"Error processing {image_id}: {e}")
-        debug_info(debug_messages, image_id, args)
+        minutes,seconds = time_program(start_time)
+        debug_messages.append(f"OVERALL RUNTIME for {image_id}: {minutes}:{seconds:02d}")
         return image_id, 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y", image_path, 0, debug_messages
 
 

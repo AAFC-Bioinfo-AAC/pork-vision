@@ -503,7 +503,6 @@ def measure_ruler(image, image_id, outlier, minimal, debug_messages):
             debug_messages.append(f"Saving image to output/ruler_measurement")
             os.makedirs('output/ruler_measurement', exist_ok=True)
             cv2.imwrite(f"output/ruler_measurement/{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
-        debug_messages.append(f"conversion_factor: {conversion_factor} mm/px")
         return conversion_factor, outlier, debug_messages
     except:
         outlier = "Y"
