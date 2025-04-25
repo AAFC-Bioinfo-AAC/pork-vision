@@ -63,8 +63,7 @@ def process_image(model, image_path, args, color_model):
         if muscle_bbox is None or fat_bbox is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Did not detect a muscle/fat bounding box.")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier, image_path, 0
+            return extract_image_id(image_path), 0, 0, 0, 0, 0, 0, 0, 0, outlier, color_outlier, image_path, 0, debug_messages
         debug_messages.append("Converting muscle mask to image")
         muscle_binary_mask, debug_messages = convert_contours_to_image(muscle_mask, results.orig_shape, debug_messages)
         debug_messages.append("Converting fat mask to image")
@@ -74,7 +73,7 @@ def process_image(model, image_path, args, color_model):
         rotated_image, rotated_muscle_mask, rotated_fat_mask, final_angle, outlier, debug_messages = orient_muscle_and_fat_using_adjacency(
             results.orig_img, muscle_binary_mask, fat_binary_mask, outlier, debug_messages
         )
-
+        debug_messages.append("Successfully completed Orientation.")
 
         # Step 4: Conversion Factor Calculation
         debug_messages.append("Measuring Ruler in pixels to determine conversion factor")
@@ -86,8 +85,19 @@ def process_image(model, image_path, args, color_model):
         # Step 6: Create Canadian Standard chart using A.I model.
         debug_messages.append("Creating color standards using YOLO model.")
         canadian_standards, outlier, debug_messages = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal, debug_messages)
+        debug_messages.append("Standards successfully created (RGB)\n"
+                              f"C6: {canadian_standards[0]}\n"
+                              f"C5: {canadian_standards[1]}\n"
+                              f"C4: {canadian_standards[2]}\n"
+                              f"C3: {canadian_standards[3]}\n"
+                              f"C2: {canadian_standards[4]}\n"
+                              f"C1: {canadian_standards[5]}\n"
+                              f"C0: {canadian_standards[6]}\n"
+        )
         # Step 7: Find Marbling
+        debug_messages.append("Processing Marbling")
         marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
+        debug_messages.append("Marbling successfully processed!")
         debug_messages.append(f"area in px^2: {area_px}, conversion factor: {conversion_factor} mm/px")
         area_mm = area_px/((1/(conversion_factor))**2)
         debug_messages.append(f"Calculated area in mm^2: {area_mm}")
@@ -95,57 +105,62 @@ def process_image(model, image_path, args, color_model):
             cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
 
         # Step 8: Perform color grading
+        debug_messages.append("Performing color grading")
         canadian_classified_standard, lean_mask, color_outlier = colour_grading(
             rotated_image, eroded_mask, marbling_mask, args.output_path+'/colouring', image_id, canadian_standards, args.minimal
         )
+        debug_messages.append("color grading successfully processed!")
 
         # Step 9: Measurement
+        debug_messages.append("Finding the muscle angle")
         angle = get_muscle_rotation_angle(rotated_muscle_mask)
         if angle is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: ANGLE is None")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
-
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+        debug_messages.append("Success!")
+        debug_messages.append("Finding the longest horizontal segment in the muscle mask")
         muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
         if muscle_width_start is None or muscle_width_end is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Muscle width is None")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
+            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+        debug_messages.append("Success!")
         muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
-
+        debug_messages.append(f"Muscle Width in pixels = {muscle_width}")
+        debug_messages.append(f"Finding the midline between muscle and best fat")
         midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
         if midline_position is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Midline position is None")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
-
-
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+        debug_messages.append("Success!")
+        debug_messages.append("Finding the Muscle depth")
         muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle, (1/(conversion_factor)*10))
         if muscle_depth_start is None or muscle_depth_end is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Muscle Depth is None")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
+            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+        debug_messages.append("Success!")
         muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
-
+        debug_messages.append(f"Muscle Depth in pixels = {muscle_depth} px")
+        debug_messages.append("Finding the fat depth!")
         fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
         if fat_depth_start is None or fat_depth_end is None:
             outlier = "Y"
             debug_messages.append(f"ERROR: Fat depth is None")
-            debug_info(debug_messages, image_id, args)
-            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm
+            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+        debug_messages.append(f"Success!")
         fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
-
+        debug_messages.append(f"Fat depth in pixels = {fat_depth}")
         # Step 7: Save annotated image
         if args.minimal == False:
+            debug_messages.append("Saving the annotated image")
             save_annotated_image(
                 rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
                 (fat_depth_start, fat_depth_end), image_path, args.output_path+'/annotated_images', args.minimal
             )
-
+            debug_messages.append("Saving the ROI images")
             save_to_roi(
                 muscle_width_start,
                 muscle_width_end,
@@ -178,7 +193,7 @@ def process_image(model, image_path, args, color_model):
     except Exception as e:
         debug_messages.append(f"Error processing {image_id}: {e}")
         debug_info(debug_messages, image_id, args)
-        return image_id, 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y", image_path, 0
+        return image_id, 0, 0, 0, 0, 0, 0, 0, 0, "Y", "Y", image_path, 0, debug_messages
 
 
 def main():
@@ -200,7 +215,7 @@ def main():
         futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
         for future in concurrent.futures.as_completed(futures):
             result = future.result()
-            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier, image_path,area_mm = result
+            img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier, image_path,area_mm, debug_messages = result
             id_list.append(img_id)
             muscle_width_list.append(muscle_width)
             muscle_depth_list.append(muscle_depth)
@@ -213,6 +228,7 @@ def main():
             outlier_list.append(outlier)
             colour_outlier_list.append(colour_outlier)
             area_mm_list.append(area_mm)
+            debug_info(debug_messages, img_id, args)
             if outlier == "Y" or colour_outlier == "Y":
                 os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
                 image_outlier = cv2.imread(f"{image_path}")
