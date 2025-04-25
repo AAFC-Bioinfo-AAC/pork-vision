@@ -308,7 +308,9 @@ def main():
     print_table_of_measurements(args.output_path+'marbling.csv')
     print_table_of_measurements(args.output_path+'colouring.csv')
     minutes,seconds = time_program(post_start)
-    print(f"RUNTIME FOR steps AFTER Image Analysis: {minutes}:{seconds:02d}")
+    print(f"RUNTIME FOR steps AFTER Image Analysis: {minutes}:{seconds:02d}\n\n")
+    minutes,seconds = time_program(start_time)
+    print(f"OVERALL RUNTIME FOR THE PROGRAM: {minutes}:{seconds:02d}")
 
 
 if __name__ == "__main__":
