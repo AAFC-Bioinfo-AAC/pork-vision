@@ -35,14 +35,11 @@ def mask_selector(current_image, debug_messages, confidence_threshold=0.4):
             confidence_muscle = confidences[j]
             muscle_bbox = current_image.boxes[j].xyxy  # Bounding box
             muscle_mask = current_image.masks[j].xy if has_masks else None  # Mask contour
-            debug_messages.append(f"Muscle:\n Bbox location: {muscle_bbox}.\n Mask location: {muscle_mask}")
 
         elif cls == 1 and confidences[j] > confidence_fat:  # Fat class
             confidence_fat = confidences[j]
             fat_bbox = current_image.boxes[j].xyxy  # Bounding box
             fat_mask = current_image.masks[j].xy if has_masks else None  # Mask contour
-            debug_messages.append(f"Fat:\n Bbox location: {fat_bbox}.\n Mask location: {fat_mask}")
-
     # If any of the masks are missing, return None
     if muscle_bbox is None or muscle_mask is None or fat_bbox is None or fat_mask is None:
         debug_messages.append(f"Skipping image - Missing valid muscle or fat mask.")
