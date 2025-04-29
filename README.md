@@ -134,7 +134,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 
 ---
 
-## **Measurement Parameters**
+## **Measurement Variables**
 | **Parameter**      | **Description**                                  | **Default Value**|
 |--------------------|--------------------------------------------------|------------------|
 | `cm_to_pixels`     | Conversion factor for cm to pixels.              | `140` px/cm      |
@@ -143,7 +143,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 
 ---
 
-## **Orientation Parameters**
+## **Orientation Variables**
 | **Parameter** | **Description** | **Default Value**                     |
 | ------------- | --------------- | ------------------------------------- |
 | `min_area`    | Minimum area to be considered valid         | `500` px  |
@@ -152,14 +152,14 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 
 ---
 
-## **Image Processing Parameters**
+## **Image Processing Variables**
 | **Parameter**         | **Description**                                      | **Default Value** |
 |-----------------------|------------------------------------------------------|-------------------|
 | `confidence_threshold` | Minimum confidence score for valid detection | `0.4` |
 
 ---
 
-## **Marbling Parameters**
+## **Marbling Variables**
 | **Parameter** | **Description**                     | **Default Value**          |
 |---------------|-------------------------------------|----------------------------|
 | `kernel_size` | Size of the Gaussian kernel         | `11`                       |
@@ -173,7 +173,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 
 ---
 
-## **Coloring Parameters**
+## **Coloring Variables**
 | **Parameter** | **Description**                     | **Default Value**          |
 |---------------|-------------------------------------|----------------------------|
 | `class_to_std` | The YOLO classes and what standard they correspond to | `Inverted (class 0 = standard 6)` |
