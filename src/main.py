@@ -127,7 +127,7 @@ def process_image(image_path, args):
         debug_messages.append(f"Conversion Calculation Time: {minutes}:{seconds:02d}\n\n")
 
         # Step 5: Create Canadian Standard chart using A.I model.
-        if run_marbling:
+        if run_marbling or run_measurement:
             debug_messages.append("COLOR MODEL:")
             color_model_start = time.time()
             debug_messages.append("Creating color standards using YOLO model.")
