@@ -152,7 +152,7 @@ def process_image(image_path, args):
             debug_messages.append(f"Skipping creation of color standards\n\n")
 
         # Step 6: Find Marbling
-        if run_marbling:
+        if run_marbling or run_measurement:
             debug_messages.append("MARBLING:")
             marbling_start = time.time()
             debug_messages.append("Processing Marbling")
