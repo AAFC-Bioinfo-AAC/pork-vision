@@ -20,4 +20,17 @@ def parse_args():
     parser.add_argument("--output_path", type=str, default="output/")
     parser.add_argument("--minimal", type=str, default=False)
     parser.add_argument("--debug", type=str, default=True)
-    return parser.parse_args()
+    parser.add_argument("--outputs", type=str, default="all",
+        help=(
+            "Comma-separated list of analyses to run e.g. python src/main.py --outputs measurement,marbling"
+            "Use 'all' to run everything."
+        )
+    )
+    args = parser.parse_args()
+
+    outs = [o.strip().lower() for o in args.outputs.split(",")]
+    if "all" in outs:
+        outs = ["measurement", "marbling", "colour"]
+    args.outputs = outs
+
+    return args

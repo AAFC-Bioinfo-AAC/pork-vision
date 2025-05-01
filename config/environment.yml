@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.9
-  - ultralytics=8.2.34
+  - ultralytics=8.3.68
   - segment-anything=1.0.1
   - numpy=2.0.0
   - pandas=2.2.3
