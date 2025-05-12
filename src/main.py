@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from utils.imports import *
-import concurrent.futures
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from ultralytics import YOLO
 from utils.preprocess import (
     mask_selector,
@@ -27,6 +27,11 @@ from utils.postprocess import (
 )
 import time
 
+def init_models(model_path, color_model_path):
+    global model, color_model
+    model       = YOLO(model_path)
+    color_model = YOLO(color_model_path)
+
 def time_program(start):
     """
     Used to time how long certain things took in an image.
@@ -49,7 +54,7 @@ def debug_info(debug_messages,image_id,args):
                 file.write(string+"\n")
             file.close()
 
-def process_image(model, image_path, args, color_model):
+def process_image(image_path, args):
     """Process an image: Run YOLO inference, extract measurements, and save annotated output."""
     try:
         start_time = time.time()
@@ -59,6 +64,10 @@ def process_image(model, image_path, args, color_model):
         debug_messages = []
         debug_messages.append(f"{image_id}:")
         print("\nProcessing:", image_id)
+
+        run_measurement = 'measurement' in args.outputs
+        run_marbling   = 'marbling' in args.outputs or 'colour' in args.outputs
+        run_colour     = 'colour' in args.outputs
         
         # Step 1: YOLO Inference
         debug_messages.append("SEGMENTATION MODEL:")
@@ -117,102 +126,120 @@ def process_image(model, image_path, args, color_model):
         debug_messages.append(f"Conversion Factor Finished")
         debug_messages.append(f"Conversion Calculation Time: {minutes}:{seconds:02d}\n\n")
 
-        # Step 6: Create Canadian Standard chart using A.I model.
-        debug_messages.append("COLOR MODEL:")
-        color_model_start = time.time()
-        debug_messages.append("Creating color standards using YOLO model.")
-        canadian_standards, outlier, debug_messages = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal, debug_messages)
-        if len(canadian_standards == 7):
-            debug_messages.append("Standards successfully created (RGB)\n"
-                                f"C6: {canadian_standards[0]}\n"
-                                f"C5: {canadian_standards[1]}\n"
-                                f"C4: {canadian_standards[2]}\n"
-                                f"C3: {canadian_standards[3]}\n"
-                                f"C2: {canadian_standards[4]}\n"
-                                f"C1: {canadian_standards[5]}\n"
-                                f"C0: {canadian_standards[6]}\n"
-            )
+        # Step 5: Create Canadian Standard chart using A.I model.
+        if run_marbling or run_measurement:
+            debug_messages.append("COLOR MODEL:")
+            color_model_start = time.time()
+            debug_messages.append("Creating color standards using YOLO model.")
+            canadian_standards, outlier, debug_messages = create_coloring_standards(rotated_image, color_model, image_id, args.output_path+'/colouring', outlier, args.minimal, debug_messages)
+            if len(canadian_standards) == 7:
+                debug_messages.append("Standards successfully created (RGB)\n"
+                                    f"C6: {canadian_standards[0]}\n"
+                                    f"C5: {canadian_standards[1]}\n"
+                                    f"C4: {canadian_standards[2]}\n"
+                                    f"C3: {canadian_standards[3]}\n"
+                                    f"C2: {canadian_standards[4]}\n"
+                                    f"C1: {canadian_standards[5]}\n"
+                                    f"C0: {canadian_standards[6]}\n"
+                )
+            else:
+                debug_messages.append("Error with finding standards")
+            minutes, seconds = time_program(color_model_start)
+            debug_messages.append(f"Color Model Finished")
+            debug_messages.append(f"Color Model Time: {minutes}:{seconds:02d}\n\n")
         else:
-             debug_messages.append("Error with finding standards")
-        minutes, seconds = time_program(color_model_start)
-        debug_messages.append(f"Color Model Finished")
-        debug_messages.append(f"Color Model Time: {minutes}:{seconds:02d}\n\n")
+            canadian_standards = None
+            debug_messages.append(f"Skipping creation of color standards\n\n")
 
-        # Step 7: Find Marbling
-        debug_messages.append("MARBLING:")
-        marbling_start = time.time()
-        debug_messages.append("Processing Marbling")
-        marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
-        debug_messages.append("Marbling successfully processed!")
-        debug_messages.append(f"area in px^2: {area_px}")
-        area_mm = area_px/((1/(conversion_factor))**2)
-        debug_messages.append(f"Calculated area in mm^2: {area_mm}")
-        if args.minimal == False:
-            cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
-        minutes,seconds = time_program(marbling_start)
-        debug_messages.append(f"MARBLING FINISHED")
-        debug_messages.append(f"Marbling Time: {minutes}:{seconds:02d}\n\n")
+        # Step 6: Find Marbling
+        if run_marbling or run_measurement:
+            debug_messages.append("MARBLING:")
+            marbling_start = time.time()
+            debug_messages.append("Processing Marbling")
+            marbling_mask, eroded_mask, marbling_percentage, area_px = process_marbling(rotated_image, rotated_muscle_mask, args.output_path+'/marbling', canadian_standards, args.minimal, base_filename=image_id)
+            debug_messages.append("Marbling successfully processed!")
+            debug_messages.append(f"area in px^2: {area_px}")
+            area_mm = area_px/((1/(conversion_factor))**2)
+            debug_messages.append(f"Calculated area in mm^2: {area_mm}")
+            if args.minimal == False:
+                cv2.imwrite(f"{args.output_path}/marbling/{image_id}/{image_id}_fat_mask.jpg", rotated_fat_mask)
+            minutes,seconds = time_program(marbling_start)
+            debug_messages.append(f"MARBLING FINISHED")
+            debug_messages.append(f"Marbling Time: {minutes}:{seconds:02d}\n\n")
+        else:
+            marbling_mask = eroded_mask = None
+            marbling_percentage = area_px = area_mm = 0
+            debug_messages.append(f"Skipping marbling analysis\n\n")
 
-        # Step 8: Perform color grading
-        debug_messages.append("COLOR GRADING:")
-        color_grading_start = time.time()
-        debug_messages.append("Performing color grading")
-        canadian_classified_standard, lean_mask, color_outlier = colour_grading(
-            rotated_image, eroded_mask, marbling_mask, args.output_path+'/colouring', image_id, canadian_standards, args.minimal
-        )
-        debug_messages.append("COLOR GRADING FINISHED!")
-        minutes,seconds = time_program(color_grading_start)
-        debug_messages.append(f"Color Grading Time: {minutes}:{seconds:02d}\n\n")
+        # Step 7: Perform color grading
+        if run_colour:
+            debug_messages.append("COLOR GRADING:")
+            color_grading_start = time.time()
+            debug_messages.append("Performing color grading")
+            canadian_classified_standard, lean_mask, color_outlier = colour_grading(
+                rotated_image, eroded_mask, marbling_mask, args.output_path+'/colouring', image_id, canadian_standards, args.minimal
+            )
+            debug_messages.append("COLOR GRADING FINISHED!")
+            minutes,seconds = time_program(color_grading_start)
+            debug_messages.append(f"Color Grading Time: {minutes}:{seconds:02d}\n\n")
+        else:
+            canadian_classified_standard = lean_mask = color_outlier = None
+            debug_messages.append(f"Skipping color grading\n\n")
 
-        # Step 9: Measurement
-        debug_messages.append("MEASUREMENT:")
-        measurement_start = time.time()
-        debug_messages.append("Finding the muscle angle")
-        angle = get_muscle_rotation_angle(rotated_muscle_mask)
-        if angle is None:
-            outlier = "Y"
-            debug_messages.append(f"ERROR: ANGLE is None")
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
-        debug_messages.append("Success!")
-        debug_messages.append("Finding the longest horizontal segment in the muscle mask")
-        muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
-        if muscle_width_start is None or muscle_width_end is None:
-            outlier = "Y"
-            debug_messages.append(f"ERROR: Muscle width is None")
-            return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
-        debug_messages.append("Success!")
-        muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
-        debug_messages.append(f"Muscle Width in pixels = {muscle_width}")
-        debug_messages.append(f"Finding the midline between muscle and best fat")
-        midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
-        if midline_position is None:
-            outlier = "Y"
-            debug_messages.append(f"ERROR: Midline position is None")
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
-        debug_messages.append("Success!")
-        debug_messages.append("Finding the Muscle depth")
-        muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle, (1/(conversion_factor)*10))
-        if muscle_depth_start is None or muscle_depth_end is None:
-            outlier = "Y"
-            debug_messages.append(f"ERROR: Muscle Depth is None")
-            return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
-        debug_messages.append("Success!")
-        muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
-        debug_messages.append(f"Muscle Depth in pixels = {muscle_depth} px")
-        debug_messages.append("Finding the fat depth!")
-        fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
-        if fat_depth_start is None or fat_depth_end is None:
-            outlier = "Y"
-            debug_messages.append(f"ERROR: Fat depth is None")
-            return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
-        debug_messages.append(f"Success!")
-        fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
-        debug_messages.append(f"Fat depth in pixels = {fat_depth}")
-        minutes,seconds = time_program(measurement_start)
-        debug_messages.append("MEASUREMENT FINISHED")
-        debug_messages.append(f"Measurement Time: {minutes}:{seconds:02d}\n\n")
-        # Step 7: Save annotated image
-        if args.minimal == False:
+        # Step 8: Measurement
+        if run_measurement:
+            debug_messages.append("MEASUREMENT:")
+            measurement_start = time.time()
+            debug_messages.append("Finding the muscle angle")
+            angle = get_muscle_rotation_angle(rotated_muscle_mask)
+            if angle is None:
+                outlier = "Y"
+                debug_messages.append(f"ERROR: ANGLE is None")
+                return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+            debug_messages.append("Success!")
+            debug_messages.append("Finding the longest horizontal segment in the muscle mask")
+            muscle_width_start, muscle_width_end = measure_longest_horizontal_segment(rotated_muscle_mask, angle)
+            if muscle_width_start is None or muscle_width_end is None:
+                outlier = "Y"
+                debug_messages.append(f"ERROR: Muscle width is None")
+                return extract_image_id(image_path), 0, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+            debug_messages.append("Success!")
+            muscle_width = np.linalg.norm(np.array(muscle_width_start) - np.array(muscle_width_end))
+            debug_messages.append(f"Muscle Width in pixels = {muscle_width}")
+            debug_messages.append(f"Finding the midline between muscle and best fat")
+            midline_position, midline_point = find_midline_using_fat_extremes(rotated_fat_mask)
+            if midline_position is None:
+                outlier = "Y"
+                debug_messages.append(f"ERROR: Midline position is None")
+                return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+            debug_messages.append("Success!")
+            debug_messages.append("Finding the Muscle depth")
+            muscle_depth_start, muscle_depth_end = measure_vertical_segment(rotated_muscle_mask, midline_position, angle, (1/(conversion_factor)*10))
+            if muscle_depth_start is None or muscle_depth_end is None:
+                outlier = "Y"
+                debug_messages.append(f"ERROR: Muscle Depth is None")
+                return extract_image_id(image_path), muscle_width, 0, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+            debug_messages.append("Success!")
+            muscle_depth = np.linalg.norm(np.array(muscle_depth_start) - np.array(muscle_depth_end))
+            debug_messages.append(f"Muscle Depth in pixels = {muscle_depth} px")
+            debug_messages.append("Finding the fat depth!")
+            fat_depth_start, fat_depth_end = extend_vertical_line_to_fat(rotated_fat_mask, (muscle_depth_start, muscle_depth_end))
+            if fat_depth_start is None or fat_depth_end is None:
+                outlier = "Y"
+                debug_messages.append(f"ERROR: Fat depth is None")
+                return extract_image_id(image_path), muscle_width, muscle_depth, 0, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, color_outlier, image_path, area_mm, debug_messages
+            debug_messages.append(f"Success!")
+            fat_depth = np.linalg.norm(np.array(fat_depth_start) - np.array(fat_depth_end))
+            debug_messages.append(f"Fat depth in pixels = {fat_depth}")
+            minutes,seconds = time_program(measurement_start)
+            debug_messages.append("MEASUREMENT FINISHED")
+            debug_messages.append(f"Measurement Time: {minutes}:{seconds:02d}\n\n")
+        else:
+            muscle_width = muscle_depth = fat_depth = 0
+            debug_messages.append(f"Skipping measurement\n\n")
+
+        # Step 9: Save annotated image
+        if run_measurement and args.minimal == False:
             debug_messages.append("Saving the annotated image")
             save_annotated_image(
                 rotated_image, (muscle_width_start, muscle_width_end), (muscle_depth_start, muscle_depth_end),
@@ -229,8 +256,10 @@ def process_image(model, image_path, args, color_model):
                 image_id=extract_image_id(image_path),
                 rois_folder=args.output_path+'/rois'
             )
+        
         minutes,seconds = time_program(start_time)
         debug_messages.append(f"OVERALL RUNTIME for {image_id}: {minutes}:{seconds:02d}")
+        
         return (
             image_id,
             int(round(muscle_width)),
@@ -248,7 +277,6 @@ def process_image(model, image_path, args, color_model):
             debug_messages
         )
             
-
     except Exception as e:
         debug_messages.append(f"Error processing {image_id}: {e}")
         minutes,seconds = time_program(start_time)
@@ -259,6 +287,9 @@ def process_image(model, image_path, args, color_model):
 def main():
     start_time = time.time()
     args = parse_args()
+    run_measurement = 'measurement' in args.outputs
+    run_marbling   = 'marbling' in args.outputs
+    run_colour     = 'colour' in args.outputs
 
     # Step 1: Get all image paths
     image_paths = sorted([os.path.join(args.image_path, img) for img in os.listdir(args.image_path)])
@@ -268,16 +299,14 @@ def main():
     canadian_classified_standard_list, lean_mask_list, outlier_list, colour_outlier_list = [], [], [], []
 
     max_workers = min(4, os.cpu_count() // 2)
-    model = YOLO(args.model_path)
-    color_model = YOLO(args.color_model_path)
     os.makedirs(f'{args.output_path}', exist_ok=True)
     minutes,seconds = time_program(start_time)
     print(f"RUNTIME BEFORE PARALLEL PROCESSING/IMAGE ANALYSIS starts: {minutes}:{seconds:02d}")
 
     parallel_start = time.time()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = {executor.submit(process_image, model, img_path, args, color_model): img_path for img_path in image_paths}
-        for future in concurrent.futures.as_completed(futures):
+    with ProcessPoolExecutor(max_workers=max_workers, initializer=init_models, initargs=(args.model_path, args.color_model_path)) as executor:
+        futures = [executor.submit(process_image, img_path, args) for img_path in image_paths]
+        for future in as_completed(futures):
             result = future.result()
             img_id, muscle_width, muscle_depth, fat_depth, marbling_percentage, canadian_classified_standard, lean_mask, conversion_factor, area_px, outlier, colour_outlier, image_path,area_mm, debug_messages = result
             id_list.append(img_id)
@@ -298,16 +327,23 @@ def main():
                 image_outlier = cv2.imread(f"{image_path}")
                 cv2.imwrite(f"{args.output_path}/outlier/{img_id}.jpg", image_outlier)
 
-    minutes,seconds = time.time(parallel_start)
+    minutes,seconds = time_program(parallel_start)
     print(f"TOTAL RUNTIME FOR PARALLEL PROCESSING: {minutes}:{seconds:02d}\n\n")
     post_start = time.time()
+    
     # Step 3: Save and display results
-    save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
-    save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
-    save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
-    print_table_of_measurements(args.output_path+'measurement.csv')
-    print_table_of_measurements(args.output_path+'marbling.csv')
-    print_table_of_measurements(args.output_path+'colouring.csv')
+    if run_measurement:
+        save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
+        print_table_of_measurements(args.output_path+'measurement.csv')
+
+    if run_marbling:
+        save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
+        print_table_of_measurements(args.output_path+'marbling.csv')
+
+    if run_colour:
+        save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
+        print_table_of_measurements(args.output_path+'colouring.csv')
+
     minutes,seconds = time_program(post_start)
     print(f"RUNTIME FOR steps AFTER Image Analysis: {minutes}:{seconds:02d}\n\n")
     minutes,seconds = time_program(start_time)
