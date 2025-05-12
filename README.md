@@ -131,6 +131,7 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 | `--color_model_path` | Path to the trained YOLOv11 detection model. | `"src/models/color_100_last.pt"` |
 | `--minimal` | Option to specify if you want to save non-outlier images | False |
 | `--debug` | Option to specify if you want to see extra information/images | False |
+| `--outputs` | Option to specify which modules you would like to run (e.g. measurement, marbling, colour, all) | all |
 
 ---
 
