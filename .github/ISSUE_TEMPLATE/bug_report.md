@@ -9,17 +9,11 @@ assignees: ''
 ### Describe the Bug
 A clear and concise description of what the bug is.
 
-**Example**: "When I run the `alignment` step using the default configuration, the tool fails with a 'file not found' error for the reference genome."
-
 ### Expected Behavior
 A clear and concise description of what you expected to happen.
 
-**Example**: "The alignment step should complete successfully and produce an output file named aligned_reads.bam in the results/ folder."
-
 ### Actual Behavior
 A clear and concise description of what actually happened.
-
-**Example**: "The pipeline stops with an error stating that the reference genome file is missing, even though it is present in the specified directory."
 
 ### Screenshots or Logs
 If applicable, add screenshots or logs to help explain your problem.

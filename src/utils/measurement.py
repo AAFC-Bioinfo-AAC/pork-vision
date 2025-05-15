@@ -1,5 +1,6 @@
 from utils.imports import *
 import math
+args = parse_args()
 
 def measure_longest_horizontal_segment(muscle_mask, rotation_angle, step=1):
     """
@@ -500,9 +501,11 @@ def measure_ruler(image, image_id, outlier, minimal, debug_messages):
             outlier = "Y"
             return None, outlier, debug_messages
         if minimal==False:
-            debug_messages.append(f"Saving image to output/ruler_measurement")
-            os.makedirs('output/ruler_measurement', exist_ok=True)
-            cv2.imwrite(f"output/ruler_measurement/{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg", rotated_image)
+            ruler_dir = os.path.join(args.output_path, 'ruler_measurement')
+            debug_messages.append(f"Saving image to {ruler_dir}")
+            os.makedirs(ruler_dir, exist_ok=True)
+            filename = f"{image_id}_{pixel_count}px-{round(mm_line/10, 1)}cm.jpg"
+            cv2.imwrite(os.path.join(ruler_dir, filename), rotated_image)
         return conversion_factor, outlier, debug_messages
     except:
         outlier = "Y"

@@ -323,9 +323,20 @@ def main():
             area_mm_list.append(area_mm)
             debug_info(debug_messages, img_id, args)
             if outlier == "Y" or colour_outlier == "Y":
-                os.makedirs(f'{args.output_path}/outlier', exist_ok=True)
-                image_outlier = cv2.imread(f"{image_path}")
-                cv2.imwrite(f"{args.output_path}/outlier/{img_id}.jpg", image_outlier)
+                outlier_dir = os.path.join(args.output_path, 'outlier')
+                os.makedirs(outlier_dir, exist_ok=True)
+
+                if os.path.exists(image_path):
+                    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
+                    if img is not None:
+                        cv2.imwrite(
+                            os.path.join(outlier_dir, f"{img_id}.jpg"),
+                            img
+                        )
+                    else:
+                        print(f"[WARNING] Failed to load image for outlier: {image_path}")
+                else:
+                    print(f"[ERROR] Outlier image not found on disk: {image_path}")
 
     minutes,seconds = time_program(parallel_start)
     print(f"TOTAL RUNTIME FOR PARALLEL PROCESSING: {minutes}:{seconds:02d}\n\n")
@@ -333,16 +344,22 @@ def main():
     
     # Step 3: Save and display results
     if run_measurement:
-        save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, args.output_path+'measurement.csv', conversion_factor_list, area_px_list, outlier_list,area_mm_list)
-        print_table_of_measurements(args.output_path+'measurement.csv')
+        os.makedirs(args.output_path, exist_ok=True)
+        measurement_csv = os.path.join(args.output_path, 'measurement.csv')
+        save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, measurement_csv, conversion_factor_list, area_px_list, outlier_list,area_mm_list)
+        print_table_of_measurements(measurement_csv)
 
     if run_marbling:
-        save_marbling_csv(id_list, marbling_percentage_list, args.output_path+'marbling.csv')
-        print_table_of_measurements(args.output_path+'marbling.csv')
+        os.makedirs(args.output_path, exist_ok=True)
+        marbling_csv = os.path.join(args.output_path, 'marbling.csv')
+        save_marbling_csv(id_list, marbling_percentage_list, marbling_csv)
+        print_table_of_measurements(marbling_csv)
 
     if run_colour:
-        save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, args.output_path+'colouring.csv', colour_outlier_list)
-        print_table_of_measurements(args.output_path+'colouring.csv')
+        os.makedirs(args.output_path, exist_ok=True)
+        colouring_csv = os.path.join(args.output_path, 'colouring.csv')
+        save_colouring_csv(id_list, canadian_classified_standard_list, lean_mask_list, colouring_csv, colour_outlier_list)
+        print_table_of_measurements(colouring_csv)
 
     minutes,seconds = time_program(post_start)
     print(f"RUNTIME FOR steps AFTER Image Analysis: {minutes}:{seconds:02d}\n\n")
