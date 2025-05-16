@@ -298,7 +298,7 @@ def main():
     id_list, muscle_width_list, muscle_depth_list, fat_depth_list, marbling_percentage_list, conversion_factor_list, area_px_list, area_mm_list = [], [], [], [], [], [], [], []
     canadian_classified_standard_list, lean_mask_list, outlier_list, colour_outlier_list = [], [], [], []
 
-    max_workers = min(4, os.cpu_count() // 2)
+    max_workers = min(16, os.cpu_count() // 2)
     os.makedirs(f'{args.output_path}', exist_ok=True)
     minutes,seconds = time_program(start_time)
     print(f"RUNTIME BEFORE PARALLEL PROCESSING/IMAGE ANALYSIS starts: {minutes}:{seconds:02d}")
