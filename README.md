@@ -220,76 +220,61 @@ Before running the pipeline, ensure that:
 - The required models are placed in: src/models/
 
 To execute the pipeline, use the following command:
-
-    ```
-    sbatch porkvision.sh
-    ```
+    
+```
+sbatch porkvision.sh
+```
 
 ---
 
 ## OUTPUT
 
-Processed results will be saved in the output directory, organized into the following subfolders:
-- annotated_images/ – images with visualized measurements
-- segment/ – segmentation mask outputs
-- marbling/ – marbling detection results
-- colouring/ – color grading results
-- rois/ – saved ROI files for optional manual review or correction
+Processed results will be saved in the output directory, organized into the following structure:
+- subfolders:
+    - annotated_images/ – images with visualized measurements
+    - colouring/ – color grading results
+    - debug/
+    - segment/ – segmentation mask outputs
+    - marbling/ – marbling detection results
+    - predict/
+    - rois/ – saved ROI files for optional manual review or correction
+    - ruler_measurement
+- files:
+    - colouring.csv
+    - marbling.csv
+    - measurement.csv
 
+An example of the output folder stucture created from running the program with the test files in the **data** folder:
 
 ```
-|-- config
-|   |-- environment.yml
-|   `-- requirements.txt
-|-- data [Dataset to test on, by default 1 image; can contain any amount]
-|   |-- 103_LdLeanColor.JPG
-|-- docs
-|    |-- index.md
-|    |-- loin_segmentation_project_report.docx   [Older version report by Edward/Fatima]
-|    |-- deprecated_functions.txt [functions no longer in use, kept for archiving purposes]
-|-- output 
-|    |-- .gitkeep    
-|    |-- annotated_images
-|    |   |-- 103_LdLeanColor_annotated.JPG
-|    |-- rois
-|    |   |-- 103_LdLeanColour_fat.roi
-|    |   |-- 103_LdLeanColour_horizontal.roi
-|    |   `-- 103_LdLeanColour_vertical.roi
-|    |-- measurement.csv
-|    |-- colouring.csv
-|    |-- marbling.csv
-|    |-- colouring
-|    |   `-- Folders for each image containing LUTs + Color_Standard detection image
-|    |-- marbling
-|    |   `-- Folders for each image containing marbling masks, muscle region, fat mask
-|    |-- log.out
-|     `-- predict
-|         `-- 103_LdLeanColor.jpg
-|-- src
-|    |-- models
-|    |    |-- color_100_last.pt
-|    |    |-- last.pt [Old segmentation model]
-|    |     `-- Yolo_MuscleFat_Segment_98epoch.pt [New segmentation model] 
-|    |-- utils
-|    |   |-- colouring.py
-|    |   |-- imports.py
-|    |   |-- marbling.py
-|    |   |-- measurement.py
-|    |   |-- orientation.py
-|    |   |-- postprocess.py
-|    |   `-- preprocess.py
-|    `-- main.py
-|-- tests
-|-- .gitignore
-|-- CITATION.cff
-|-- CITATIONS.md
-|-- CODE_OF_CONDUCT.md
-|-- CONTRIBUTING.md
-|-- porkvision.sh
-|-- SECURITY.md
-|-- LICENSE
-|-- README.md
- `-- requirements.txt
+output/
+|-- annotated_images
+|   `-- annotated_103_LdLeanColor.JPG
+|-- colouring
+|   `-- 103_LdLeanColor
+|       |-- 103_LdLeanColor_Color_Detect.jpg
+|       `-- 103_LdLeanColor_canadian_lut.png
+|-- colouring.csv
+|-- debug
+|   `-- 103_LdLeanColor_DEBUGINFO.txt
+|-- marbling
+|   `-- 103_LdLeanColor
+|       |-- 103_LdLeanColor_fat_mask.jpg
+|       |-- 103_LdLeanColor_marbling_mask.jpg
+|       |-- 103_LdLeanColor_original_muscle_mask.jpg
+|       `-- 103_LdLeanColor_selective_muscle_mask.jpg
+|-- marbling.csv
+|-- measurement.csv
+|-- predict
+|   `-- 103_LdLeanColor.jpg
+|-- rois
+|   `-- 103_LdLeanColor
+|       |-- 103_LdLeanColor_fat.roi
+|       |-- 103_LdLeanColor_horizontal.roi
+|       `-- 103_LdLeanColor_vertical.roi
+`-- ruler_measurement
+    `-- 103_LdLeanColor_2133px-15.5cm.jpg
+
 ```
 
 ## KNOWN ISSUES
