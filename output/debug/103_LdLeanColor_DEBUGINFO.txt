@@ -1,0 +1,110 @@
+103_LdLeanColor:
+SEGMENTATION MODEL:
+Segmentation Model Time: 0:18
+
+
+Image is saved to output/predict
+
+
+PREPROCESSING:
+Converting muscle mask to image
+Cleaning mask with clean_detection
+1 Contour detected. No cleaning necessary.
+Converting fat mask to image
+Cleaning mask with clean_detection
+1 Contour detected. No cleaning necessary.
+Preprocessing Finished
+Preprocessing Time: 0:00
+
+
+ORIENTATION:
+GOOD: Fat detected at 1543 while muscle is at 2307 so fat above muscle
+Orientation Finished
+Orientation Time: 0:00
+
+
+CONVERSION FACTOR:
+Measuring Ruler in pixels to determine conversion factor
+Finding most accurate line
+2133 px Line found at offset_edge of 1 and offset_linegap of 2
+Correcting for ruler angling.
+Change in y coordinates is -2132
+Angle of the line is -87.98526633283643.
+Angle of the line is < -45, correcting by adding 90.
+Pixel count of ruler line after correcting for angles is: 2133 px
+Saving image to output/ruler_measurement
+Success!
+Conversion factor (mm/px) = 0.07266760431317393
+Conversion Factor Finished
+Conversion Calculation Time: 0:00
+
+
+COLOR MODEL:
+Creating color standards using YOLO model.
+Parsing through bounding boxes.
+[0, array([171,  90,  99])]
+[6, array([218, 187, 168])]
+[5, array([211, 173, 161])]
+[4, array([208, 161, 151])]
+[1, array([183, 103, 109])]
+[3, array([198, 141, 136])]
+[2, array([191, 123, 123])]
+Unsorted standard chart: [[0, array([171,  90,  99])], [6, array([218, 187, 168])], [5, array([211, 173, 161])], [4, array([208, 161, 151])], [1, array([183, 103, 109])], [3, array([198, 141, 136])], [2, array([191, 123, 123])]]
+Starting insertion sort
+Canadian Array (Std 6 to Std 0): [[        171          90          99]
+ [        183         103         109]
+ [        191         123         123]
+ [        198         141         136]
+ [        208         161         151]
+ [        211         173         161]
+ [        218         187         168]]
+Saving color detect image
+Standards successfully created (RGB)
+C6: [        171          90          99]
+C5: [        183         103         109]
+C4: [        191         123         123]
+C3: [        198         141         136]
+C2: [        208         161         151]
+C1: [        211         173         161]
+C0: [        218         187         168]
+
+Color Model Finished
+Color Model Time: 0:02
+
+
+MARBLING:
+Processing Marbling
+Marbling successfully processed!
+area in px^2: 847716
+Calculated area in mm^2: 4476.432762766861
+MARBLING FINISHED
+Marbling Time: 0:27
+
+
+COLOR GRADING:
+Performing color grading
+COLOR GRADING FINISHED!
+Color Grading Time: 0:01
+
+
+MEASUREMENT:
+Finding the muscle angle
+Success!
+Finding the longest horizontal segment in the muscle mask
+Success!
+Muscle Width in pixels = 1291.9999999999998
+Finding the midline between muscle and best fat
+Success!
+Finding the Muscle depth
+Success!
+Muscle Depth in pixels = 896.0 px
+Finding the fat depth!
+Success!
+Fat depth in pixels = 372.0336006330611
+MEASUREMENT FINISHED
+Measurement Time: 0:03
+
+
+Saving the annotated image
+Saving the ROI images
+OVERALL RUNTIME for 103_LdLeanColor: 1:01
