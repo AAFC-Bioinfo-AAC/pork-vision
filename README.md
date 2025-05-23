@@ -1,122 +1,121 @@
 # Porkvision
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-## ABOUT
-This project seeks to utilize computer vision in order to automate the analysis of pork chops.
-To manually measure these dimensions, employees use some pre-defined heuristics: \
-a)	The desired muscle width is defined as the length of the longest line segment that extends horizontally across the LD muscle. \
-b)	The muscle depth is measured 7 cm from the midline of the carcass and perpendicular to the skin. This is the measurement site used in the Canadian grading system (CAN site), (Pomar et al., 2001); \
-c)	The fat depth: the portion of the vertical line segment defined in (b) that extends through the upper fatty tissue.
-d)  The marbling percentage of the chop.
-e)  The color grading of the chop.
+## About
+Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements. This project has developed a new application to evaluate the center pork chops of loin primals (gold standard location for evaluation of pork quality) based on the most important quality attributes required by domestic and international buyers. Using an existing large pork phenomics image bank and dataset generated at the AAFC Lacombe Research and Development Centre (Lacombe, AB), the system was developed and validated under conditions mimicking commercial processing.
 
-We use an object detection model in order to automate this. All images used are similar to the one shown below, with the carcass contained in a white tray, as well as 3 color palettes (on the left, above, and below the carcass), there is a ruler that is consistently besides the pork loin carcass.
+This project implements an end-to-end Python-based image analysis pipeline to automate the evaluation of pork chops using computer vision and deep learning techniques. It replicates manual workflows traditionally performed using ImageJ and custom macros, streamlining the process while maintaining compatibility with the Canadian pork colour and marbling standards.
+
+The pipeline extracts quantitative measurements such as muscle width and depth, fat depth, marbling percentage, and color score from standardized pork chop images. It is designed to process large batches efficiently, making it well-suited for research and industry applications alike.
+
+Developed entirely in Python, the system leverages libraries such as PyTorch, OpenCV, and NumPy, and integrates deep learning models including:
+- A segmentation model for fat and muscle isolation
+- A YOLOv11 object detection model for identifying color standards
+- Custom image preprocessing and measurement algorithms for geometry and intensity-based analysis
+
+---
+
+## OVERVIEW
+
+The pork chop images have the following characteristics:
+- The pork loin is placed in the centre of a white tray
+- Three color reference palettes are placed along the left, top, and bottom inner edges of the tray.
+- A ruler is aligned consistently beside the pork chop to the right inner edge of the tray.
 
 <p align="center">
     <img src="./data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
-We wish to automate this tedious process while retaining acceptable accuracy, like so:
+In current practice, trained personnel use ImageJ along with pre-defined macros to measure features on pork chop images. These include:
+- Muscle Width: The longest horizontal segment across the longissimus dorsi (LD) muscle.
+- Muscle Depth: Measured 7 cm from the midline, perpendicular to the skin, at the CAN grading site (Pomar et al., 2001).
+- Fat Depth: The vertical distance from skin through the fat layer above the muscle.
+- Marbling: Estimated as the proportion of intramuscular fat within the LD muscle.
+- Color Score: Based on proximity to standard color references.
 
 <p align="center">
-    <img src="./output/marbling/103_LdLeanColor/103_LdLeanColor_marbling_mask.jpg" alt="Pork loin marbling mask." width="300" height="200">
-    <img src="./output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="300" height="200">
-    <img src="./output/colouring/103_LdLeanColor/103_LdLeanColor_canadian_lut.png" alt="Pork loin color LUT." width="300" height="200">
+    <img src="./output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="600" height="400">
 </p>
 
----
-
-## TABLE OF CONTENTS
-| **Section**                                | **Description**                                                                                           |
-|--------------------------------------------|-----------------------------------------------------------------------------------------------------------|
-| [ABOUT](#about)                            | An overview of the PorkVision project, introducing its purpose and process. |
-| [OVERVIEW](#overview)                      | A detailed step-by-step explanation of the project's processes, supported by a pipeline diagram illustrating the workflow. |
-| [DATA](#data)                              | Information about the dataset used, including its structure, example images, and naming conventions.      |
-| [PARAMETERS](#parameters)                  | A detailed reference to the parameters used throughout the project, categorized by functionality. |
-| [USAGE](#usage)                            | Instructions on setting up and running the project, including pre-requisites, environment setup, and usage examples. |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Pre-requisites](#pre-requisites) | A list of required dependencies, tools, and software to ensure the project runs correctly.                |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Instructions](#instructions)    | Step-by-step directions to execute the code and process data, with examples and troubleshooting tips.     |
-| &nbsp;&nbsp;&nbsp;&nbsp;[Notes](#notes)                     | Optional details, tips, or alternative methods for running the project effectively.                       |
-| [OUTPUT](#output)                          | A description of the files and directories generated, including results such as CSVs and annotated images. |
-| [KNOWN ISSUES](#known-issues)              | A record of known bugs or limitations in the project, with workarounds or references to potential fixes.  |
-| [CREDITS](#credits)                        | Acknowledgment of contributors, organizations, and teams that supported the project.                     |
-| [CONTRIBUTION](#contribution)              | Guidelines for contributing to PorkVision, including links to the `CONTRIBUTING.md` file.                |
-| [COPYRIGHT](#copyright)                    | Ownership details and intellectual property rights related to the project.                               |
-| [LICENSE](#license)                        | Licensing information for PorkVision, including a link to the `LICENSE` file for terms of use.           |
-| [PUBLICATIONS & ADDITIONAL RESOURCES](#publications--additional-resources) | References to related publications, resources, and supplementary materials.                              |
-| [CITATION](#citation)                      | Guidelines for citing PorkVision, with references to the `CITATION.cff` and `CITATIONS.md` files.        |
-
----
-
-## OVERVIEW
-The steps this code performs can be split into smaller processes.
-### **1. Pre-Processing**  
-- A trained segmentation model extracts and isolates a mask for the fat and the muscle from the image.  
-- These masks serve as input for measurement functions.
-
-
-### **2. Orientation**  
-Some images may be captured in different orientations (fat on the left, right, or bottom). To standardize inputs:  
-- The fat and muscle masks are analyzed to determine their relative positions.  
-- The image is rotated until the fat is positioned **on top** of the muscle.
-
-### **3. Image Analysis - Conversion Factor Calculation**
-Using OpenCV's Canny and HoughLinesP, we
-- Search for any straight lines in the image focusing on lines larger than 2000px (near the size of a ruler).
-- Using an estimation of 2137px for a 15.5cm ruler; we calculate the approximate cm value of the line and we get our conversion factor (mm/px).
-- Find the total area of the muscle in px^2, and we convert into mm^2.
-- Use the value of 10mm/140px if we are having difficulty finding a proper line.
-
-### **4. Image Analysis - Marbling Measurement**
-Using the binary muscle mask from our model, we:
-- Cut out potential fat that may exist in the perimeter of our image/mask region.
-- Preprocess the image to subtract the background, apply dynamic contrast stretch, and apply a LUT.
-- Threshhold further in order to capture the marbling regions within the mask.
-- Compare mask px to marbling px in order to determine marbling percentage.
-
-### **5. Image Analysis - Color Grading**
-We use a YOLOv11 model to detect the Canadian Color Standard and:
-- Capture the lean muscle utilizing the muscle mask.
-- Find the euclidean distances between a pixel and it's closest colour standard.
-- Use this data to convert the colors of the lean muscle into their closest standard.
-- Calculate the percentage of each standard in the muscle region.
-
-### **6. Image Analysis – Muscle Measurement**  
-Using geometric analysis of the muscle mask, we compute:  
-- **Muscle Width:** Measured as the **longest horizontal line** between the leftmost and rightmost points of the muscle mask.  
-- **Muscle Depth:** Measured as the vertical line 7cm inward from the midline of the carcass.     
-- The **x-coordinate** of the muscle depth measurement is used to **extend a vertical line upward** into the fat region.  
-- The **fat depth** is computed as the **distance between the topmost and bottommost points of the fat mask** at the selected x-coordinate.  
-
-
-### **7. Post-Processing & Output**  
-- Measurements are saved to a CSV file (`output/results.csv`).    
-- Annotated images with width, depth, and fat measurements drawn as overlay lines are saved to `output/annotated_images/`.
-- .roi files are saved to `output/rois/` incase a technician would like to manually verify measurements.    
+The automated image analysis pipeline performs the measurements described above through a sequence of modular stages, as outlined below and in the flowchart and images:
 
 **Process Flowchart**:
+
 ```mermaid
-    flowchart LR;
-       A{Input: Raw Images and Neural Network}-->B[Select Mask]
-            B-->C(Convert Contours to Images)
-            C-->D[Correct Image Orientation]
-            D-->E[Find Conversion Factor]
-            E-->F[Find Marbling]
-            F-->G[Standardize LAB channels]
-            G-->H[Find colouring]
-            H-->I(Measure Muscle Width and Depth and Fat Depth)
-            I-->J(Draw Lines on Images Using Measurements)
-            J-->K{Output: Processed Images and CSV}
+flowchart LR
+    A{{Input:<br>Raw Images & Neural Network}} --> B[Select Segmentation Mask]
+    B --> C[Convert Contours<br>to Masked Images]
+    C --> D[Correct Image<br>Orientation]
+    D --> E[Compute mm/px:<br>Conversion Factor]
+    E --> F[Detect<br>Marbling]
+    F --> G[Standardize<br>LAB Color Channels]
+    G --> H[Classify Muscle<br>Color Score]
+    H --> I[Measure:<br>Muscle Width & Depth<br>Fat Depth]
+    I --> J[Draw Measurements<br>on Annotated Image]
+    J --> K{{Output:<br>Processed Images & CSV}}
 ```
+
+   
+### 1. Preprocessing
+
+A trained segmentation model identifies and isolates **fat** and **muscle** regions in the input image. These masks form the foundation for all downstream measurements.
+
+### 2. Orientation Standardization
+
+To ensure uniform input across samples:
+
+- The spatial relationship between fat and muscle masks is analyzed.
+- The image is rotated, if necessary, so that the **fat layer** is always positioned **above** the muscle.
+
+### 3. Conversion Factor Calculation
+
+To establish real-world scale using OpenCV:
+
+- **Canny edge detection** and **HoughLinesP** are used to detect ruler lines.
+- Lines **longer than 2000 px** are assumed to represent a valid portion of a physical ruler (typically **15.5 cm ≈ 2137 px**).
+- A **mm/px conversion factor** is calculated from this line.
+- If no ruler is detected, a **default conversion factor** of **10 mm / 140 px** is applied.
+
+### 4. Marbling Detection
+
+Focused on the muscle mask:
+
+- Edge fat and background artifacts are removed.
+- Contrast is dynamically adjusted, and color enhancement is applied via **LUT**.
+- Marbling regions are extracted using thresholding.
+- **Marbling percentage** is computed as the ratio of **marbled area** to **total muscle area**.
+
+### 5. Color Score
+
+Using a YOLOv11-based model:
+
+- The model detects the **Canadian Color Standard** palettes in the image.
+- Muscle region colors are mapped to the closest standard using **Euclidean distance**.
+- The output includes the **percentage breakdown** of matched color standards.
+
+### 6. Muscle & Fat Measurements
+
+Geometric analysis of the segmentation masks provides:
+
+- **Muscle Width**: Longest horizontal span of the muscle mask.
+- **Muscle Depth**: Vertical depth measured **7 cm from the midline**.
+- **Fat Depth**: Vertical distance from the **top of the fat layer** to the **muscle** at the muscle depth coordinate.
+
+### 7. Post-Processing and Output
+
+The final output includes:
+
+- Results saved to: `output/results.csv`
+- Annotated images stored in: `output/annotated_images/`
+- ROI files saved to: `output/rois/` for manual review or correction of measurements.
 
 ---
 
 ## DATA
 
-The dataset that was used was obtained from studies of pork loin carcasses throughout the years. These were used to train the neural network that is used within this project. All are in a JPG format with a resolution of 5184x3456p or 3456px5184p. The images should be stored under the data directory and are named similarly. 
+The dataset used in this project was compiled from pork quality studies conducted over several years. These images were used to train the neural networks employed in the pipeline. All files are in JPG format with a resolution of 5184×3456 or 3456×5184 pixels, depending on orientation. To run the analysis, images should be placed in the data/ directory and follow a consistent naming convention.
 
-**Example:**
-- **103_LdLeanColor.JPG**
+Example filename: 103_LdLeanColor.JPG
 
 ---
 
@@ -183,8 +182,10 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 
 
 ## USAGE
+
 ### Pre-requisites
-**Programming Languages, Libraries, and frameworks**
+
+#### Programming Languages, Libraries, and frameworks
   - python=3.9
   - ultralytics=8.2.34
   - segment-anything=1.0.1
@@ -197,29 +198,45 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
   - opencv
   - scipy
 
-**Installation** \
-    1. Make sure to have conda installed and that you are in the project's repository. \
-    2.
+#### Installation
+
+1. Ensure you have Conda installed and are inside the root directory of the project repository.
+2. Create the environment using the provided environment file:
+
     ```
     conda env create -f environment.yml
-    ``` \
-    3.
+    ```
+
+3. Activate the environment
+
     ```
     conda activate porkvision-1.0.0
     ``` 
 
-### Instructions
-1. Ensure everything is contained to it's proper location.
-2. Make sure to have the proper models in src/models.
-3. Run with the following:
+#### Setup & Execution
+
+Before running the pipeline, ensure that:
+- All files are organized in their correct directories.
+- The required models are placed in: src/models/
+
+To execute the pipeline, use the following command:
+
     ```
     sbatch porkvision.sh
     ```
-4. The results can be found in the annotated_images, segment, marbling, colouring, and rois subdirectories in the output folder.
 
 ---
 
 ## OUTPUT
+
+Processed results will be saved in the output directory, organized into the following subfolders:
+- annotated_images/ – images with visualized measurements
+- segment/ – segmentation mask outputs
+- marbling/ – marbling detection results
+- colouring/ – color grading results
+- rois/ – saved ROI files for optional manual review or correction
+
+
 ```
 |-- config
 |   |-- environment.yml
@@ -274,24 +291,25 @@ The dataset that was used was obtained from studies of pork loin carcasses throu
 |-- README.md
  `-- requirements.txt
 ```
+
 ## KNOWN ISSUES
 N/A
 
 ---
 
 ## CREDITS
-We thank the following people and teams for their assistance in the development of this project:
-- Fatima Davelouis
-- Edward Yakubovich
-- Arun Kommadath
-- Sean Hill
-- Maaz Ali
-- Manuel Juarez
-- Sophie Zawadski
-- Bethany Uttaro
-- Lacey Hudson
-- Ibrahim Tarik
-- Rhona Thacker
+
+- Fatima Davelouis (Bioinformatician | Oct. 2023 - Feb. 2024): developed an initial version of the image analysis code to annotate a subset of images using a pre-trained U-Net model, combined with geometry-based analysis to extract muscle and fat measurements.
+- Edward Yakubovich (Bioinformatician | Apr. 2024 - Dec. 2024): trained new models using YOLO and SAM, and modified the code to extract muscle and fat measurements from a more diverse set of images.
+- Maaz Ali (Student bioinformatician | Jan. - Apr. 2025): designed the overall pipeline architecture, re-implemented the core codebase, managed version control using GitHub, and co-authored the project documentation. Additionally, retrained the fat segmentation model and trained a new color detection model. Developed modules for preprocessing, orientation, marbling, colouring, measurement, and post-processing.
+- Sean Hill (Student bioinformatician | From Jan. 2025): designed the overall pipeline architecture, re-implemented the core codebase, managed version control using GitHub, and co-authored the project documentation. Additionally, developed modules for preprocessing, orientation, marbling, colouring, measurement, and post-processing.
+- Tarek Ibrahim (Student bioinformatician | Jan. - Apr. 2025): Assisted with initial code refactoring.
+- Arun Kommadath (Bioinformatics team lead): coordinated project activities, performed code testing, reviewed documentation, and provided overall supervision and guidance.
+- Manuel Juarez (Research scientist): conceptualised the project and provided domain-specific expertise in meat science and grading standards, and advised on heuristic refinement.
+- Bethany Uttaro (Research scientist | retired): developed ImageJ macros based on domain-specific expertise in meat science and grading standards.
+- Sophie Zawadski (Research technician | retired): managed image data, manually annotated images and developed ImageJ macros.
+- Rhona Thacker (Research technician): managed image data, manually annotated images, applied ImageJ macros, reviewed annotated images and provided feedback for heuristic refinement.
+- Lacey Hudson (Research technician): manually annotated images, applied ImageJ macros, reviewed annotated images and provided feedback for heuristic refinement.
 
 ---
 
@@ -306,25 +324,19 @@ Government of Canada, Agriculture & Agri-Food Canada
 ---
 
 ## LICENSE
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+This project is licensed under the GPLv3 License. See [LICENSE](LICENSE) for details.
 
 ---
 
 ## PUBLICATIONS & ADDITIONAL RESOURCES
-- [Index.md](docs/index.md) [Contains documentation and additional installation instructions]
-- [Ultralytics YOLOv11](https://docs.ultralytics.com/)
-- [Segment Anything](https://github.com/facebookresearch/segment-anything)
-- [matplotlib](https://matplotlib.org/stable/index.html)
-- [NumPy](https://numpy.org/doc/stable/)
-- [OpenCV](https://docs.opencv.org/4.x/index.html)
-- [pandas](https://pandas.pydata.org/docs/)
-- [SciPy](https://scipy.org/)
-- [Shapely](https://shapely.readthedocs.io/en/stable/)
-- [scikit-image](https://scikit-image.org/docs/stable/)
-- [tabulate](https://pypi.org/project/tabulate/)
-- [roifile](https://pypi.org/project/roifile/)
+
+An extensive list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
 
 ---
 
 ## CITATION
-If you use this repository for your analysis, please cite it using the [CITATION.cff](CITATION.cff) file. An extensive list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
+
+If you use this repository for your analysis, please cite it using the [CITATION.cff](CITATION.cff) file.
+
+
+
