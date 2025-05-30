@@ -252,8 +252,13 @@ Before running the pipeline, ensure that:
 - All files are organized in their correct directories.
 - The required models are placed in: src/models/
 
-To execute the pipeline, use the following command:
-    
+To execute the pipeline locally, use the following command:
+```
+python ./src/main.py
+```
+
+To execute the pipeline on an HPC with SLURM, first complete the SLURM directive placeholders in porkvision.sh script and then run the following command:
+
 ```
 sbatch porkvision.sh
 ```
