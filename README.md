@@ -13,12 +13,12 @@
     - [7. Post-Processing and Output](#7-post-processing-and-output)
   - [Data](#data)
   - [Parameters](#parameters)
-    - [**General Parameters**](#general-parameters)
-    - [**Measurement Variables**](#measurement-variables)
-    - [**Orientation Variables**](#orientation-variables)
-    - [**Image Processing Variables**](#image-processing-variables)
-    - [**Marbling Variables**](#marbling-variables)
-    - [**Coloring Variables**](#coloring-variables)
+    - [General Parameters](#general-parameters)
+    - [Measurement Variables](#measurement-variables)
+    - [Orientation Variables](#orientation-variables)
+    - [Image Processing Variables](#image-processing-variables)
+    - [Marbling Variables](#marbling-variables)
+    - [Coloring Variables](#coloring-variables)
   - [Usage](#usage)
     - [Pre-requisites](#pre-requisites)
       - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
@@ -154,7 +154,7 @@ Example filename: 103_LdLeanColor.JPG
 
 ## Parameters
 
-### **General Parameters**
+### General Parameters
 | **Parameter**         | **Description**                                      | **Default Value**                  |
 |-----------------------|------------------------------------------------------|------------------------------------|
 | `--image_path`        | Path to input image(s) for processing.               | `"data/"`               |
@@ -167,7 +167,7 @@ Example filename: 103_LdLeanColor.JPG
 
 ---
 
-### **Measurement Variables**
+### Measurement Variables
 | **Variable**      | **Description**                                  | **Default Value**|
 |--------------------|--------------------------------------------------|------------------|
 | `cm_to_pixels`     | Conversion factor for cm to pixels.              | `140` px/cm      |
@@ -176,7 +176,7 @@ Example filename: 103_LdLeanColor.JPG
 
 ---
 
-### **Orientation Variables**
+### Orientation Variables
 | **Variable** | **Description** | **Default Value**                     |
 | ------------- | --------------- | ------------------------------------- |
 | `min_area`    | Minimum area to be considered valid         | `500` px  |
@@ -185,14 +185,14 @@ Example filename: 103_LdLeanColor.JPG
 
 ---
 
-### **Image Processing Variables**
+### Image Processing Variables
 | **Variable**         | **Description**                                      | **Default Value** |
 |-----------------------|------------------------------------------------------|-------------------|
 | `confidence_threshold` | Minimum confidence score for valid detection | `0.4` |
 
 ---
 
-### **Marbling Variables**
+### Marbling Variables
 | **Variable** | **Description**                     | **Default Value**          |
 |---------------|-------------------------------------|----------------------------|
 | `kernel_size` | Size of the Gaussian kernel         | `11`                       |
@@ -206,7 +206,7 @@ Example filename: 103_LdLeanColor.JPG
 
 ---
 
-### **Coloring Variables**
+### Coloring Variables
 | **Variable** | **Description**                     | **Default Value**          |
 |---------------|-------------------------------------|----------------------------|
 | `class_to_std` | The YOLO classes and what standard they correspond to | `Inverted (class 0 = standard 6)` |
