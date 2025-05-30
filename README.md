@@ -219,17 +219,17 @@ Example filename: 103_LdLeanColor.JPG
 ### Pre-requisites
 
 #### Programming Languages, Libraries, and frameworks
-  - python=3.9
-  - ultralytics=8.2.34
+  - numpy=2.2.6
+  - opencv=4.11.0
+  - pandas=2.2.3  
+  - python=3.13.3 
+  - pytorch=2.7.0
+  - roifile=2025.5.10
+  - scikit-image=0.25.2
+  - scipy=1.15.2
   - segment-anything=1.0.1
-  - numpy=2.0.0
-  - pandas=2.2.3
-  - pytorch=2.5.1
-  - scikit-image=0.24.0
-  - roifile
-  - tabulate
-  - opencv
-  - scipy
+  - tabulate=0.9.0
+  - ultralytics=8.3.146
 
 #### Installation
 
@@ -237,14 +237,19 @@ Example filename: 103_LdLeanColor.JPG
 2. Create the environment using the provided environment file:
 
     ```
-    conda env create -f environment.yml
+    conda env create -f config/environment_1.2.key.yml
     ```
+
+Also provided is a conda environment with all pinned versions of packages used at the time of testing.
+
 
 3. Activate the environment
 
     ```
-    conda activate porkvision-1.0.0
+    conda activate environment_1.2.key
     ``` 
+
+
 
 #### Setup & Execution
 
