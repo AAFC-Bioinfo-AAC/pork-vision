@@ -1,7 +1,7 @@
 #!/bin/bash -l
 #SBATCH --job-name=porkvision
 #SBATCH --cluster=<cluster name>
-#SBATCH --partition=standard
+#SBATCH --partition=<partition name>
 #SBATCH --account=<account name>
 #SBATCH --time=<time limit, e.g., 24:00:00 for 24 hours>
 #SBATCH --ntasks=1
