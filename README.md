@@ -1,6 +1,39 @@
 # Porkvision
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
+- [Porkvision](#porkvision)
+  - [About](#about)
+  - [Overview](#overview)
+    - [1. Preprocessing](#1-preprocessing)
+    - [2. Orientation Standardization](#2-orientation-standardization)
+    - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
+    - [4. Marbling Detection](#4-marbling-detection)
+    - [5. Color Score](#5-color-score)
+    - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
+    - [7. Post-Processing and Output](#7-post-processing-and-output)
+  - [Data](#data)
+  - [Parameters](#parameters)
+  - [**General Parameters**](#general-parameters)
+  - [**Measurement Variables**](#measurement-variables)
+  - [**Orientation Variables**](#orientation-variables)
+  - [**Image Processing Variables**](#image-processing-variables)
+  - [**Marbling Variables**](#marbling-variables)
+  - [**Coloring Variables**](#coloring-variables)
+  - [Usage](#usage)
+    - [Pre-requisites](#pre-requisites)
+      - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
+      - [Installation](#installation)
+      - [Setup \& Execution](#setup--execution)
+  - [Output](#output)
+  - [Known Issues](#known-issues)
+  - [Credits](#credits)
+  - [Contribution](#contribution)
+  - [Copyright](#copyright)
+  - [License](#license)
+  - [Publications and Additional Resources](#publications-and-additional-resources)
+  - [Citation](#citation)
+
+
 ## About
 Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements. This project has developed a new application to evaluate the center pork chops of loin primals (gold standard location for evaluation of pork quality) based on the most important quality attributes required by domestic and international buyers. Using an existing large pork phenomics image bank and dataset generated at the AAFC Lacombe Research and Development Centre (Lacombe, AB), the system was developed and validated under conditions mimicking commercial processing.
 
@@ -15,7 +48,7 @@ Developed entirely in Python, the system leverages libraries such as PyTorch, Op
 
 ---
 
-## OVERVIEW
+## Overview
 
 The pork chop images have the following characteristics:
 - The pork loin is placed in the centre of a white tray
@@ -111,7 +144,7 @@ The final output includes:
 
 ---
 
-## DATA
+## Data
 
 The dataset used in this project was compiled from pork quality studies conducted over several years. These images were used to train the neural networks employed in the pipeline. All files are in JPG format with a resolution of 5184×3456 or 3456×5184 pixels, depending on orientation. To run the analysis, images should be placed in the data/ directory and follow a consistent naming convention.
 
@@ -119,7 +152,7 @@ Example filename: 103_LdLeanColor.JPG
 
 ---
 
-## PARAMETERS
+## Parameters
 
 ## **General Parameters**
 | **Parameter**         | **Description**                                      | **Default Value**                  |
@@ -181,7 +214,7 @@ Example filename: 103_LdLeanColor.JPG
 ---
 
 
-## USAGE
+## Usage
 
 ### Pre-requisites
 
@@ -227,7 +260,7 @@ sbatch porkvision.sh
 
 ---
 
-## OUTPUT
+## Output
 
 Processed results will be saved in the output directory, organized into the following structure:
 - subfolders:
@@ -277,12 +310,12 @@ output/
 
 ```
 
-## KNOWN ISSUES
+## Known Issues
 N/A
 
 ---
 
-## CREDITS
+## Credits
 
 - Fatima Davelouis (Bioinformatician | Oct. 2023 - Feb. 2024): developed an initial version of the image analysis code to annotate a subset of images using a pre-trained U-Net model, combined with geometry-based analysis to extract muscle and fat measurements.
 - Edward Yakubovich (Bioinformatician | Apr. 2024 - Dec. 2024): trained new models using YOLO and SAM, and modified the code to extract muscle and fat measurements from a more diverse set of images.
@@ -298,28 +331,28 @@ N/A
 
 ---
 
-## CONTRIBUTION
+## Contribution
 If you would like to contribute to this project, please consult [CONTRIBUTING.md](.github/CONTRIBUTING.md)
 
 ---
 
-## COPYRIGHT
+## Copyright
 Government of Canada, Agriculture & Agri-Food Canada
 
 ---
 
-## LICENSE
+## License
 This project is licensed under the GPLv3 License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## PUBLICATIONS & ADDITIONAL RESOURCES
+## Publications and Additional Resources
 
 An extensive list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
 
 ---
 
-## CITATION
+## Citation
 
 If you use this repository for your analysis, please cite it using the [CITATION.cff](CITATION.cff) file.
 
