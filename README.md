@@ -262,52 +262,57 @@ sbatch porkvision.sh
 
 ## Output
 
-Processed results will be saved in the output directory, organized into the following structure:
-- subfolders:
-    - annotated_images/ – images with visualized measurements
-    - colouring/ – color grading results
-    - debug/
-    - segment/ – segmentation mask outputs
-    - marbling/ – marbling detection results
-    - predict/
-    - rois/ – saved ROI files for optional manual review or correction
-    - ruler_measurement
-- files:
-    - colouring.csv
-    - marbling.csv
-    - measurement.csv
+Processed results are saved in the `output` directory, organized as follows:
 
-An example of the output folder stucture created from running the program with the test files in the **data** folder:
+- **annotated_images/** – Images with visualized measurements (e.g., `annotated_*.JPG`)
+- **colouring/** – Color grading results, including:
+  - Detected color standard overlays (e.g., `*_Color_Detect.jpg`)
+  - Canadian LUT visualizations (e.g., `*_canadian_lut.png`)
+- **colouring.csv** – Tabular summary of color grading results for all processed images
+- **debug/** – Debugging information and logs (e.g., `*_DEBUGINFO.txt`)
+- **marbling/** – Marbling detection results, including:
+  - Fat masks (e.g., `*_fat_mask.jpg`)
+  - Marbling masks (e.g., `*_marbling_mask.jpg`)
+  - Original and selective muscle masks
+- **marbling.csv** – Tabular summary of marbling measurements
+- **measurement.csv** – Tabular summary of muscle and fat measurements
+- **predict/** – Segmentation or detection overlays for each image
+- **rois/** – Saved ROI files for manual review or correction, organized per image:
+  - Fat, horizontal, and vertical ROI files (e.g., `*_fat.roi`, `*_horizontal.roi`, `*_vertical.roi`)
+- **ruler_measurement/** – Images showing detected ruler lines and conversion factors (e.g., `*_2133px-15.5cm.jpg`)
+
+**Example output folder structure:**
+
+An example of the output folder stucture created from running the program with the test files in the data folder. A subfolder will be created for each processed image, organized by image name. CSV files provide summary tables for batch analysis.
 
 ```
 output/
-|-- annotated_images
+|-- annotated_images/
 |   `-- annotated_103_LdLeanColor.JPG
-|-- colouring
-|   `-- 103_LdLeanColor
+|-- colouring/
+|   `-- 103_LdLeanColor/
 |       |-- 103_LdLeanColor_Color_Detect.jpg
 |       `-- 103_LdLeanColor_canadian_lut.png
 |-- colouring.csv
-|-- debug
+|-- debug/
 |   `-- 103_LdLeanColor_DEBUGINFO.txt
-|-- marbling
-|   `-- 103_LdLeanColor
+|-- marbling/
+|   `-- 103_LdLeanColor/
 |       |-- 103_LdLeanColor_fat_mask.jpg
 |       |-- 103_LdLeanColor_marbling_mask.jpg
 |       |-- 103_LdLeanColor_original_muscle_mask.jpg
 |       `-- 103_LdLeanColor_selective_muscle_mask.jpg
 |-- marbling.csv
 |-- measurement.csv
-|-- predict
+|-- predict/
 |   `-- 103_LdLeanColor.jpg
-|-- rois
-|   `-- 103_LdLeanColor
+|-- rois/
+|   `-- 103_LdLeanColor/
 |       |-- 103_LdLeanColor_fat.roi
 |       |-- 103_LdLeanColor_horizontal.roi
 |       `-- 103_LdLeanColor_vertical.roi
-`-- ruler_measurement
+`-- ruler_measurement/
     `-- 103_LdLeanColor_2133px-15.5cm.jpg
-
 ```
 
 ## Known Issues
