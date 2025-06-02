@@ -352,7 +352,7 @@ This warnings indicates broken support for the dtype!
 ---
 
 ## Contribution
-If you would like to contribute to this project, please consult [CONTRIBUTING.md](.github/CONTRIBUTING.md)
+If you would like to contribute to this project, please consult [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ---
 
