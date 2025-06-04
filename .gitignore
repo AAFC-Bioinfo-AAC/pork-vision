@@ -172,3 +172,7 @@ cython_debug/
 
 *.pt
 .gitkeep
+
+# Visual Studio Code settings
+#  This file is used to store workspace settings for Visual Studio Code.
+.vscode/settings.json
