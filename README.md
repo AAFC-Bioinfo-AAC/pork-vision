@@ -282,9 +282,11 @@ sbatch porkvision.sh
 
 When running the script, ignore the following warning if it shows:
 ```
-***envs/porkvision-1.1.0/lib/python3.9/site-packages/numpy/_core/getlimits.py:545: UserWarning: Signature b'\x00\xd0\xcc\xcc\xcc\xcc\xcc\xcc\xfb\xbf\x00\x00\x00\x00\x00\x00' for <class 'numpy.longdouble'> does not match any known type: falling back to type probe function.
+***envs/porkvision-1.1.0/lib/python3.9/site-packages/numpy/_core/getlimits.py:545:
+UserWarning: Signature b'\x00\xd0\xcc\xcc\xcc\xcc\xcc\xcc\xfb\xbf\x00\x00\x00\x00\x00\x00' 
+for <class 'numpy.longdouble'> does not match any known type: falling back to type probe function.
 This warning indicates broken support for the dtype!
-  machar = _get_machar(dtype)***
+  machar = _get_machar(dtype)
 ```
 This warning can be safely ignored and typically does not affect script execution.
 
