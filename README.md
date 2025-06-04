@@ -37,9 +37,9 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   - [Pre-requisites](#pre-requisites)
     - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
     - [Installation](#installation)
-    - [Setup \& Execution](#setup--execution)
+  - [Instructions](#instructions)
+  - [Notes](#notes)
 - [Output](#output)
-- [Known Issues](#known-issues)
 - [Credits](#credits)
 - [Contribution](#contribution)
 - [Copyright](#copyright)
@@ -256,12 +256,12 @@ Also provided is a conda environment with all pinned versions of key packages us
 3. Activate the environment
 
     ```
-    conda activate environment_1.2.key
+    conda activate porkvision-1.0.0
     ``` 
 
 
 
-#### Setup & Execution
+### Instructions
 
 Before running the pipeline, ensure that:
 - All files are organized in their correct directories.
@@ -277,6 +277,16 @@ To execute the pipeline on an HPC with SLURM, first complete the SLURM directive
 ```
 sbatch porkvision.sh
 ```
+
+### Notes
+
+When running the script, ignore the following warning if it shows:
+```
+***envs/porkvision-1.1.0/lib/python3.9/site-packages/numpy/_core/getlimits.py:545: UserWarning: Signature b'\x00\xd0\xcc\xcc\xcc\xcc\xcc\xcc\xfb\xbf\x00\x00\x00\x00\x00\x00' for <class 'numpy.longdouble'> does not match any known type: falling back to type probe function.
+This warning indicates broken support for the dtype!
+  machar = _get_machar(dtype)***
+```
+This warning can be safely ignored and typically does not affect script execution.
 
 ---
 
@@ -303,7 +313,7 @@ Processed results are saved in the `output` directory, organized as follows:
 
 **Example output folder structure:**
 
-An example of the output folder stucture created from running the program with the test files in the data folder. A subfolder will be created for each processed image, organized by image name. CSV files provide summary tables for batch analysis.
+An example of the output folder structure created from running the program with the test files in the data folder. A subfolder will be created for each processed image, organized by image name. CSV files provide summary tables for batch analysis.
 
 ```
 output/
@@ -335,14 +345,6 @@ output/
     `-- 103_LdLeanColor_2133px-15.5cm.jpg
 ```
 
-## Known Issues
-
-When running the script, ignore the following warning if it shows:
-***envs/porkvision-1.1.0/lib/python3.9/site-packages/numpy/_core/getlimits.py:545: UserWarning: Signature b'\x00\xd0\xcc\xcc\xcc\xcc\xcc\xcc\xfb\xbf\x00\x00\x00\x00\x00\x00' for <class 'numpy.longdouble'> does not match any known type: falling back to type probe function.
-This warnings indicates broken support for the dtype!
-  machar = _get_machar(dtype)***
-
-
 ---
 
 ## Credits
@@ -362,12 +364,12 @@ This warnings indicates broken support for the dtype!
 ---
 
 ## Contribution
-If you would like to contribute to this project, please consult [CONTRIBUTING.md](CONTRIBUTING.md)
+If you would like to contribute to this project, please review the guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 
 ---
 
 ## Copyright
-Government of Canada, Agriculture & Agri-Food Canada
+Government of Canada, Agriculture & Agri-Food Canada (AAFC)
 
 ---
 
@@ -378,7 +380,7 @@ This project is licensed under the GPLv3 License. See [LICENSE](LICENSE) for det
 
 ## Publications and Additional Resources
 
-An extensive list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
+A list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
 
 ---
 
