@@ -100,7 +100,8 @@ flowchart TD
    
 ### 1. Preprocessing
 
-A trained segmentation model identifies and isolates **fat** and **muscle** regions in the input image. These masks form the foundation for all downstream measurements.
+A trained segmentation model identifies and isolates **fat** and **muscle** regions in the input image. These masks form the foundation for all downstream measurements. A total of 286 images were used to train the muscle/fat model. 
+ 
 
 ### 2. Orientation Standardization
 
@@ -131,7 +132,7 @@ Focused on the muscle mask:
 
 Using a YOLOv11-based model:
 
-- The model detects the **Canadian Color Standard** palettes in the image.
+- The model detects the **Canadian Color Standard** palettes in the image. A total of 161 images were used to train the color model.
 - Muscle region colors are mapped to the closest standard using **Euclidean distance**.
 - The output includes the **percentage breakdown** of matched color standards.
 
