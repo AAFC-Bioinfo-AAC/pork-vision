@@ -1,52 +1,52 @@
+<!-- omit in toc -->
 # Porkvision
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-- [Porkvision](#porkvision)
-  - [About](#about)
-  - [Overview](#overview)
-    - [1. Preprocessing](#1-preprocessing)
-    - [2. Orientation Standardization](#2-orientation-standardization)
-    - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
-    - [4. Marbling Detection](#4-marbling-detection)
-    - [5. Color Score](#5-color-score)
-    - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
-    - [7. Post-Processing and Output](#7-post-processing-and-output)
-  - [Data](#data)
-  - [Parameters](#parameters)
-    - [General Parameters](#general-parameters)
-    - [Measurement Variables](#measurement-variables)
-    - [Orientation Variables](#orientation-variables)
-    - [Image Processing Variables](#image-processing-variables)
-    - [Marbling Variables](#marbling-variables)
-    - [Coloring Variables](#coloring-variables)
-  - [Usage](#usage)
-    - [Pre-requisites](#pre-requisites)
-      - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
-      - [Installation](#installation)
-      - [Setup \& Execution](#setup--execution)
-  - [Output](#output)
-  - [Known Issues](#known-issues)
-  - [Credits](#credits)
-  - [Contribution](#contribution)
-  - [Copyright](#copyright)
-  - [License](#license)
-  - [Publications and Additional Resources](#publications-and-additional-resources)
-  - [Citation](#citation)
-
-
+<!-- omit in toc -->
 ## About
-Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements. This project has developed a new application to evaluate the center pork chops of loin primals (gold standard location for evaluation of pork quality) based on the most important quality attributes required by domestic and international buyers. Using an existing large pork phenomics image bank and dataset generated at the AAFC Lacombe Research and Development Centre (Lacombe, AB), the system was developed and validated under conditions mimicking commercial processing.
+Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements.
 
-This project implements an end-to-end Python-based image analysis pipeline to automate the evaluation of pork chops using computer vision and deep learning techniques. It replicates manual workflows traditionally performed using ImageJ and custom macros, streamlining the process while maintaining compatibility with the Canadian pork colour and marbling standards.
+Here we developed a Python-based image analysis pipeline using computer vision and deep learning techniques to automate the evaluation of center pork chops of loin primals (gold standard location for evaluation of pork quality) based on the most important quality attributes required by domestic and international buyers. Using an existing large pork phenomics image bank and dataset generated at the AAFC Lacombe Research and Development Centre (Lacombe, AB), the system was developed and validated under conditions mimicking commercial processing. It replicates manual workflows traditionally performed using ImageJ and custom macros, streamlining the process while maintaining compatibility with the Canadian pork colour and marbling standards.
 
-The pipeline extracts quantitative measurements such as muscle width and depth, fat depth, marbling percentage, and color score from standardized pork chop images. It is designed to process large batches efficiently, making it well-suited for research and industry applications alike.
-
-Developed entirely in Python, the system leverages libraries such as PyTorch, OpenCV, and NumPy, and integrates deep learning models including:
+The pipeline extracts quantitative measurements such as muscle width and depth, fat depth, marbling percentage, and color score from standardized pork chop images. It is designed to process large batches efficiently, making it well-suited for research and industry applications alike. Developed entirely in Python, the system leverages libraries such as PyTorch, OpenCV, and NumPy, and integrates deep learning models including:
 - A segmentation model for fat and muscle isolation
 - A YOLOv11 object detection model for identifying color standards
 - Custom image preprocessing and measurement algorithms for geometry and intensity-based analysis
-
+  
 ---
+
+<!-- omit in toc -->
+## Table of Contents
+- [Overview](#overview)
+  - [1. Preprocessing](#1-preprocessing)
+  - [2. Orientation Standardization](#2-orientation-standardization)
+  - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
+  - [4. Marbling Detection](#4-marbling-detection)
+  - [5. Color Score](#5-color-score)
+  - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
+  - [7. Post-Processing and Output](#7-post-processing-and-output)
+- [Data](#data)
+- [Parameters](#parameters)
+  - [General Parameters](#general-parameters)
+  - [Measurement Variables](#measurement-variables)
+  - [Orientation Variables](#orientation-variables)
+  - [Image Processing Variables](#image-processing-variables)
+  - [Marbling Variables](#marbling-variables)
+  - [Coloring Variables](#coloring-variables)
+- [Usage](#usage)
+  - [Pre-requisites](#pre-requisites)
+    - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
+    - [Installation](#installation)
+    - [Setup \& Execution](#setup--execution)
+- [Output](#output)
+- [Known Issues](#known-issues)
+- [Credits](#credits)
+- [Contribution](#contribution)
+- [Copyright](#copyright)
+- [License](#license)
+- [Publications and Additional Resources](#publications-and-additional-resources)
+- [Citation](#citation)
+
 
 ## Overview
 
@@ -146,7 +146,7 @@ The final output includes:
 
 ## Data
 
-The dataset used in this project was compiled from pork quality studies conducted over several years. These images were used to train the neural networks employed in the pipeline. All files are in JPG format with a resolution of 5184×3456 or 3456×5184 pixels, depending on orientation. To run the analysis, images should be placed in the data/ directory and follow a consistent naming convention.
+The dataset used in this project was compiled from pork quality studies conducted over several years. A subset of about 100 images were used to train the neural networks employed in the pipeline. All files are in JPG format with a resolution of 5184×3456 or 3456×5184 pixels, depending on orientation. To run the analysis, images should be placed in the data/ directory and follow a consistent naming convention.
 
 Example filename: 103_LdLeanColor.JPG
 
@@ -237,10 +237,10 @@ Example filename: 103_LdLeanColor.JPG
 2. Create the environment using the provided environment file:
 
     ```
-    conda env create -f config/environment_1.2.key.yml
+    conda env create -f config/environment.yml
     ```
 
-Also provided is a conda environment with all pinned versions of packages used at the time of testing.
+Also provided is a conda environment with all pinned versions of key packages used at the time of testing.
 
 
 3. Activate the environment
