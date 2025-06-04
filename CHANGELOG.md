@@ -15,26 +15,26 @@ Porkvision `v1.0.0` marks the first full, production-ready release of an end-to-
 
 ### Key Features
 
-- ** Full Modular Pipeline**
+- **Full Modular Pipeline**
   - Preprocessing, orientation standardization, measurement, marbling, and coloring all modularized.
 
-- ** Deep Learning Models**
+- **Deep Learning Models**
   - Fat/muscle segmentation via YOLOv11 & SAM
   - Color standard detection via custom-trained YOLO model
 
-- ** Measurement Tools**
+- **Measurement Tools**
   - Muscle width, depth, and fat thickness calculation with mm/px conversion from ruler detection
 
-- ** Marbling Analysis**
+- **Marbling Analysis**
   - Intramuscular fat quantification using contrast enhancement and geometric filtering
 
-- ** Color Scoring**
+- **Color Scoring**
   - Color score classification based on proximity to Canadian pork color reference palettes
 
-- ** Output System**
+- **Output System**
   - Clean export of annotated images, ROIs, and CSV summaries (`marbling.csv`, `measurement.csv`, `colouring.csv`)
 
-- ** Batch Processing Ready**
+- **Batch Processing Ready**
   - Designed to scale across hundreds of images using SLURM or local execution
 
 ---
