@@ -2,14 +2,15 @@ name: porkvision-1.0.0
 channels:
   - conda-forge
 dependencies:
-  - python=3.9
-  - ultralytics=8.3.68
-  - segment-anything=1.0.1
-  - numpy=2.0.0
-  - pandas=2.2.3
-  - pytorch=2.5.1
-  - scikit-image=0.24.0
-  - roifile
-  - tabulate
+  - numpy
   - opencv
+  - pandas
+  - python
+  - pytorch
+  - roifile
+  - scikit-image
   - scipy
+  - segment-anything
+  - tabulate
+  - ultralytics
+
