@@ -1,8 +1,6 @@
-<!-- omit in toc -->
-# Porkvision
+# PORKVISION
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
-<!-- omit in toc -->
 ## About
 Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements.
 
@@ -15,37 +13,39 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   
 ---
 
-<!-- omit in toc -->
 ## Table of Contents
-- [Overview](#overview)
-  - [1. Preprocessing](#1-preprocessing)
-  - [2. Orientation Standardization](#2-orientation-standardization)
-  - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
-  - [4. Marbling Detection](#4-marbling-detection)
-  - [5. Color Score](#5-color-score)
-  - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
-  - [7. Post-Processing and Output](#7-post-processing-and-output)
-- [Data](#data)
-- [Parameters](#parameters)
-  - [General Parameters](#general-parameters)
-  - [Measurement Variables](#measurement-variables)
-  - [Orientation Variables](#orientation-variables)
-  - [Image Processing Variables](#image-processing-variables)
-  - [Marbling Variables](#marbling-variables)
-  - [Coloring Variables](#coloring-variables)
-- [Usage](#usage)
-  - [Pre-requisites](#pre-requisites)
-    - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
-    - [Installation](#installation)
-  - [Instructions](#instructions)
-  - [Notes](#notes)
-- [Output](#output)
-- [Credits](#credits)
-- [Contribution](#contribution)
-- [Copyright](#copyright)
-- [License](#license)
-- [Publications and Additional Resources](#publications-and-additional-resources)
-- [Citation](#citation)
+- [PORKVISION](#porkvision)
+  - [About](#about)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+    - [1. Preprocessing](#1-preprocessing)
+    - [2. Orientation Standardization](#2-orientation-standardization)
+    - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
+    - [4. Marbling Detection](#4-marbling-detection)
+    - [5. Color Score](#5-color-score)
+    - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
+    - [7. Post-Processing and Output](#7-post-processing-and-output)
+  - [Data](#data)
+  - [Parameters](#parameters)
+    - [General Parameters](#general-parameters)
+    - [Measurement Variables](#measurement-variables)
+    - [Orientation Variables](#orientation-variables)
+    - [Image Processing Variables](#image-processing-variables)
+    - [Marbling Variables](#marbling-variables)
+    - [Coloring Variables](#coloring-variables)
+  - [Usage](#usage)
+    - [Pre-requisites](#pre-requisites)
+      - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
+      - [Installation](#installation)
+    - [Instructions](#instructions)
+    - [Notes](#notes)
+  - [Output](#output)
+  - [Credits](#credits)
+  - [Contribution](#contribution)
+  - [Copyright](#copyright)
+  - [License](#license)
+  - [Publications and Additional Resources](#publications-and-additional-resources)
+  - [Citation](#citation)
 
 
 ## Overview
