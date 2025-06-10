@@ -19,12 +19,8 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
     - [1. Preprocessing](#1-preprocessing)
-    - [2. Orientation Standardization](#2-orientation-standardization)
-    - [3. Conversion Factor Calculation](#3-conversion-factor-calculation)
-    - [4. Marbling Detection](#4-marbling-detection)
-    - [5. Color Score](#5-color-score)
-    - [6. Muscle \& Fat Measurements](#6-muscle--fat-measurements)
-    - [7. Post-Processing and Output](#7-post-processing-and-output)
+    - [2. Analysis](#2-analysis)
+    - [3. Measurement](#3-measurement)
   - [Data](#data)
   - [Parameters](#parameters)
     - [General Parameters](#general-parameters)
@@ -100,57 +96,36 @@ flowchart LR
    
 ### 1. Preprocessing
 
-A trained segmentation model identifies and isolates **fat** and **muscle** regions in the input image. These masks form the foundation for all downstream measurements. A total of 286 images were used to train the muscle/fat model. 
- 
+Raw pork loin images are processed through a trained YOLOv11 segmentation model to identify **muscle** and **fat** regions. Using SAM-style mask extraction, the contours of these regions are converted into binary masks that drive all downstream analysis.
 
-### 2. Orientation Standardization
+* **Mask Selection**: The model selects the most confident detections for each class (muscle = 0, fat = 1) and converts polygon contours into binary masks using `polygon2mask()`.
+* **Orientation Correction**: The spatial layout of the muscle and fat masks is analyzed to standardize anatomical orientation. The image is rotated, if needed, to ensure the **fat region is always above the muscle**. A secondary fine-alignment step uses `cv2.fitEllipse()` to compute the dominant axis of the muscle and align it horizontally.
+* **Scale Calibration**: The physical scale is established by detecting a known **15.5 cm ruler** in the image using **Canny edge detection** and **Hough Line Transform**. If a line is detected, a dynamic **mm/px conversion factor** is calculated. If detection fails or is out-of-bounds, a default fallback value of **10 mm / 140 px** is applied, logged, and the image is marked as an outlier. 
 
-To ensure uniform input across samples:
 
-- The spatial relationship between fat and muscle masks is analyzed.
-- The image is rotated, if necessary, so that the **fat layer** is always positioned **above** the muscle.
+### 2. Analysis
 
-### 3. Conversion Factor Calculation
+The preprocessed image undergoes marbling detection and lean color classification using a combination of classical and deep learning methods:
 
-To establish real-world scale using OpenCV:
+* **Marbling Detection**: The extracted muscle region is enhanced using **CLAHE**, background subtraction, and **gamma correction** to generate a pseudo-colour image. The **blue channel** of the pseudo-image is thresholded to detect intramuscular fat. Morphological filtering and connected component analysis refine this into a high-precision **marbling mask**, from which the **marbling percentage** is computed relative to the cleaned muscle area.
+* **Color Standardization**: A second YOLOv11 model detects embedded **Canadian lean color standards** (C0–C6) in each image. The **mode RGB values** within each detected bounding box are extracted and sorted to create a standard reference array.
+* **Color Classification**: Pixels in the lean muscle area (excluding marbling) are classified by **Euclidean distance** to the closest color standard. A full **percentage breakdown** of how much muscle area maps to each standard is saved and visualized using a custom lookup table.
 
-- **Canny edge detection** and **HoughLinesP** are used to detect ruler lines.
-- Lines **longer than 2000 px** are assumed to represent a valid portion of a physical ruler (typically **15.5 cm ≈ 2137 px**).
-- A **mm/px conversion factor** is calculated from this line.
-- If no ruler is detected, a **default conversion factor** of **10 mm / 140 px** is applied.
 
-### 4. Marbling Detection
+### 3. Measurement
 
-Focused on the muscle mask:
+Geometric computations are performed to quantify key anatomical measurements from the standardized and scaled masks:
 
-- Edge fat and background artifacts are removed.
-- Contrast is dynamically adjusted, and color enhancement is applied via **LUT**.
-- Marbling regions are extracted using thresholding.
-- **Marbling percentage** is computed as the ratio of **marbled area** to **total muscle area**.
+* **Muscle Width**: Measured as the **longest axis perpendicular** to the rotation angle of the muscle, using search-based traversal across the major axis.
+* **Muscle Depth**: Computed by tracing a vertical line offset from the midline of the carcass, aligned to the muscle's rotation angle. 
+* **Fat Depth**: Determined by extending the muscle depth line into the fat mask until the top edge is reached.
+* **Annotation and Export**: All measurement lines (width, depth, fat) are drawn on the rotated image. Final outputs include:
 
-### 5. Color Score
-
-Using a YOLOv11-based model:
-
-- The model detects the **Canadian Color Standard** palettes in the image. A total of 161 images were used to train the color model.
-- Muscle region colors are mapped to the closest standard using **Euclidean distance**.
-- The output includes the **percentage breakdown** of matched color standards.
-
-### 6. Muscle & Fat Measurements
-
-Geometric analysis of the segmentation masks provides:
-
-- **Muscle Width**: Longest horizontal span of the muscle mask.
-- **Muscle Depth**: Vertical depth measured **7 cm from the midline**.
-- **Fat Depth**: Vertical distance from the **top of the fat layer** to the **muscle** at the muscle depth coordinate.
-
-### 7. Post-Processing and Output
-
-The final output includes:
-
-- Results saved to: `output/results.csv`
-- Annotated images stored in: `output/annotated_images/`
-- ROI files saved to: `output/rois/` for manual review or correction of measurements.
+  * `output/measurement.csv` — Muscle/fat metrics in both pixels and mm
+  * `output/marbling.csv` — Marbling percentage per image
+  * `output/colouring.csv` — Muscle color class breakdowns
+  * `output/annotated_images/` — Images with overlayed measurement lines
+  * `output/rois/` — ImageJ-compatible ROI files for downstream validation
 
 ---
 
