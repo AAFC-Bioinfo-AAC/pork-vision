@@ -6,10 +6,12 @@ Exports from the Canadian pork industry generate $5 billion per year. Primal cut
 
 Here we developed a Python-based image analysis pipeline using computer vision and deep learning techniques to automate the evaluation of center pork chops of loin primals (gold standard location for evaluation of pork quality) based on the most important quality attributes required by domestic and international buyers. Using an existing large pork phenomics image bank and dataset generated at the AAFC Lacombe Research and Development Centre (Lacombe, AB), the system was developed and validated under conditions mimicking commercial processing. It replicates manual workflows traditionally performed using ImageJ and custom macros, streamlining the process while maintaining compatibility with the Canadian pork colour and marbling standards.
 
-The pipeline extracts quantitative measurements such as muscle width and depth, fat depth, marbling percentage, and color score from standardized pork chop images. It is designed to process large batches efficiently, making it well-suited for research and industry applications alike. Developed entirely in Python, the system leverages libraries such as PyTorch, OpenCV, and NumPy, and integrates deep learning models including:
-- A segmentation model for fat and muscle isolation
-- A YOLOv11 object detection model for identifying color standards
-- Custom image preprocessing and measurement algorithms for geometry and intensity-based analysis
+The pipeline extracts quantitative measurements such as muscle width and depth, fat depth, marbling percentage, and color score from standardized pork chop images. It is designed to process large batches efficiently, making it well-suited for research and industry applications alike. Developed entirely in Python, the system leverages libraries such as PyTorch, OpenCV, and NumPy, and integrates:
+- Deep Learning Models:
+  - A segmentation model to isolate fat and muscle regions
+  - A YOLOv11 object detection model for identifying embedded color standards
+- Custom Algorithms:
+  - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
   
 ---
 
