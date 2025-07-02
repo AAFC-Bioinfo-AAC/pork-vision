@@ -73,27 +73,33 @@ The automated image analysis pipeline performs the measurements described above 
 **Process Flowchart**:
 
 ```mermaid
-flowchart LR
-    A{{Input:<br>Raw Images &<br>Neural Network}} --> B
-
-    subgraph Preprocessing
+---
+config:
+  theme: 'dark'
+  themeVariables:
+    lineColor: '#F8B229'
+---
+flowchart TB
+    subgraph MODULES
+      direction TB
+      subgraph Preprocessing
+        direction LR
         B[Select<br>Segmentation Mask] --> C[Convert Contours<br>to Masked Images]
         C --> D[Correct Image<br>Orientation]
         D --> E[Compute mm/px:<br>Conversion Factor]
-    end
-
-    subgraph Analysis
-        E --> F[Detect<br>Marbling]
-        F --> G[Standardize LAB<br>Color Channels]
+      end
+      subgraph Analysis
+        direction LR
+        F[Detect<br>Marbling] --> G[Standardize LAB<br>Color Channels]
         G --> H[Classify Muscle<br>Color Score]
+      end
+      subgraph Measurement
+        direction LR
+        I[Measure:<br>Muscle Width & Depth<br>Fat Depth] --> J[Draw Measurements<br>on Annotated Image]
+      end
     end
-
-    subgraph Measurement
-        H --> I[Measure:<br>Muscle Width & Depth<br>Fat Depth]
-        I --> J[Draw Measurements<br>on Annotated Image]
-    end
-
-    J --> K{{Output:<br>Processed Images &<br>CSV}}
+    A{{Input:<br>Raw Images &<br>Neural Network}} --> MODULES --> Z{{Output:<br>Processed Images &<br>CSV}}
+    Preprocessing --> Analysis --> Measurement
 ```
    
 ### 1. Preprocessing
