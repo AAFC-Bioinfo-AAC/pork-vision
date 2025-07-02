@@ -126,7 +126,7 @@ flowchart TB
         direction LR
         B[Select<br>Segmentation Mask] --> C[Convert Contours<br>to Masked Images]
         C --> D[Correct Image<br>Orientation]
-        D --> E[Compute mm/px:<br>Conversion Factor]
+        D --> E[Compute mm/px<br>Conversion Factor]
       end
       subgraph Analysis
         direction LR
@@ -135,10 +135,10 @@ flowchart TB
       end
       subgraph Measurement
         direction LR
-        I[Measure:<br>Muscle Width & Depth<br>Fat Depth] --> J[Draw Measurements<br>on Annotated Image]
+        I[Measure:<br>Muscle Width<br>Muscle Depth<br>Fat Depth] --> J[Draw Measurements<br>on Annotated Image]
       end
     end
-    A{{Input:<br>Raw Images &<br>Neural Network}} --> MODULES --> Z{{Output:<br>Processed Images &<br>CSV}}
+    A{{Raw Images<br>Neural Network}} --> MODULES --> Z{{Processed Images<br>CSV Reports}}
     Preprocessing --> Analysis --> Measurement
 ```
 
