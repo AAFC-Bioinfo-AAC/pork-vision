@@ -48,6 +48,8 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 
 ## Overview
 
+### Image characteristics and measurements
+
 The pork chop images have the following characteristics:
 - The pork loin is placed in the centre of a white tray
 - Three color reference palettes are placed along the left, top, and bottom inner edges of the tray.
@@ -68,9 +70,44 @@ In current practice, trained personnel use ImageJ along with pre-defined macros 
     <img src="./output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="600" height="400">
 </p>
 
-The automated image analysis pipeline performs the measurements described above through a sequence of modular stages, as outlined below and in the flowchart and images:
+### Automated image analysis pipeline modules
 
-**Process Flowchart**:
+The automated image analysis pipeline performs all image measurements indicated above, through a sequence of modular stages:
+   
+#### Preprocessing
+
+Raw pork loin images are processed through a trained YOLOv11 segmentation model to identify **muscle** and **fat** regions. Using SAM-style mask extraction, the contours of these regions are converted into binary masks that drive all downstream analysis.
+
+* **Mask Selection**: The model selects the most confident detections for each class (muscle = 0, fat = 1) and converts polygon contours into binary masks using `polygon2mask()`.
+* **Orientation Correction**: The spatial layout of the muscle and fat masks is analyzed to standardize anatomical orientation. The image is rotated, if needed, to ensure the **fat region is always above the muscle**. A secondary fine-alignment step uses `cv2.fitEllipse()` to compute the dominant axis of the muscle and align it horizontally.
+* **Scale Calibration**: The physical scale is established by detecting a known **15.5 cm ruler** in the image using **Canny edge detection** and **Hough Line Transform**. If a line is detected, a dynamic **mm/px conversion factor** is calculated. If detection fails or is out-of-bounds, a default fallback value of **10 mm / 140 px** is applied, logged, and the image is marked as an outlier. 
+
+
+#### Analysis
+
+The preprocessed image undergoes marbling detection and lean color classification using a combination of classical and deep learning methods:
+
+* **Marbling Detection**: The extracted muscle region is enhanced using **CLAHE**, background subtraction, and **gamma correction** to generate a pseudo-colour image. The **blue channel** of the pseudo-image is thresholded to detect intramuscular fat. Morphological filtering and connected component analysis refine this into a high-precision **marbling mask**, from which the **marbling percentage** is computed relative to the cleaned muscle area.
+* **Color Standardization**: A second YOLOv11 model detects embedded **Canadian lean color standards** (C0–C6) in each image. The **mode RGB values** within each detected bounding box are extracted and sorted to create a standard reference array.
+* **Color Classification**: Pixels in the lean muscle area (excluding marbling) are classified by **Euclidean distance** to the closest color standard. A full **percentage breakdown** of how much muscle area maps to each standard is saved and visualized using a custom lookup table.
+
+
+#### Measurement
+
+Geometric computations are performed to quantify key anatomical measurements from the standardized and scaled masks:
+
+* **Muscle Width**: Measured as the **longest axis perpendicular** to the rotation angle of the muscle, using search-based traversal across the major axis.
+* **Muscle Depth**: Computed by tracing a vertical line offset from the midline of the carcass, aligned to the muscle's rotation angle. 
+* **Fat Depth**: Determined by extending the muscle depth line into the fat mask until the top edge is reached.
+* **Annotation and Export**: All measurement lines (width, depth, fat) are drawn on the rotated image. Final outputs include:
+
+  * `output/measurement.csv` — Muscle/fat metrics in both pixels and mm
+  * `output/marbling.csv` — Marbling percentage per image
+  * `output/colouring.csv` — Muscle color class breakdowns
+  * `output/annotated_images/` — Images with overlayed measurement lines
+  * `output/rois/` — ImageJ-compatible ROI files for downstream validation
+
+### Automated image analysis pipeline flowchart
 
 ```mermaid
 ---
@@ -101,39 +138,7 @@ flowchart TB
     A{{Input:<br>Raw Images &<br>Neural Network}} --> MODULES --> Z{{Output:<br>Processed Images &<br>CSV}}
     Preprocessing --> Analysis --> Measurement
 ```
-   
-### 1. Preprocessing
 
-Raw pork loin images are processed through a trained YOLOv11 segmentation model to identify **muscle** and **fat** regions. Using SAM-style mask extraction, the contours of these regions are converted into binary masks that drive all downstream analysis.
-
-* **Mask Selection**: The model selects the most confident detections for each class (muscle = 0, fat = 1) and converts polygon contours into binary masks using `polygon2mask()`.
-* **Orientation Correction**: The spatial layout of the muscle and fat masks is analyzed to standardize anatomical orientation. The image is rotated, if needed, to ensure the **fat region is always above the muscle**. A secondary fine-alignment step uses `cv2.fitEllipse()` to compute the dominant axis of the muscle and align it horizontally.
-* **Scale Calibration**: The physical scale is established by detecting a known **15.5 cm ruler** in the image using **Canny edge detection** and **Hough Line Transform**. If a line is detected, a dynamic **mm/px conversion factor** is calculated. If detection fails or is out-of-bounds, a default fallback value of **10 mm / 140 px** is applied, logged, and the image is marked as an outlier. 
-
-
-### 2. Analysis
-
-The preprocessed image undergoes marbling detection and lean color classification using a combination of classical and deep learning methods:
-
-* **Marbling Detection**: The extracted muscle region is enhanced using **CLAHE**, background subtraction, and **gamma correction** to generate a pseudo-colour image. The **blue channel** of the pseudo-image is thresholded to detect intramuscular fat. Morphological filtering and connected component analysis refine this into a high-precision **marbling mask**, from which the **marbling percentage** is computed relative to the cleaned muscle area.
-* **Color Standardization**: A second YOLOv11 model detects embedded **Canadian lean color standards** (C0–C6) in each image. The **mode RGB values** within each detected bounding box are extracted and sorted to create a standard reference array.
-* **Color Classification**: Pixels in the lean muscle area (excluding marbling) are classified by **Euclidean distance** to the closest color standard. A full **percentage breakdown** of how much muscle area maps to each standard is saved and visualized using a custom lookup table.
-
-
-### 3. Measurement
-
-Geometric computations are performed to quantify key anatomical measurements from the standardized and scaled masks:
-
-* **Muscle Width**: Measured as the **longest axis perpendicular** to the rotation angle of the muscle, using search-based traversal across the major axis.
-* **Muscle Depth**: Computed by tracing a vertical line offset from the midline of the carcass, aligned to the muscle's rotation angle. 
-* **Fat Depth**: Determined by extending the muscle depth line into the fat mask until the top edge is reached.
-* **Annotation and Export**: All measurement lines (width, depth, fat) are drawn on the rotated image. Final outputs include:
-
-  * `output/measurement.csv` — Muscle/fat metrics in both pixels and mm
-  * `output/marbling.csv` — Marbling percentage per image
-  * `output/colouring.csv` — Muscle color class breakdowns
-  * `output/annotated_images/` — Images with overlayed measurement lines
-  * `output/rois/` — ImageJ-compatible ROI files for downstream validation
 
 ---
 
