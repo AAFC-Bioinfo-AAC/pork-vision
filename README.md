@@ -43,7 +43,6 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   - [Output](#output)
   - [Credits](#credits)
   - [Contribution](#contribution)
-  - [Copyright](#copyright)
   - [License](#license)
   - [Publications and Additional Resources](#publications-and-additional-resources)
   - [Citation](#citation)
@@ -374,7 +373,7 @@ A list of references for the tools used can be found in the [CITATIONS.md](CITAT
 
 ## Citation
 
-If you use this repository for your analysis, please cite it using the [CITATION.cff](CITATION.cff) file.
+If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
 
 
 
