@@ -361,13 +361,8 @@ If you would like to contribute to this project, please review the guidelines in
 
 ---
 
-## Copyright
-Government of Canada, Agriculture & Agri-Food Canada (AAFC)
-
----
-
 ## License
-This project is licensed under the GPLv3 License. See [LICENSE](LICENSE) for details.
+This project is distributed under the GPLv3 License. For complete details and copyright information, see the [LICENSE](LICENSE) file.
 
 ---
 
