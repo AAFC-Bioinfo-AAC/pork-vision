@@ -44,7 +44,7 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   - [Credits](#credits)
   - [Contribution](#contribution)
   - [License](#license)
-  - [Publications and Additional Resources](#publications-and-additional-resources)
+  - [References](#references)
   - [Citation](#citation)
 
 
@@ -365,9 +365,9 @@ This project is distributed under the GPLv3 License. For complete details and co
 
 ---
 
-## Publications and Additional Resources
+## References
 
-A list of references for the tools used can be found in the [CITATIONS.md](CITATIONS.md) file.
+References to tools and software used here can be found in the [CITATIONS.md](CITATIONS.md) file.
 
 ---
 
