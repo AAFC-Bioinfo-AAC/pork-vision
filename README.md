@@ -87,11 +87,13 @@ Raw pork loin images are processed through a trained YOLOv11 segmentation model 
 
 #### Analysis
 
-The preprocessed image undergoes marbling detection and lean color classification using a combination of classical and deep learning methods:
+The preprocessed image undergoes marbling detection and lean color classification through externally executed **Fiji (ImageJ)** macros, which replicate established Canadian pork grading standards using rule-based image processing techniques. These macros provide a reproducible and standardized method for evaluation, aligned with historical workflows used in manual grading environments.
 
-* **Marbling Detection**: The extracted muscle region is enhanced using **CLAHE**, background subtraction, and **gamma correction** to generate a pseudo-colour image. The **blue channel** of the pseudo-image is thresholded to detect intramuscular fat. Morphological filtering and connected component analysis refine this into a high-precision **marbling mask**, from which the **marbling percentage** is computed relative to the cleaned muscle area.
-* **Color Standardization**: A second YOLOv11 model detects embedded **Canadian lean color standards** (C0–C6) in each image. The **mode RGB values** within each detected bounding box are extracted and sorted to create a standard reference array.
-* **Color Classification**: Pixels in the lean muscle area (excluding marbling) are classified by **Euclidean distance** to the closest color standard. A full **percentage breakdown** of how much muscle area maps to each standard is saved and visualized using a custom lookup table.
+* **Marbling Detection**: A Fiji macro is used to generate a binary mask of intramuscular fat within the muscle region. The macro operates by applying adaptive contrast enhancement, thresholding, and connected component analysis to quantify marbling. The resulting percentage of intramuscular fat relative to the cleaned muscle mask is saved as a standardized value.
+
+* **Color Classification**: A second Fiji macro performs detection of embedded **Canadian lean color standards** (e.g., C0 to C6) placed on the tray surrounding the loin. It calculates the mode RGB values within the defined standard chips and matches these against the lean muscle pixels using a custom lookup table. The macro outputs both a classified overlay and a summary CSV indicating the proportion of muscle mapped to each color category.
+
+This integration ensures compatibility with legacy ImageJ workflows while enhancing reproducibility and interoperability for downstream quality control and industry validation.
 
 
 #### Measurement
@@ -129,8 +131,8 @@ flowchart TB
       end
       subgraph Analysis
         direction LR
-        F[Detect<br>Marbling] --> G[Standardize LAB<br>Color Channels]
-        G --> H[Classify Muscle<br>Color Score]
+        F[Export Cleaned<br>Muscle/Fat Masks] --> G[Run Fiji<br>Marbling Macro]
+        G --> H[Run Fiji<br>Color Grading Macro]
       end
       subgraph Measurement
         direction LR
@@ -189,27 +191,6 @@ Example filename: 103_LdLeanColor.JPG
 | **Variable**         | **Description**                                      | **Default Value** |
 |-----------------------|------------------------------------------------------|-------------------|
 | `confidence_threshold` | Minimum confidence score for valid detection | `0.4` |
-
----
-
-### Marbling Variables
-| **Variable** | **Description**                     | **Default Value**          |
-|---------------|-------------------------------------|----------------------------|
-| `kernel_size` | Size of the Gaussian kernel         | `11`                       |
-| `lut`         | The colormap that is used           | `COLORMAP_JET`             |
-| `kernel_size` | Size of the Gaussian kernel         | `(5, 5)`                   |
-| `gamma`       | Gamma correction factor             | `0.3`                      |
-| `min_area`    | Min area to be considered           | `5` px                     |
-| `clip_limit`  | CLAHE | `2.0` |
-| `tile_grid_size` | CLAHE | `(8, 8)` | 
-| `base_filename` | The image name | `None` |
-
----
-
-### Coloring Variables
-| **Variable** | **Description**                     | **Default Value**          |
-|---------------|-------------------------------------|----------------------------|
-| `class_to_std` | The YOLO classes and what standard they correspond to | `Inverted (class 0 = standard 6)` |
 
 ---
 
@@ -293,9 +274,7 @@ Processed results are saved in the `output` directory, organized as follows:
 - **colouring.csv** – Tabular summary of color grading results for all processed images
 - **debug/** – Debugging information and logs (e.g., `*_DEBUGINFO.txt`)
 - **marbling/** – Marbling detection results, including:
-  - Fat masks (e.g., `*_fat_mask.jpg`)
   - Marbling masks (e.g., `*_marbling_mask.jpg`)
-  - Original and selective muscle masks
 - **marbling.csv** – Tabular summary of marbling measurements
 - **measurement.csv** – Tabular summary of muscle and fat measurements
 - **predict/** – Segmentation or detection overlays for each image
@@ -320,10 +299,7 @@ output/
 |   `-- 103_LdLeanColor_DEBUGINFO.txt
 |-- marbling/
 |   `-- 103_LdLeanColor/
-|       |-- 103_LdLeanColor_fat_mask.jpg
 |       |-- 103_LdLeanColor_marbling_mask.jpg
-|       |-- 103_LdLeanColor_original_muscle_mask.jpg
-|       `-- 103_LdLeanColor_selective_muscle_mask.jpg
 |-- marbling.csv
 |-- measurement.csv
 |-- predict/
