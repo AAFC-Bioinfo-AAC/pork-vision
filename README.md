@@ -284,33 +284,53 @@ Processed results are saved in the `output` directory, organized as follows:
 
 **Example output folder structure:**
 
-An example of the output folder structure created from running the program with the test files in the data folder. A subfolder will be created for each processed image, organized by image name. CSV files provide summary tables for batch analysis.
+An example of the output folder structure created from running the program with the test file in the data folder. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
 
 ```
+
 output/
-|-- annotated_images/
+|-- annotated_images
 |   `-- annotated_103_LdLeanColor.JPG
-|-- colouring/
-|   `-- 103_LdLeanColor/
-|       |-- 103_LdLeanColor_Color_Detect.jpg
-|       `-- 103_LdLeanColor_canadian_lut.png
+|-- colour.csv
+|-- colouring
+|   |-- 103_LdLeanColor
+|   |   |-- 103_LdLeanColor_Color_Detect.jpg
+|   |   `-- 103_LdLeanColor_canadian_lut.png
+|   |-- regions
+|   |   |-- 103_LdLeanColor_G.png
+|   |   |-- 103_LdLeanColor_colour.png
+|   |   |-- 103_LdLeanColor_roi.png
+|   |   `-- 103_LdLeanColor_std.txt
+|   `-- results
+|       `-- 103_LdLeanColor_Canadian_LUT.png
 |-- colouring.csv
-|-- debug/
+|-- debug
 |   `-- 103_LdLeanColor_DEBUGINFO.txt
-|-- marbling/
-|   `-- 103_LdLeanColor/
-|       |-- 103_LdLeanColor_marbling_mask.jpg
+|-- marbling
+|   |-- 103_LdLeanColor
+|   |   |-- 103_LdLeanColor_fat_mask.jpg
+|   |   |-- 103_LdLeanColor_marbling_mask.jpg
+|   |   |-- 103_LdLeanColor_original_muscle_mask.jpg
+|   |   `-- 103_LdLeanColor_selective_muscle_mask.jpg
+|   |-- masks
+|   |   `-- 103_LdLeanColor_crop.png
+|   |-- overlays
+|   |   `-- 103_LdLeanColor_overlay.png
+|   `-- regions
+|       |-- 103_LdLeanColor_crop.png
+|       `-- 103_LdLeanColor_roi.png
 |-- marbling.csv
 |-- measurement.csv
-|-- predict/
+|-- predict
 |   `-- 103_LdLeanColor.jpg
-|-- rois/
-|   `-- 103_LdLeanColor/
+|-- rois
+|   `-- 103_LdLeanColor
 |       |-- 103_LdLeanColor_fat.roi
 |       |-- 103_LdLeanColor_horizontal.roi
 |       `-- 103_LdLeanColor_vertical.roi
-`-- ruler_measurement/
+`-- ruler_measurement
     `-- 103_LdLeanColor_2133px-15.5cm.jpg
+
 ```
 
 ---
@@ -350,6 +370,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
