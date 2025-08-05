@@ -32,8 +32,6 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
     - [Measurement Variables](#measurement-variables)
     - [Orientation Variables](#orientation-variables)
     - [Image Processing Variables](#image-processing-variables)
-    - [Marbling Variables](#marbling-variables)
-    - [Coloring Variables](#coloring-variables)
   - [Usage](#usage)
     - [Pre-requisites](#pre-requisites)
       - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
@@ -222,6 +220,7 @@ Example filename: 103_LdLeanColor.JPG
     ```
 
 Also provided is a conda environment with all pinned versions of key packages used at the time of testing.
+**Note:** On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. This is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs. Please be patient.
 
 
 3. Activate the environment
@@ -237,6 +236,12 @@ Also provided is a conda environment with all pinned versions of key packages us
 Before running the pipeline, ensure that:
 - All files are organized in their correct directories.
 - The required models are placed in: src/models/
+
+**Note:** For Fiji macros to run properly on the HPC, make sure the following environment variable is set in your SLURM batch script:
+```bash
+ export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
+```
+This ensures headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`.
 
 To execute the pipeline locally, use the following command:
 ```
@@ -261,6 +266,19 @@ This warning indicates broken support for the dtype!
 ```
 This warning can be safely ignored and typically does not affect script execution.
 
+Fiji execution may produce verbose Java warnings such as duplicate script language bindings (e.g., Groovy, BeanShell, Clojure). Example warnings:
+```
+[WARNING] Not overwriting name 'Groovy': ...
+[WARNING] Not overwriting extension 'bsh': ...
+```
+These are expected and safe to ignore. Many warnings originate from classpath conflicts in SciJava and cannot be fully silenced without custom JAR pruning.
+
+On first run of the script, Ultralytics will automatically generate a default settings file (typically in your `$HOME/.config/Ultralytics` directory). You may encounter a message like:
+```
+Ultralytics settings file not found. Creating default settings at ~/.config/Ultralytics/settings.yaml
+```
+This is expected and does not indicate a problem.
+
 ---
 
 ## Output
@@ -268,13 +286,25 @@ This warning can be safely ignored and typically does not affect script executio
 Processed results are saved in the `output` directory, organized as follows:
 
 - **annotated_images/** – Images with visualized measurements (e.g., `annotated_*.JPG`)
-- **colouring/** – Color grading results, including:
-  - Detected color standard overlays (e.g., `*_Color_Detect.jpg`)
-  - Canadian LUT visualizations (e.g., `*_canadian_lut.png`)
+- **colouring/** – Results from lean colour analysis using the Canadian 7-class standard  
+  - `[image_name]/` – Diagnostic visualizations and outputs for each image:
+    - `*_Color_Detect.jpg`: Color detection visualization
+  - `regions/` – Intermediate processing artifacts:
+    - `*_G.png`: Grayscale green-channel image
+    - `*_roi.png`: Binary mask of the lean ROI
+    - `*_colour.png`: Visual diagnostic image with ROI overlay
+    - `*_std.txt`: Seven RGB standard color values
+  - `results/` – Final outputs used for analysis or reporting:
+    - `*_Canadian_LUT.png`: Merged color-labeled PNG showing lean colour classification
 - **colouring.csv** – Tabular summary of color grading results for all processed images
 - **debug/** – Debugging information and logs (e.g., `*_DEBUGINFO.txt`)
-- **marbling/** – Marbling detection results, including:
-  - Marbling masks (e.g., `*_marbling_mask.jpg`)
+- **marbling/** – Results from marbling segmentation and region extraction  
+  - `masks/` – Eroded masks used for lean colour intersection:
+    - `*_crop.png`: Binary mask showing lean meat
+  - `overlays/` – Visualization overlays:
+    - `*_overlay.png`: Colour overlay of marbling on original chop
+  - `regions/` – ROI processing intermediates:
+    - `*_roi.png`: Eroded binary mask of the full chop ROI
 - **marbling.csv** – Tabular summary of marbling measurements
 - **measurement.csv** – Tabular summary of muscle and fat measurements
 - **predict/** – Segmentation or detection overlays for each image
@@ -370,6 +400,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
