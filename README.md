@@ -198,17 +198,12 @@ Example filename: 103_LdLeanColor.JPG
 ### Pre-requisites
 
 #### Programming Languages, Libraries, and frameworks
-  - numpy=2.2.6
-  - opencv=4.11.0
-  - pandas=2.2.3  
-  - python=3.13.3 
-  - pytorch=2.7.0
-  - roifile=2025.5.10
-  - scikit-image=0.25.2
-  - scipy=1.15.2
-  - segment-anything=1.0.1
-  - tabulate=0.9.0
-  - ultralytics=8.3.146
+
+| **Category**                    | **Components**       |
+|---------------------------------|----------------------|
+| Programming Languages           |	Python, Java         |
+| Libraries	                      | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything        |
+| Frameworks / Apps	              | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv8       |
 
 #### Installation
 
@@ -400,6 +395,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
