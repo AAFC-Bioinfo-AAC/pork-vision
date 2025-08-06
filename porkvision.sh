@@ -9,5 +9,7 @@
 #SBATCH --mem=<amount of memory, e.g., 16G for 16 GB>   
 #SBATCH --output=logs/porkvision_%j.log
 
+export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
+
 conda activate porkvision-1.0.0
 python ./src/main.py
