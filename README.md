@@ -229,20 +229,20 @@ Also provided is a conda environment with all pinned versions of key packages us
 Before running the pipeline, ensure that:
 - All files are organized in their correct directories.
 - The required models are placed in: src/models/
-  
-**Note:** For Fiji macros to run properly on the HPC, make sure the following environment variable is set in your SLURM batch script:
+
+When executing the pipeline locally, first set the FIJI_CMD environment variable to ensure that headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`:
 
 ```bash
  export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
 ```
-This ensures headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`.
 
-To execute the pipeline locally, use the following command:
+Then, run:
+
 ```
 python ./src/main.py
 ```
 
-To execute the pipeline on an HPC with SLURM, first complete the SLURM directive placeholders in porkvision.sh script and then run the following command:
+To execute the pipeline on an HPC with SLURM, first complete the SLURM directive placeholders and set the FIJI_CMD environment variable in porkvision.sh script and then run the following command:
 
 ```
 sbatch porkvision.sh
@@ -394,6 +394,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
