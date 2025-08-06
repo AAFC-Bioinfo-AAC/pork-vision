@@ -203,7 +203,7 @@ Example filename: 103_LdLeanColor.JPG
 |---------------------------------|----------------------|
 | Programming Languages           |	Python, Java         |
 | Libraries	                      | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything        |
-| Frameworks / Apps	              | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv8       |
+| Frameworks / Apps	              | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv11       |
 
 #### Installation
 
@@ -394,6 +394,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
