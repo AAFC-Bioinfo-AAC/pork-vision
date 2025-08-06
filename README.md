@@ -214,9 +214,9 @@ Example filename: 103_LdLeanColor.JPG
     conda env create -f config/environment.yml
     ```
 
-Also provided is a conda environment with all pinned versions of key packages used at the time of testing.
-**Note:** On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. This is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs. Please be patient.
+Also provided is a conda environment with all pinned versions of key packages used at the time of testing.  
 
+**Note:** On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs. 
 
 3. Activate the environment
 
@@ -224,15 +224,14 @@ Also provided is a conda environment with all pinned versions of key packages us
     conda activate porkvision-1.0.0
     ``` 
 
-
-
 ### Instructions
 
 Before running the pipeline, ensure that:
 - All files are organized in their correct directories.
 - The required models are placed in: src/models/
-
+  
 **Note:** For Fiji macros to run properly on the HPC, make sure the following environment variable is set in your SLURM batch script:
+
 ```bash
  export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
 ```
@@ -395,6 +394,7 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
 
 
 
