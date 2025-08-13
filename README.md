@@ -312,50 +312,58 @@ Processed results are saved in the `output` directory, organized as follows:
 An example of the output folder structure created from running the program with the test file in the data folder. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
 
 ```
-
 output/
 |-- annotated_images
-|   `-- annotated_103_LdLeanColor.JPG
+|   |-- annotated_103_LdLeanColor.JPG
+|   `-- annotated_1301_LdLeanColor.jpg
 |-- colour.csv
 |-- colouring
 |   |-- 103_LdLeanColor
-|   |   |-- 103_LdLeanColor_Color_Detect.jpg
-|   |   `-- 103_LdLeanColor_canadian_lut.png
+|   |   `-- 103_LdLeanColor_Color_Detect.jpg
+|   |-- 1301_LdLeanColor
+|   |   `-- 1301_LdLeanColor_Color_Detect.jpg
 |   |-- regions
 |   |   |-- 103_LdLeanColor_G.png
 |   |   |-- 103_LdLeanColor_colour.png
 |   |   |-- 103_LdLeanColor_roi.png
-|   |   `-- 103_LdLeanColor_std.txt
+|   |   |-- 103_LdLeanColor_std.txt
+|   |   |-- 1301_LdLeanColor_G.png
+|   |   |-- 1301_LdLeanColor_colour.png
+|   |   |-- 1301_LdLeanColor_roi.png
+|   |   `-- 1301_LdLeanColor_std.txt
 |   `-- results
-|       `-- 103_LdLeanColor_Canadian_LUT.png
-|-- colouring.csv
-|-- debug
-|   `-- 103_LdLeanColor_DEBUGINFO.txt
+|       |-- 103_LdLeanColor_Canadian_LUT.png
+|       `-- 1301_LdLeanColor_Canadian_LUT.png
 |-- marbling
-|   |-- 103_LdLeanColor
-|   |   |-- 103_LdLeanColor_fat_mask.jpg
-|   |   |-- 103_LdLeanColor_marbling_mask.jpg
-|   |   |-- 103_LdLeanColor_original_muscle_mask.jpg
-|   |   `-- 103_LdLeanColor_selective_muscle_mask.jpg
 |   |-- masks
-|   |   `-- 103_LdLeanColor_crop.png
+|   |   |-- 103_LdLeanColor_crop.png
+|   |   `-- 1301_LdLeanColor_crop.png
 |   |-- overlays
-|   |   `-- 103_LdLeanColor_overlay.png
+|   |   |-- 103_LdLeanColor_overlay.png
+|   |   `-- 1301_LdLeanColor_overlay.png
 |   `-- regions
 |       |-- 103_LdLeanColor_crop.png
-|       `-- 103_LdLeanColor_roi.png
+|       |-- 103_LdLeanColor_roi.png
+|       |-- 1301_LdLeanColor_crop.png
+|       `-- 1301_LdLeanColor_roi.png
 |-- marbling.csv
 |-- measurement.csv
+|-- outlier
+|   `-- 1301_LdLeanColor.jpg
 |-- predict
-|   `-- 103_LdLeanColor.jpg
+|   |-- 103_LdLeanColor.jpg
+|   `-- 1301_LdLeanColor.jpg
 |-- rois
-|   `-- 103_LdLeanColor
-|       |-- 103_LdLeanColor_fat.roi
-|       |-- 103_LdLeanColor_horizontal.roi
-|       `-- 103_LdLeanColor_vertical.roi
+|   |-- 103_LdLeanColor
+|   |   |-- 103_LdLeanColor_fat.roi
+|   |   |-- 103_LdLeanColor_horizontal.roi
+|   |   `-- 103_LdLeanColor_vertical.roi
+|   `-- 1301_LdLeanColor
+|       |-- 1301_LdLeanColor_fat.roi
+|       |-- 1301_LdLeanColor_horizontal.roi
+|       `-- 1301_LdLeanColor_vertical.roi
 `-- ruler_measurement
     `-- 103_LdLeanColor_2133px-15.5cm.jpg
-
 ```
 
 ---
