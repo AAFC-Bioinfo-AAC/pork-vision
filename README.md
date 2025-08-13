@@ -301,6 +301,7 @@ Processed results are saved in the `output` directory, organized as follows:
     - `*_roi.png`: Eroded binary mask of the full chop ROI
 - **marbling.csv** – Tabular summary of marbling measurements
 - **measurement.csv** – Tabular summary of muscle and fat measurements
+- **outlier** - Images identified as outliers (e.g. blurry or overexposed) are copied here
 - **predict/** – Segmentation or detection overlays for each image
 - **rois/** – Saved ROI files for manual review or correction, organized per image:
   - Fat, horizontal, and vertical ROI files (e.g., `*_fat.roi`, `*_horizontal.roi`, `*_vertical.roi`)
