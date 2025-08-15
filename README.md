@@ -324,7 +324,7 @@ Processed results are saved in the `output` directory, organized as follows:
 
 **Example output folder structure:**
 
-An example of the output folder structure created from running the program with the test file in the data folder. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
+Here is an example of the output folder structure created from running the program with the 2 test image files in the data folder, one of which is a blurry image that will fail the ruler measurements and be flagged as an outlier. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
 
 ```text
 output/
