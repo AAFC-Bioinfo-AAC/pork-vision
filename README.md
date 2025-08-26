@@ -242,10 +242,16 @@ Before running the pipeline, ensure that:
 When executing the pipeline locally, first set the FIJI_CMD environment variable to ensure that headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`:
 
 ```bash
- export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
+ export FIJI_CMD=$(which ImageJ)
 ```
 
-Then, run:
+Note that the above will work only after activating the conda environment. The FIJI_CMD environment variable can verified as follows:
+
+```bash
+ echo $FIJI_CMD
+```
+
+Next, run:
 
 ```bash
 python ./src/main.py
@@ -420,3 +426,4 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
