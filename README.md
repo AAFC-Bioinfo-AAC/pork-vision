@@ -13,6 +13,8 @@
   - [References](#references)
   - [Citation](#citation)
 
+---
+
 ## About
 
 Exports from the Canadian pork industry generate $5 billion per year. Primal cuts with desirable quality attributes, especially loins, bellies and butts, are sold at premium prices in international markets, such as Japan. Current methods used for measuring pork quality, both in-line and under research conditions, are conducted through mainly subjective methods and manual testing on the loin primal. Fully automated systems are not usually available for the collection of quality data in pork primals or pork chops, and adoption of the few available technologies able to evaluate some quality traits has been limited due to high costs and operational requirements.
@@ -27,6 +29,8 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 - Custom Algorithms:
   - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
   
+For technical details, installation and usage, see [User-guide](docs/user-guide).
+
 ---
 
 ## Credits
