@@ -29,7 +29,7 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 - Custom Algorithms:
   - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
   
-For technical details, installation and usage, see [User-guide](docs/user-guide).
+For technical details, installation and usage, see [`User guide`](./docs/user-guide.md).
 
 ---
 
