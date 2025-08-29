@@ -2,10 +2,10 @@
 
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
+<!-- omit in toc -->
 ## Table of Contents
 
 - [PORK-VISION](#pork-vision)
-  - [Table of Contents](#table-of-contents)
   - [About](#about)
   - [Credits](#credits)
   - [Contribution](#contribution)
