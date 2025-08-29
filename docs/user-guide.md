@@ -1,9 +1,9 @@
 # USER GUIDE
 
+<!-- omit in toc -->
 ## Table of Contents
 
 - [USER GUIDE](#user-guide)
-  - [Table of Contents](#table-of-contents)
   - [Overview](#overview)
     - [Image characteristics and measurements](#image-characteristics-and-measurements)
     - [Automated image analysis pipeline modules](#automated-image-analysis-pipeline-modules)
