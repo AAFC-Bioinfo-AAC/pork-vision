@@ -36,7 +36,7 @@ The pork chop images have the following characteristics:
 - A ruler is aligned consistently beside the pork chop to the right inner edge of the tray.
 
 <p align="center">
-    <img src="./data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
+    <img src="../data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
 
 In current practice, trained personnel use ImageJ along with pre-defined macros to measure features on pork chop images. These include:
@@ -48,7 +48,7 @@ In current practice, trained personnel use ImageJ along with pre-defined macros 
 - Color Score: Based on proximity to standard color references.
 
 <p align="center">
-    <img src="./output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="600" height="400">
+    <img src="../output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="600" height="400">
 </p>
 
 ### Automated image analysis pipeline modules
