@@ -1,5 +1,8 @@
 # PORK-VISION
 
+[![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
+[![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
+
 ![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 <!-- omit in toc -->
@@ -60,3 +63,4 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
