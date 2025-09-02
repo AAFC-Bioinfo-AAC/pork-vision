@@ -1,5 +1,8 @@
 # PORK-VISION
 
+[![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
+[![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
+
 ![Licence](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 <!-- omit in toc -->
