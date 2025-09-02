@@ -1,4 +1,4 @@
-GPLv3
+GNU General Public License v3.0
 
 Copyright (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
 ---------------------------------------------------------------------------------------------------------------------------------------
@@ -682,4 +682,5 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
 
