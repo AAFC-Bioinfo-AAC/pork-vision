@@ -56,7 +56,7 @@ This project is distributed under the GPLv3 License. For complete details and co
 
 ## References
 
-References to tools and software used here can be found in the [CITATIONS.md](CITATIONS.md) file.
+References to techniques, tools and software used here can be found in the [REFERENCES.md](REFERENCES.md) file.
 
 ---
 
