@@ -56,7 +56,7 @@ Ce projet est distribué sous la licence GPLv3. Pour plus de détails et d’inf
 
 ## Références
 
-Les références aux outils et logiciels utilisés ici se trouvent dans le fichier [REFERENCES.md](REFERENCES.md).
+Les références aux techniques, outils et logiciels utilisés ici peuvent être trouvées dans le fichier [REFERENCES.md](REFERENCES.md).
 
 ---
 
