@@ -3,20 +3,6 @@
 [![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
 [![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
 
-![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
-
-<!-- omit in toc -->
-## Table of Contents
-
-- [PORK-VISION](#pork-vision)
-  - [About](#about)
-  - [Documentation](#documentation)
-  - [Credits](#credits)
-  - [Contribution](#contribution)
-  - [License](#license)
-  - [References](#references)
-  - [Citation](#citation)
-
 ---
 
 ## About
@@ -33,36 +19,28 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 - Custom Algorithms:
   - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
 
+---
+
 ## Documentation
 
-For technical details, installation and usage instructions, please see the [`User Guide`](./docs/user-guide.md).
+For technical details, including installation and usage instructions, please see the [`User Guide`](./docs/user-guide.md).
 
 ---
 
-## Credits
+## Acknowledgements
 
-Developed by a multidisciplinary team of bioinformaticians and meat science experts at Lacombe Research and Development centre, Agriculture & Agri-Food Canada. For individual contributions, see the [CREDITS](CREDITS.md) file.
+This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada. See the [CREDITS](CREDITS.md) file for a list of individual contributions.
 
----
+To cite this project, refer to the [CITATION](CITATION.cff) file or click the *Cite this repository* button (right-hand sidebar).
 
-## Contribution
+To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file  and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.mdmd).
 
-If you would like to contribute to this project, please review the guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+For references to key publications, resources and tools/software used here, see the [REFERENCES](REFERENCES.md) file.
 
 ---
 
 ## License
 
-This project is distributed under the GPLv3 License. For complete details and copyright information, see the [LICENSE](LICENSE) file.
+This project is licensed under the GNU General Public License v3.0 (GPLv3). See the [LICENSE](LICENSE) file for details.
 
----
-
-## References
-
-References to techniques, tools and software used here can be found in the [REFERENCES.md](REFERENCES.md) file.
-
----
-
-## Citation
-
-If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+Copyright (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
