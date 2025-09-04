@@ -29,18 +29,20 @@ For technical details, including installation and usage instructions, please see
 
 ## Acknowledgements
 
-This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada. See the [CREDITS](CREDITS.md) file for a list of individual contributions.
+This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada.
 
-To cite this project, refer to the [CITATION](CITATION.cff) file or click the *Cite this repository* button (right-hand sidebar).
+- Credits: For a list of individual contributions, see [CREDITS](CREDITS.md).
 
-To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file  and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.mdmd).
+- Citation: To cite this project, click the *`Cite this repository`* button on the right-hand sidebar.
 
-For references to key publications, resources and tools/software used here, see the [REFERENCES](REFERENCES.md) file.
+- Contributing: To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+
+- References: For a list of key resources and software used here, see [REFERENCES](REFERENCES.md).
 
 ---
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 (GPLv3). See the [LICENSE](LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](LICENSE) for details.
 
 Copyright (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
