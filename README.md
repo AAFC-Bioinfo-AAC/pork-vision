@@ -10,6 +10,7 @@
 
 - [PORK-VISION](#pork-vision)
   - [About](#about)
+  - [Documentation](#documentation)
   - [Credits](#credits)
   - [Contribution](#contribution)
   - [License](#license)
@@ -31,8 +32,10 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
   - A YOLOv11 object detection model for identifying embedded color standards
 - Custom Algorithms:
   - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
-  
-For technical details, installation and usage, see [`User guide`](./docs/user-guide.md).
+
+## Documentation
+
+For technical details, installation and usage instructions, please see the [`User Guide`](./docs/user-guide.md).
 
 ---
 
