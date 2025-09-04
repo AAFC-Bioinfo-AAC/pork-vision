@@ -23,7 +23,7 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 
 ## Documentation
 
-For technical details, including installation and usage instructions, please see the [`User Guide`](./docs/user-guide.md).
+For technical details, including installation and usage instructions, please see the [**`User Guide`**](./docs/user-guide.md).
 
 ---
 
@@ -31,18 +31,18 @@ For technical details, including installation and usage instructions, please see
 
 This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada.
 
-- Credits: For a list of individual contributions, see [CREDITS](CREDITS.md).
+- **Credits**: For a list of individual contributions, see [CREDITS](CREDITS.md).
 
-- Citation: To cite this project, click the *`Cite this repository`* button on the right-hand sidebar.
+- **Citation**: To cite this project, click the *`Cite this repository`* button on the right-hand sidebar.
 
-- Contributing: To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+- **Contributing**: To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 
-- References: For a list of key resources and software used here, see [REFERENCES](REFERENCES.md).
+- **References**: For a list of key resources and software used here, see [REFERENCES](REFERENCES.md).
 
 ---
 
 ## License
 
-This project is licensed under the GNU General Public License v3.0 (GPLv3). See [LICENSE](LICENSE) for details.
+This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See [LICENSE](LICENSE) for details.
 
-Copyright (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
+**Copyright** (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
