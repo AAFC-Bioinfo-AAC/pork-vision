@@ -33,7 +33,7 @@ This project was developed by a multidisciplinary team of bioinformaticians and 
 
 - **Credits**: For a list of individual contributions, see [CREDITS](CREDITS.md).
 
-- **Citation**: To cite this project, click the *`Cite this repository`* button on the right-hand sidebar.
+- **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar.
 
 - **Contributing**: To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
 
@@ -45,4 +45,4 @@ This project was developed by a multidisciplinary team of bioinformaticians and 
 
 This project is licensed under the **GNU General Public License v3.0 (GPLv3)**. See [LICENSE](LICENSE) for details.
 
-**Copyright** (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
+**Copyright (c)** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
