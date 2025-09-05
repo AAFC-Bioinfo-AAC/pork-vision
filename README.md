@@ -31,13 +31,19 @@ For technical details, including installation and usage instructions, please see
 
 This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada.
 
-- **Credits**: For a list of individual contributions, see [CREDITS](CREDITS.md).
+- **Credits**: For a list of individual contributions, see [CREDITS.md](CREDITS.md)
 
-- **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar.
+- **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar
 
-- **Contributing**: To contribute to this project, review the guidelines provided in the [CONTRIBUTING](CONTRIBUTING.md) file and adhere to our [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md).
+- **Contributing**: To contribute to this project, review and adhere to our [guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md)
 
-- **References**: For a list of key resources and software used here, see [REFERENCES](REFERENCES.md).
+- **References**: For a list of key resources used here, see [REFERENCES.md](REFERENCES.md)
+
+---
+
+## Security  
+
+⚠️ Do not post any security issues on the public repository! Please report them as described in [SECURITY.md](SECURITY.md)
 
 ---
 
