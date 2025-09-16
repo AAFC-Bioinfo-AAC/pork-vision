@@ -52,4 +52,3 @@ This project was developed by a multidisciplinary team of bioinformaticians and 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details. Visit [LicenseHub](https://licensehub.org) to view the plain-language summary of this license.
 
 **Copyright (c)** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
-
