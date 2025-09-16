@@ -48,6 +48,7 @@ Porkvision `v1.0.0` marks the first full, production-ready release of an end-to-
 ---
 
 ### Example Outputs
+
 - `output/annotated_images/`: measurement overlays  
 - `output/marbling/`: marbling and fat masks  
 - `output/rois/`: region-of-interest files for manual QA  

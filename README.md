@@ -242,10 +242,16 @@ Before running the pipeline, ensure that:
 When executing the pipeline locally, first set the FIJI_CMD environment variable to ensure that headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`:
 
 ```bash
- export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
+ export FIJI_CMD=$(which ImageJ)
 ```
 
-Then, run:
+Note that the above will work only after activating the conda environment. The FIJI_CMD environment variable can verified as follows:
+
+```bash
+ echo $FIJI_CMD
+```
+
+Next, run:
 
 ```bash
 python ./src/main.py
@@ -324,7 +330,7 @@ Processed results are saved in the `output` directory, organized as follows:
 
 **Example output folder structure:**
 
-An example of the output folder structure created from running the program with the test file in the data folder. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
+Here is an example of the output folder structure created from running the program with the 2 test image files in the data folder, one of which is a blurry image that will fail the ruler measurements and be flagged as an outlier. Sub-folders will be created for each processed image, organized by image name. CSV files provide summary tables of the analysis results.
 
 ```text
 output/
@@ -420,3 +426,4 @@ References to tools and software used here can be found in the [CITATIONS.md](CI
 ## Citation
 
 If you use this project in your work, please cite it using the [CITATION.cff](CITATION.cff) file.
+
