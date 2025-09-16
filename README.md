@@ -1,7 +1,19 @@
+<!-- omit in toc -->
 # PORK-VISION
 
 [![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
 [![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
+
+---
+
+<!-- omit in toc -->
+## Table of Contents
+
+- [About](#about)
+- [Documentation](#documentation)
+- [Acknowledgements](#acknowledgements)
+- [Security](#security)
+- [License](#license)
 
 ---
 
@@ -35,7 +47,7 @@ This project was developed by a multidisciplinary team of bioinformaticians and 
 
 - **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar
 
-- **Contributing**: To contribute to this project, review and adhere to our [guidelines](CONTRIBUTING.md) and [code of conduct](CODE_OF_CONDUCT.md)
+- **Contributing**: Contributions are welcome! Please review the guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) to foster a respectful and inclusive environment.
 
 - **References**: For a list of key resources used here, see [REFERENCES.md](REFERENCES.md)
 
