@@ -227,10 +227,10 @@ Note that the above will work only after activating the conda environment. The F
  echo $FIJI_CMD
 ```
 
-Next, run:
+Next, run the following command, which will send any errors (and the anticipated numerous warnings that can be safely ignored; see [Notes](#notes) below) to a file while still showing the normal program output on screen:
 
 ```bash
-python ./src/main.py
+python ./src/main.py 2> err.txt
 ```
 
 To execute the pipeline on an HPC with SLURM, first complete the SLURM directive placeholders and set the FIJI_CMD environment variable in porkvision.sh script and then run the following command:
