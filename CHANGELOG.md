@@ -3,7 +3,7 @@
 
 ## v1.0.0 — Initial Public Release
 
-**Release Date:** 2025-06-xx
+**Release Date:** 2025-10-01
 
 ---
 
