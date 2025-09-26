@@ -1,4 +1,19 @@
 #!/usr/bin/env python
+
+LICENSE_NOTICE = """\
+
+Pork-vision: pork chop image analysis pipeline. This program comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it under certain condition. 
+For license details, see <https://www.gnu.org/licenses/>.
+
+"""
+
+def print_LICENSE_NOTICE() -> None:
+    print(LICENSE_NOTICE)
+
+# print on startup
+print_LICENSE_NOTICE()
+
 from utils.imports import *
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from ultralytics import YOLO
@@ -182,4 +197,5 @@ def main():
     print(f"OVERALL RUNTIME: {m}:{s:02d}")
 
 if __name__ == "__main__":
+
     main() 
