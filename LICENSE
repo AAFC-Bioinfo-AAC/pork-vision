@@ -1,12 +1,9 @@
-Copyright (c) His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
----------------------------------------------------------------------------------------------------------------------------------------
-(c) Droit d’auteur — Sa Majesté le Roi du chef du Canada, représentée par le ministre de l’Agriculture et Agroalimentaire Canada, 2025.
----------------------------------------------------------------------------------------------------------------------------------------
-Traduction en français de la licence publique générale GNU, version 3:
-<https://forge.chapril.org/tgodefroy/Traduction-en-francais-GPLv3/wiki/Traduction-en-fran%C3%A7ais-de-la-GNU-GPLv3>
----------------------------------------------------------------------------------------------------------------------------------------
+Pork-vision: Python-based image analysis pipeline to automate the evaluation of pork chops using computer vision and deep learning techniques / Pipeline d'analyse d'image basé sur Python utilisant des techniques de vision par ordinateur et d'apprentissage profond pour automatiser l'évaluation des côtelettes de longe de porc centrales.
 
-                     GNU GENERAL PUBLIC LICENSE
+Copyright (c) 2025 His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food.
+(c) Droit d’auteur — Sa Majesté le Roi du chef du Canada, représentée par le ministre de l’Agriculture et Agroalimentaire Canada, 2025.
+
+                    GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
  Copyright (C) 2007 Free Software Foundation, Inc. <https://fsf.org/>
@@ -639,8 +636,12 @@ to attach them to the start of each source file to most effectively
 state the exclusion of warranty; and each file should have at least
 the "copyright" line and a pointer to where the full notice is found.
 
-    <one line to give the program's name and a brief idea of what it does.>
-    Copyright (C) <year>  <name of author>
+    Pork-vision: Python-based image analysis pipeline to automate the evaluation 
+    of pork chops using computer vision and deep learning techniques / Pipeline d'analyse 
+    d'image basé sur Python utilisant des techniques de vision par ordinateur et d'apprentissage 
+    profond pour automatiser l'évaluation des côtelettes de longe de porc centrales.
+    Copyright (c) 2025 His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food.
+    (c) Droit d’auteur — Sa Majesté le Roi du chef du Canada, représentée par le ministre de l’Agriculture et Agroalimentaire Canada, 2025.
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -660,7 +661,10 @@ Also add information on how to contact you by electronic and paper mail.
   If the program does terminal interaction, make it output a short
 notice like this when it starts in an interactive mode:
 
-    <program>  Copyright (C) <year>  <name of author>
+    Pork-vision: Python-based image analysis pipeline to automate the evaluation 
+    of pork chops using computer vision and deep learning techniques / Pipeline d'analyse 
+    d'image basé sur Python utilisant des techniques de vision par ordinateur et d'apprentissage 
+    profond pour automatiser l'évaluation des côtelettes de longe de porc centrales.
     This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
     This is free software, and you are welcome to redistribute it
     under certain conditions; type `show c' for details.
