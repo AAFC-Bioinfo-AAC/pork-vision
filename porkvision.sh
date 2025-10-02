@@ -8,8 +8,14 @@
 #SBATCH --cpus-per-task=<number of CPUs> 
 #SBATCH --mem=<amount of memory, e.g., 16G for 16 GB>   
 #SBATCH --output=logs/porkvision_%j.log
+#SBATCH --error=logs/porkvision_%j.err
 
+# Add path to ImageJ executable
 export FIJI_CMD="/your/path/to/porkvision-env/bin/ImageJ"
 
+# Activate conda environment
+# source ~/miniconda3/etc/profile.d/conda.sh
 conda activate porkvision-1.0.0
+
+# Run the script
 python ./src/main.py
