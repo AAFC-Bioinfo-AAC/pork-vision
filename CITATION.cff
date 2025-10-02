@@ -10,9 +10,6 @@ identifiers:
   - type: doi
     value: # Insert Zenodo DOI
 authors:
-  - family-names: Kommadath
-    given-names: Arun
-    orcid: 0000-0003-3587-6670
   - family-names: Hill
     given-names: Sean
   - family-names: Ali
@@ -33,3 +30,6 @@ authors:
     given-names: Rhona
   - family-names: Juarez
     given-names: Manuel
+  - family-names: Kommadath
+    given-names: Arun
+    orcid: 0000-0003-3587-6670
