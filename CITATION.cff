@@ -1,41 +1,35 @@
-cff-version: 1.0.0
-message: "If you use this software, please cite it as below"
-authors:
-- family-names: Kommadath
-  given-names: Arun
-  orcid: 0000-0003-3587-6670
-- family-names: Davelouis
-  given-names: Fatima
-  orcid: 
-- family-names: Yakubovich
-  given-names: Edward
-  orcid: 
-- family-names: Ali
-  given-names: Maaz
-  orcid: 
-- family-names: Hill
-  given-names: Sean
-  orcid: 
-- family-names: Ibrahim
-  given-names: Tarik
-  orcid: 
-- family-names: Uttaro
-  given-names: Bethany
-  orcid:
-- family-names: Zawadski
-  given-names: Sophie
-  orcid:
-- family-names: Thacker
-  given-names: Rhona
-  orcid:
-- family-names: Hudson
-  given-names: Lacey
-  orcid:
-- family-names: Juarez
-  given-names: Manuel
-  orcid:
-title: "Porkvision"
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: Pork-vision
+type: software
 version: "1.0.0"
-doi: 
-date-released: 
-url: https://github.com/AAFC-Bioinformatics/porkvision
+date-released: "2025-10-02" # Update to actual release date
+repository-code: "https://github.com/AAFC-Bioinfo-AAC/pork-vision"
+license: GPL-3.0
+identifiers:
+  - type: doi
+    value: # Insert Zenodo DOI
+authors:
+  - family-names: Kommadath
+    given-names: Arun
+    orcid: 0000-0003-3587-6670
+  - family-names: Hill
+    given-names: Sean
+  - family-names: Ali
+    given-names: Maaz
+  - family-names: Yakubovich
+    given-names: Edward
+  - family-names: Davelouis
+    given-names: Fatima
+  - family-names: Ibrahim
+    given-names: Tarik
+  - family-names: Uttaro
+    given-names: Bethany
+  - family-names: Zawadski
+    given-names: Sophie
+  - family-names: Hudson
+    given-names: Lacey
+  - family-names: Thacker
+    given-names: Rhona
+  - family-names: Juarez
+    given-names: Manuel
