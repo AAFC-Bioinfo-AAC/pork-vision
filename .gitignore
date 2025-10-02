@@ -170,7 +170,7 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-*.pt
+# *.pt
 .gitkeep
 
 # Visual Studio Code settings
