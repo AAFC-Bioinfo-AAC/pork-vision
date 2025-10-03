@@ -1,29 +1,29 @@
-# USER GUIDE
+<!-- omit in toc -->
+# PORK-VISION USER GUIDE
 
 <!-- omit in toc -->
 ## Table of Contents
 
-- [USER GUIDE](#user-guide)
-  - [Overview](#overview)
-    - [Image characteristics and measurements](#image-characteristics-and-measurements)
-    - [Automated image analysis pipeline modules](#automated-image-analysis-pipeline-modules)
-      - [Preprocessing](#preprocessing)
-      - [Analysis](#analysis)
-      - [Measurement](#measurement)
-    - [Automated image analysis pipeline flowchart](#automated-image-analysis-pipeline-flowchart)
-  - [Data](#data)
-  - [Parameters](#parameters)
-    - [General Parameters](#general-parameters)
-    - [Measurement Variables](#measurement-variables)
-    - [Orientation Variables](#orientation-variables)
-    - [Image Processing Variables](#image-processing-variables)
-  - [Usage](#usage)
-    - [Pre-requisites](#pre-requisites)
-      - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
-      - [Installation](#installation)
-    - [Instructions](#instructions)
-    - [Notes](#notes)
-  - [Output](#output)
+- [Overview](#overview)
+  - [Image characteristics and measurements](#image-characteristics-and-measurements)
+  - [Automated image analysis pipeline modules](#automated-image-analysis-pipeline-modules)
+    - [Preprocessing](#preprocessing)
+    - [Analysis](#analysis)
+    - [Measurement](#measurement)
+  - [Automated image analysis pipeline flowchart](#automated-image-analysis-pipeline-flowchart)
+- [Data](#data)
+- [Parameters](#parameters)
+  - [General Parameters](#general-parameters)
+  - [Measurement Variables](#measurement-variables)
+  - [Orientation Variables](#orientation-variables)
+  - [Image Processing Variables](#image-processing-variables)
+- [Usage](#usage)
+  - [Pre-requisites](#pre-requisites)
+    - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
+    - [Installation](#installation)
+  - [Instructions](#instructions)
+  - [Notes](#notes)
+- [Output](#output)
 
 ## Overview
 
