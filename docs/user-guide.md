@@ -35,6 +35,8 @@ The pork chop images have the following characteristics:
 - Three color reference palettes are placed along the left, top, and bottom inner edges of the tray.
 - A ruler is aligned consistently beside the pork chop to the right inner edge of the tray.
 
+![Pork loin on a white tray.](../data/103_LdLeanColor.JPG)
+
 <p align="center">
     <img src="../data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
 </p>
