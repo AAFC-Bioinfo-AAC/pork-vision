@@ -198,12 +198,9 @@ Example filename: 103_LdLeanColor.JPG
 
 ### Instructions
 
+See instructions below to run the pipeline locally or on an HPC. To specify a different path than the default for raw images, models or output, or to fine-tune any parameters, see [Parameters](#parameters) and adjust the run commands as required.
+
 #### Running locally
-
-Before running the pipeline, ensure that:
-
-- All files are organized in their correct directories.
-- The required models are placed in: `src/models/`
 
 Activate the conda environment:
 
@@ -218,7 +215,7 @@ export FIJI_CMD=$(which ImageJ)
 echo "$FIJI_CMD"   # verify
 ```
 
-Run the pipeline, sending any errors (and the anticipated numerous warnings that can be safely ignored) to a file while still showing the normal program output on screen:
+Run the pipeline from the project's root as follows, sending any errors (and the anticipated numerous warnings that can be safely ignored) to a file while still showing the normal program output on screen:
 
 ```bash
 python ./src/main.py 2> err.txt
@@ -226,7 +223,7 @@ python ./src/main.py 2> err.txt
 
 #### Running on HPC (SLURM)
 
-Fill in the SBATCH placeholders, set FIJI_CMD in `porkvision.sh` and then submit the SLURM script:
+Update the SBATCH placeholders and FIJI_CMD in `porkvision.sh` (and the run command if parameters are different from default), then submit the job:
 
 ```bash
 sbatch porkvision.sh
@@ -272,7 +269,8 @@ This is expected and does not indicate a problem.
 
 Processed results are saved in the `output` directory, organized as follows:
 
-- **annotated_images/** – Images with visualized measurements (e.g., `annotated_*.JPG`)
+- **annotated_images/** – Images with visualized measurements (e.g., `annotated_*.jpg`)
+- **colour.csv** – Tabular summary of color grading results for all processed images
 - **colouring/** – Results from lean colour analysis using the Canadian 7-class standard  
   - `[image_name]/` – Diagnostic visualizations and outputs for each image:
     - `*_Color_Detect.jpg`: Color detection visualization
@@ -283,8 +281,7 @@ Processed results are saved in the `output` directory, organized as follows:
     - `*_std.txt`: Seven RGB standard color values
   - `results/` – Final outputs used for analysis or reporting:
     - `*_Canadian_LUT.png`: Merged color-labeled PNG showing lean colour classification
-- **colouring.csv** – Tabular summary of color grading results for all processed images
-- **debug/** – Debugging information and logs (e.g., `*_DEBUGINFO.txt`)
+- **debug/** – folder created if --debug parameter used. Will contain debugging information and logs (e.g., `*_DEBUGINFO.txt`)
 - **marbling/** – Results from marbling segmentation and region extraction  
   - `masks/` – Eroded masks used for lean colour intersection:
     - `*_crop.png`: Binary mask showing lean meat
@@ -307,7 +304,7 @@ Here is an example of the output folder structure created from running the progr
 ```text
 output/
 |-- annotated_images
-|   |-- annotated_103_LdLeanColor.JPG
+|   |-- annotated_103_LdLeanColor.jpg
 |   `-- annotated_1301_LdLeanColor.jpg
 |-- colour.csv
 |-- colouring
