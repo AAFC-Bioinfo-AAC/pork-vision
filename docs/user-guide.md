@@ -20,7 +20,7 @@
 - [Usage](#usage)
   - [Pre-requisites](#pre-requisites)
     - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
-    - [Installation](#installation)
+  - [Installation](#installation)
   - [Instructions](#instructions)
   - [Notes](#notes)
 - [Output](#output)
@@ -37,10 +37,6 @@ The pork chop images have the following characteristics:
 
 ![Pork loin on a white tray.](../data/103_LdLeanColor.JPG)
 
-<p align="center">
-    <img src="../data/103_LdLeanColor.JPG" alt="Pork loin on a white tray." width="600" height="400">
-</p>
-
 In current practice, trained personnel use ImageJ along with pre-defined macros to measure features on pork chop images. These include:
 
 - Muscle Width: The longest horizontal segment across the longissimus dorsi (LD) muscle.
@@ -49,9 +45,7 @@ In current practice, trained personnel use ImageJ along with pre-defined macros 
 - Marbling: Estimated as the proportion of intramuscular fat within the LD muscle.
 - Color Score: Based on proximity to standard color references.
 
-<p align="center">
-    <img src="../output/annotated_images/annotated_103_LdLeanColor.JPG" alt="Pork loin annotated." width="600" height="400">
-</p>
+![Pork loin annotated.](../output/annotated_images/annotated_103_LdLeanColor.JPG)
 
 ### Automated image analysis pipeline modules
 
@@ -191,18 +185,17 @@ Example filename: 103_LdLeanColor.JPG
 | Libraries                       | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything        |
 | Frameworks / Apps               | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv11       |
 
-#### Installation
+### Installation
 
 1. Ensure you have Conda installed and are inside the root directory of the project repository.
+
 2. Create the environment using the provided environment file:
 
     ```bash
     conda env create -f config/environment.yml
     ```
-
-Also provided is a conda environment with all pinned versions of key packages used at the time of testing.  
-
-**Note:** On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs.
+  
+    Also provided is a conda environment with all pinned versions of key packages used at the time of testing. On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs.
 
 3. Activate the environment
 
