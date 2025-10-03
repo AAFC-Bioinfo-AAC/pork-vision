@@ -19,10 +19,11 @@
   - [Image Processing Variables](#image-processing-variables)
 - [Usage](#usage)
   - [Pre-requisites](#pre-requisites)
-    - [Programming Languages, Libraries, and frameworks](#programming-languages-libraries-and-frameworks)
   - [Installation](#installation)
   - [Instructions](#instructions)
-  - [Notes](#notes)
+    - [Running locally](#running-locally)
+    - [Running on HPC (SLURM)](#running-on-hpc-slurm)
+  - [First-Run Notes \& Expected Warnings](#first-run-notes--expected-warnings)
 - [Output](#output)
 
 ## Overview
@@ -177,8 +178,6 @@ Example filename: 103_LdLeanColor.JPG
 
 ### Pre-requisites
 
-#### Programming Languages, Libraries, and frameworks
-
 | **Category**                    | **Components**       |
 |---------------------------------|----------------------|
 | Programming Languages           | Python, Java         |
@@ -187,77 +186,79 @@ Example filename: 103_LdLeanColor.JPG
 
 ### Installation
 
-1. Ensure you have Conda installed and are inside the root directory of the project repository.
+1. Ensure Conda is installed and you are in the root directory of the project repository.
 
-2. Create the environment using the provided environment file:
+2. Create conda environment using the provided environment file:
 
     ```bash
     conda env create -f config/environment.yml
     ```
   
-    Also provided is a conda environment with all pinned versions of key packages used at the time of testing. On certain systems (e.g., WSL), the environment creation process may appear to hang while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs.
-
-3. Activate the environment
-
-    ```bash
-    conda activate porkvision-1.0.0
-    ```
+    Also provided is a conda environment with all pinned versions of key packages used at the time of testing. Note that on certain systems (e.g., WSL), the environment creation process may appear to stall while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Also, expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs.
 
 ### Instructions
+
+#### Running locally
 
 Before running the pipeline, ensure that:
 
 - All files are organized in their correct directories.
-- The required models are placed in: src/models/
+- The required models are placed in: `src/models/`
 
-When executing the pipeline locally, first set the FIJI_CMD environment variable to ensure that headless Fiji macros are executed via the expected entry point bundled with the conda-installed `bioconda::fiji`:
-
-```bash
- export FIJI_CMD=$(which ImageJ)
-```
-
-Note that the above will work only after activating the conda environment. The FIJI_CMD environment variable can verified as follows:
+Activate the conda environment:
 
 ```bash
- echo $FIJI_CMD
+  conda activate porkvision-1.0.0
 ```
 
-Next, run the following command, which will send any errors (and the anticipated numerous warnings that can be safely ignored; see [Notes](#notes) below) to a file while still showing the normal program output on screen:
+Set the `FIJI_CMD` to the conda-installed ImageJ entry point:
+
+```bash
+export FIJI_CMD=$(which ImageJ)
+echo "$FIJI_CMD"   # verify
+```
+
+Run the pipeline, sending any errors (and the anticipated numerous warnings that can be safely ignored) to a file while still showing the normal program output on screen:
 
 ```bash
 python ./src/main.py 2> err.txt
 ```
 
-To execute the pipeline on an HPC with SLURM, first complete the SLURM directive placeholders and set the FIJI_CMD environment variable in porkvision.sh script and then run the following command:
+#### Running on HPC (SLURM)
+
+Fill in the SBATCH placeholders, set FIJI_CMD in `porkvision.sh` and then submit the SLURM script:
 
 ```bash
 sbatch porkvision.sh
 ```
 
-### Notes
+### First-Run Notes & Expected Warnings
 
-When running the script, ignore the following warning if it shows:
+- NumPy longdouble probe
+
+You may see:
 
 ```bash
-***envs/porkvision-1.1.0/lib/python3.9/site-packages/numpy/_core/getlimits.py:545:
-UserWarning: Signature b'\x00\xd0\xcc\xcc\xcc\xcc\xcc\xcc\xfb\xbf\x00\x00\x00\x00\x00\x00' 
-for <class 'numpy.longdouble'> does not match any known type: falling back to type probe function.
-This warning indicates broken support for the dtype!
-  machar = _get_machar(dtype)
+.../site-packages/numpy/_core/getlimits.py:...
+UserWarning: Signature ... for <class 'numpy.longdouble'> does not match any known type...
 ```
 
-This warning can be safely ignored and typically does not affect script execution.
+This indicates limited longdouble support on your platform and can be safely ignored.
 
-Fiji execution may produce verbose Java warnings such as duplicate script language bindings (e.g., Groovy, BeanShell, Clojure). Example warnings:
+- Fiji / SciJava verbosity
+
+You may see duplicate script language binding warnings (Groovy, BeanShell, Clojure), e.g.:
 
 ```bash
 [WARNING] Not overwriting name 'Groovy': ...
 [WARNING] Not overwriting extension 'bsh': ...
 ```
 
-These are expected and safe to ignore. Many warnings originate from classpath conflicts in SciJava and cannot be fully silenced without custom JAR pruning.
+These stem from classpath overlaps and are benign and cannot be fully silenced without custom JAR pruning.
 
-On first run of the script, Ultralytics will automatically generate a default settings file (typically in your `$HOME/.config/Ultralytics` directory). You may encounter a message like:
+- Ultralytics first-run config
+
+On first run, Ultralytics creates a settings file (typically in your `$HOME/.config/Ultralytics` directory), and you may encounter a message like:
 
 ```bash
 Ultralytics settings file not found. Creating default settings at ~/.config/Ultralytics/settings.yaml
