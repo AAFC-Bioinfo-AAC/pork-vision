@@ -223,7 +223,7 @@ python ./src/main.py 2> err.txt
 
 #### Running on HPC (SLURM)
 
-Update the SBATCH placeholders and FIJI_CMD in `porkvision.sh` (and the run command if parameters are different from default), then submit the job:
+Submit SLURM job after updating the SBATCH placeholders and FIJI_CMD in `porkvision.sh` (and also the run command if parameters are different from default):
 
 ```bash
 sbatch porkvision.sh
