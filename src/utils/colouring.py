@@ -1,4 +1,3 @@
-
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (c) 2025 His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
 # Pork-vision: pork chop image analysis pipeline.
