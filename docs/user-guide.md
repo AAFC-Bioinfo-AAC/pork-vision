@@ -36,7 +36,7 @@ The pork chop images have the following characteristics:
 - Three color reference palettes are placed along the left, top, and bottom inner edges of the tray.
 - A ruler is aligned consistently beside the pork chop to the right inner edge of the tray.
 
-![Pork loin on a white tray.](../data/103_LdLeanColor.JPG)
+![Pork loin on a white tray.](../data/103_LdLeanColor.jpg)
 
 In current practice, trained personnel use ImageJ along with pre-defined macros to measure features on pork chop images. These include:
 
@@ -46,7 +46,7 @@ In current practice, trained personnel use ImageJ along with pre-defined macros 
 - Marbling: Estimated as the proportion of intramuscular fat within the LD muscle.
 - Color Score: Based on proximity to standard color references.
 
-![Pork loin annotated.](../output/annotated_images/annotated_103_LdLeanColor.JPG)
+![Pork loin annotated.](../output/annotated_images/annotated_103_LdLeanColor.jpg)
 
 ### Automated image analysis pipeline modules
 
