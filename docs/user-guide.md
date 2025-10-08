@@ -1,6 +1,8 @@
 <!-- omit in toc -->
 # PORK-VISION USER GUIDE
 
+---
+
 <!-- omit in toc -->
 ## Table of Contents
 
@@ -25,6 +27,8 @@
     - [Running on HPC (SLURM)](#running-on-hpc-slurm)
   - [First-Run Notes \& Expected Warnings](#first-run-notes--expected-warnings)
 - [Output](#output)
+
+---
 
 ## Overview
 
@@ -355,3 +359,5 @@ output/
 `-- ruler_measurement
     `-- 103_LdLeanColor_2133px-15.5cm.jpg
 ```
+
+---
