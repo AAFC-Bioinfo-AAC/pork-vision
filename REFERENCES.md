@@ -1,7 +1,6 @@
 # References
 
-> This file lists the scholarly works and software used in this repository.  
-> To cite this repository, see the `CITATION.cff` file.
+This file lists the scholarly works and software used in this repository. To cite this repository, see the `CITATION.cff` file.
 
 ---
 
