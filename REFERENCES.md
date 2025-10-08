@@ -1,7 +1,7 @@
 # References
 
 > This file lists the scholarly works and software used in this repository.  
-> For how to cite *this repository*, see the badge/DOI in the README or the `CITATION.cff`.
+> To cite this repository, see the `CITATION.cff` file.
 
 ---
 
