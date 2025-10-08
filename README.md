@@ -41,7 +41,7 @@ For technical details, including installation and usage instructions, please see
 
 ## Acknowledgements
 
-This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the Lacombe Research and Development Centre, Agriculture & Agri-Food Canada.
+This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the *Lacombe Research and Development Centre, Agriculture & Agri-Food Canada (AAFC)*.
 
 - **Credits**: For a list of individual contributions, see [CREDITS.md](CREDITS.md)
 

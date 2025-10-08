@@ -41,7 +41,7 @@ Pour les détails techniques, y compris les instructions d’installation et d�
 
 ## Remerciements
 
-Ce projet a été développé par une équipe multidisciplinaire de bio-informaticiens et de spécialistes en sciences de la viande au Centre de recherche et de développement de Lacombe, Agriculture et Agroalimentaire Canada.
+Ce projet a été développé par une équipe multidisciplinaire de bio-informaticiens et de spécialistes en sciences de la viande au *Centre de recherche et de développement de Lacombe, Agriculture et Agroalimentaire Canada (AAC)*.
 
 - **Crédits** : Pour une liste des contributions individuelles, voir [CREDITS.md](CREDITS.md)
 
