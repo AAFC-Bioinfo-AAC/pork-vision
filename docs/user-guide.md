@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# PORK-VISION USER GUIDE
+# PORK-VISION - USER GUIDE
 
 ---
 
