@@ -68,4 +68,4 @@ See the [LICENSE](LICENSE) file for details. Visit [LicenseHub](https://licenseh
 
 **Copyright ©** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
 
-
+---
