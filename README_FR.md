@@ -4,7 +4,6 @@
 [![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
 [![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
 
-
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 [![YOLO](https://img.shields.io/badge/YOLO-Ultralytics-0A66C2?logo=&logoColor=white)](https://github.com/ultralytics/ultralytics)
 
