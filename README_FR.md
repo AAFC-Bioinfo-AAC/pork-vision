@@ -30,7 +30,7 @@ Le pipeline extrait des mesures quantitatives telles que : la largeur et la prof
 
 - **Modèles d’apprentissage profond** :
   - Un **modèle de segmentation** pour isoler les régions de gras et de muscle
-  - Un **modèle de détection d’objets YOLOv11** pour identifier les étalons de couleur intégrés
+  - Un **modèle de détection d’objets YOLO11** pour identifier les étalons de couleur intégrés
 - **Algorithmes personnalisés** :
   - Prétraitement des images et algorithmes de mesure pour l’analyse géométrique et basée sur l’intensité
 
