@@ -1,0 +1,15 @@
+version: 1.2 # The .dockstore.yml schema version
+workflows:
+  - subclass: <CWL | WDL | NFL | GALAXY | SMK>
+    primaryDescriptorPath: <String>
+    testParameterFiles: # <String Array>
+      - <String>
+      - <String>
+    readMePath: <String>
+    authors:
+      - orcid: <String>
+    
+    publish: False 
+    # WARNING: DO NOT set publish to TRUE in an unpublished workflow. 
+    # The code security review team will manage this setting following your publication request.
+    # For .dockstore.yml Workflows Templates, refer: https://docs.dockstore.org/en/stable/assets/templates/workflows/workflows.html
