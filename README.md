@@ -4,6 +4,9 @@
 [![FR](https://img.shields.io/badge/lang-FR-yellow.svg)](README_FR.md)
 [![EN](https://img.shields.io/badge/lang-EN-blue.svg)](README.md)
 
+![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
+[![YOLO](https://img.shields.io/badge/YOLO-Ultralytics-0A66C2?logo=&logoColor=white)](https://github.com/ultralytics/ultralytics)
+
 ---
 
 <!-- omit in toc -->
@@ -27,7 +30,7 @@ The pipeline extracts quantitative measurements such as muscle width and depth, 
 
 - **Deep Learning Models**:
   - A **segmentation model** to isolate fat and muscle regions
-  - A **YOLOv11 object detection model** for identifying embedded color standards
+  - A **YOLO11 object detection model** for identifying embedded color standards
 - **Custom Algorithms**:
   - Image preprocessing and measurement algorithms for geometry and intensity-based analysis
 
@@ -64,4 +67,5 @@ This project was developed by a multidisciplinary team of bioinformaticians and 
 See the [LICENSE](LICENSE) file for details. Visit [LicenseHub](https://licensehub.org) or [tl;drLegal](https://www.tldrlegal.com/) to view a plain-language summary of this license.
 
 **Copyright ©** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
+
 
