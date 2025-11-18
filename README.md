@@ -44,21 +44,21 @@ For technical details, including installation and usage instructions, please see
 
 ## Acknowledgements
 
-This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the *Lacombe Research and Development Centre, Agriculture & Agri-Food Canada (AAFC)*.
+- **Credits**:
+  - This project was developed by a multidisciplinary team of bioinformaticians and meat science experts at the *Lacombe Research and Development Centre, Agriculture & Agri-Food Canada (AAFC)*. For a list of individual contributions, see [CREDITS.md](CREDITS.md).
+  - 🤖 Generative AI models were used in the development of this project, and all AI-generated content has been reviewed, verified, and refined by the project team to ensure accuracy.
 
-- **Credits**: For a list of individual contributions, see [CREDITS.md](CREDITS.md)
-
-- **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar
+- **Citation**: To cite this project, click the **`Cite this repository`** button on the right-hand sidebar.
 
 - **Contributing**: Contributions are welcome! Please review the guidelines in [CONTRIBUTING.md](CONTRIBUTING.md) and ensure you adhere to our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) to foster a respectful and inclusive environment.
 
-- **References**: For a list of key resources used here, see [REFERENCES.md](REFERENCES.md)
+- **References**: For a list of key resources used here, see [REFERENCES.md](REFERENCES.md).
 
 ---
 
 ## Security  
 
-⚠️ Do not post any security issues on the public repository! Please report them as described in [SECURITY.md](SECURITY.md)
+⚠️ Do not post any security issues on the public repository! Please report them as described in [SECURITY.md](SECURITY.md).
 
 ---
 
@@ -69,3 +69,4 @@ See the [LICENSE](LICENSE) file for details. Visit [LicenseHub](https://licenseh
 **Copyright ©** His Majesty the King in Right of Canada, as represented by the Minister of Agriculture and Agri-Food, 2025.
 
 ---
+
