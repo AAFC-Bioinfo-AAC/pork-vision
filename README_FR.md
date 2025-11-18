@@ -44,9 +44,9 @@ Pour les détails techniques, y compris les instructions d’installation et d�
 
 ## Remerciements
 
-Ce projet a été développé par une équipe multidisciplinaire de bio-informaticiens et de spécialistes en sciences de la viande au *Centre de recherche et de développement de Lacombe, Agriculture et Agroalimentaire Canada (AAC)*.
-
-- **Crédits** : Pour une liste des contributions individuelles, voir [CREDITS.md](CREDITS.md)
+- **Crédits** :
+  - Ce projet a été développé par une équipe multidisciplinaire de bio-informaticiens et de spécialistes en sciences de la viande au *Centre de recherche et de développement de Lacombe, Agriculture et Agroalimentaire Canada (AAC)*. Pour une liste des contributions individuelles, voir [CREDITS.md](CREDITS.md)
+  - 🤖 Des modèles d’IA générative ont été utilisés pour la réalisation de ce projet, et tout le contenu généré par l’IA a été examiné, vérifié et perfectionné par l’équipe de projet afin d’en assurer l’exactitude.
 
 - **Citation** : Pour citer ce projet, cliquez sur le bouton **`Cite this repository`** dans la barre latérale de droite.
 
