@@ -31,6 +31,7 @@ def print_LICENSE_NOTICE() -> None:
 # print on startup
 print_LICENSE_NOTICE()
 
+import sys
 from utils.imports import *
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from ultralytics import YOLO
@@ -134,7 +135,29 @@ def main():
         macro_path = pathlib.Path(__file__).parent / "macros" / "batch_marble.ijm"
         cmd = [FIJI_CMD, "--headless", "-batch", str(macro_path), marbling_root]
 
-        subprocess.run(cmd, check=True)
+        
+        print("[Fiji] launching:", " ".join(cmd))
+        print("[Fiji] CWD:", os.getcwd())
+
+        try:
+            subprocess.run(
+                cmd,
+                check=True,
+                stdout=sys.stdout,   # stream Fiji console to your terminal
+                stderr=sys.stderr,
+                timeout=600          # optional: 10-minute timeout to avoid indefinite hangs
+            )
+            print("[Fiji] finished OK")
+        except FileNotFoundError as e:
+            print("[Fiji] launcher not found:", e)
+            raise
+        except subprocess.TimeoutExpired:
+            print("[Fiji] timed out")
+            raise
+        except subprocess.CalledProcessError as e:
+            print(f"[Fiji] exited with code {e.returncode}")
+            raise
+
         print("Fiji batch done via subprocess.")
 
         overlay_dir = os.path.join(marbling_root, 'overlays')
