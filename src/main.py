@@ -43,6 +43,7 @@ from utils.measurement import measure_longest_horizontal_segment, find_midline_u
 from utils.postprocess import save_annotated_image, save_results_to_csv, print_table_of_measurements, extract_image_id, save_to_roi
 from utils.timer import time_program
 from utils.processImage import process_image, init_models
+from utils.fiji_parallel import run_fiji_marbling_parallel, run_fiji_colour_parallel
 import time, subprocess, textwrap, pathlib, glob, shutil
 
 FIJI_CMD = os.environ.get("FIJI_CMD", "fiji") 
@@ -123,42 +124,21 @@ def main():
         save_results_to_csv(id_list, muscle_width_list, muscle_depth_list, fat_depth_list, meas_csv, conversion_factor_list, area_px_list, outlier_list, area_mm_list)
         print_table_of_measurements(meas_csv)
 
-    # Step 4: batch-run Fiji macro for marbling
+    # Step 4: PARALLEL Fiji macro for marbling (PARALLELIZED VERSION)
     if run_marbling or run_colour:
-        print("BATCH RUNNING Fiji macro over all muscle regions…")
+        print("PARALLEL RUNNING Fiji macro over all muscle regions…")
         marbling_root = os.path.join(args.output_path, 'marbling')
         regions_dir = os.path.join(args.output_path, 'marbling', 'regions')
         masks_dir   = os.path.join(args.output_path, 'marbling', 'masks')
         os.makedirs(regions_dir, exist_ok=True)
         os.makedirs(masks_dir, exist_ok=True)
 
-        macro_path = pathlib.Path(__file__).parent / "macros" / "batch_marble.ijm"
-        cmd = [FIJI_CMD, "--headless", "-batch", str(macro_path), marbling_root]
-
+        # Use parallel processing instead of batch mode
+        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count() // 2)
+        successful, failed = run_fiji_marbling_parallel(marbling_root, max_workers=fiji_workers)
         
-        print("[Fiji] launching:", " ".join(cmd))
-        print("[Fiji] CWD:", os.getcwd())
-
-        try:
-            subprocess.run(
-                cmd,
-                check=True,
-                stdout=sys.stdout,   # stream Fiji console to your terminal
-                stderr=sys.stderr,
-                timeout=600          # optional: 10-minute timeout to avoid indefinite hangs
-            )
-            print("[Fiji] finished OK")
-        except FileNotFoundError as e:
-            print("[Fiji] launcher not found:", e)
-            raise
-        except subprocess.TimeoutExpired:
-            print("[Fiji] timed out")
-            raise
-        except subprocess.CalledProcessError as e:
-            print(f"[Fiji] exited with code {e.returncode}")
-            raise
-
-        print("Fiji batch done via subprocess.")
+        if failed > 0:
+            print(f"Warning: {failed} images failed during FIJI marbling processing")
 
         overlay_dir = os.path.join(marbling_root, 'overlays')
         os.makedirs(overlay_dir, exist_ok=True)
@@ -192,20 +172,21 @@ def main():
         save_marbling_csv(marb_ids, marb_pcts, marbling_csv)
         print_table_of_measurements(marbling_csv)
 
-    # Step 5: colour CSV
+    # Step 5: PARALLEL colour CSV (PARALLELIZED VERSION)
     if run_colour:
-        print("BATCH RUNNING Fiji macro for lean-colour grading…")
+        print("PARALLEL RUNNING Fiji macro for lean-colour grading…")
         colour_root  = os.path.join(args.output_path, 'colouring')
         regions_dir  = os.path.join(colour_root, 'regions')
         lean_dir = os.path.join(args.output_path, 'marbling', 'masks')
         results_dir  = os.path.join(colour_root, 'results')
         os.makedirs(results_dir,  exist_ok=True)
 
-        macro_path = pathlib.Path(__file__).parent / "macros" / "batch_colour.ijm"
-        cmd = [FIJI_CMD, "--headless", "-batch", str(macro_path), colour_root]
-
-        subprocess.run(cmd, check=True)
-        print("Fiji colour batch done via subprocess.")
+        # Use parallel processing instead of batch mode
+        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count() // 2)
+        successful, failed = run_fiji_colour_parallel(colour_root, lean_dir, max_workers=fiji_workers)
+        
+        if failed > 0:
+            print(f"Warning: {failed} images failed during FIJI colour processing")
 
         master_rows = []
         for xls_path in glob.glob(os.path.join(results_dir, '*_colour.xls')):
@@ -238,4 +219,4 @@ def main():
 
 if __name__ == "__main__":
 
-    main() 
+    main()
