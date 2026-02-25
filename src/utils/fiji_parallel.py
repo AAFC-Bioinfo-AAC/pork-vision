@@ -20,13 +20,15 @@
 """
 Parallel FIJI processing utilities for pork-vision pipeline.
 Replaces sequential batch processing with parallel execution.
+
+Memory-optimized version for HPC/large batches.
 """
 
 import os
 import sys
 import subprocess
 import pathlib
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from typing import List, Tuple, Optional
 import time
 
@@ -37,7 +39,8 @@ def process_single_image_marbling(
     image_filename: str,
     regions_dir: str,
     masks_dir: str,
-    macro_path: str
+    macro_path: str,
+    quiet: bool = True
 ) -> Tuple[str, bool, Optional[str]]:
     """
     Process a single image for marbling analysis using FIJI.
@@ -47,6 +50,7 @@ def process_single_image_marbling(
         regions_dir: Path to regions directory
         masks_dir: Path to masks output directory
         macro_path: Path to FIJI macro file
+        quiet: Suppress FIJI warnings/output
         
     Returns:
         Tuple of (filename, success, error_message)
@@ -118,14 +122,20 @@ close("*");
         with open(temp_macro_path, 'w') as f:
             f.write(single_macro)
         
-        # Run FIJI on this single image
-        cmd = [FIJI_CMD, "--headless", "--run", temp_macro_path]
+        # Run FIJI on this single image with memory limit
+        cmd = [FIJI_CMD, "--headless", "--mem", "2g", "--run", temp_macro_path]
+        
+        # Set environment variable to suppress warnings
+        env = os.environ.copy()
+        if quiet:
+            env['SCIJAVA_LOG_LEVEL'] = 'ERROR'
         
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=120  # 2 minute timeout per image
+            timeout=180,  # 3 minute timeout
+            env=env
         )
         
         # Clean up temp macro
@@ -137,7 +147,10 @@ close("*");
         if result.returncode == 0:
             return (image_filename, True, None)
         else:
-            return (image_filename, False, f"Return code {result.returncode}: {result.stderr}")
+            # Check if it was killed (OOM)
+            if result.returncode == 137 or 'Killed' in result.stderr:
+                return (image_filename, False, "Process killed (likely out of memory)")
+            return (image_filename, False, f"Return code {result.returncode}")
             
     except subprocess.TimeoutExpired:
         return (image_filename, False, "FIJI process timed out")
@@ -150,7 +163,8 @@ def process_single_image_colour(
     regions_dir: str,
     lean_dir: str,
     results_dir: str,
-    macro_path: str
+    macro_path: str,
+    quiet: bool = True
 ) -> Tuple[str, bool, Optional[str]]:
     """
     Process a single image for colour analysis using FIJI.
@@ -161,6 +175,7 @@ def process_single_image_colour(
         lean_dir: Path to lean masks directory
         results_dir: Path to results output directory
         macro_path: Path to FIJI macro file
+        quiet: Suppress FIJI warnings/output
         
     Returns:
         Tuple of (filename, success, error_message)
@@ -305,14 +320,20 @@ close("*");
         with open(temp_macro_path, 'w') as f:
             f.write(single_macro)
         
-        # Run FIJI
-        cmd = [FIJI_CMD, "--headless", "--run", temp_macro_path]
+        # Run FIJI with memory limit
+        cmd = [FIJI_CMD, "--headless", "--mem", "2g", "--run", temp_macro_path]
+        
+        # Set environment variable to suppress warnings
+        env = os.environ.copy()
+        if quiet:
+            env['SCIJAVA_LOG_LEVEL'] = 'ERROR'
         
         result = subprocess.run(
             cmd,
             capture_output=True,
             text=True,
-            timeout=120
+            timeout=180,
+            env=env
         )
         
         # Clean up
@@ -324,7 +345,9 @@ close("*");
         if result.returncode == 0:
             return (image_filename, True, None)
         else:
-            return (image_filename, False, f"Return code {result.returncode}: {result.stderr}")
+            if result.returncode == 137 or 'Killed' in result.stderr:
+                return (image_filename, False, "Process killed (likely out of memory)")
+            return (image_filename, False, f"Return code {result.returncode}")
             
     except subprocess.TimeoutExpired:
         return (image_filename, False, "FIJI process timed out")
@@ -334,14 +357,18 @@ close("*");
 
 def run_fiji_marbling_parallel(
     marbling_root: str,
-    max_workers: Optional[int] = None
+    max_workers: Optional[int] = None,
+    quiet: bool = True
 ) -> Tuple[int, int]:
     """
     Run FIJI marbling analysis in parallel instead of batch mode.
     
+    Memory-optimized for HPC/large batches.
+    
     Args:
         marbling_root: Root directory for marbling processing
-        max_workers: Number of parallel workers (default: CPU count // 2)
+        max_workers: Number of parallel workers (default: min(4, CPU//2))
+        quiet: Suppress FIJI warnings
         
     Returns:
         Tuple of (successful_count, failed_count)
@@ -364,15 +391,21 @@ def run_fiji_marbling_parallel(
     
     print(f"Processing {len(crop_files)} images for marbling in parallel...")
     
+    # Conservative worker count for HPC to avoid OOM
     if max_workers is None:
-        max_workers = max(1, os.cpu_count() // 2)
+        max_workers = min(4, max(1, os.cpu_count() // 4))
+    
+    print(f"Using {max_workers} workers (conservative for memory)")
     
     successful = 0
     failed = 0
+    failed_images = []
     
     start_time = time.time()
     
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+    # Use ThreadPoolExecutor instead of ProcessPoolExecutor
+    # This reduces memory overhead significantly
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         # Submit all tasks
         futures = {
             executor.submit(
@@ -380,7 +413,8 @@ def run_fiji_marbling_parallel(
                 fn,
                 regions_dir,
                 masks_dir,
-                str(macro_path)
+                str(macro_path),
+                quiet
             ): fn
             for fn in crop_files
         }
@@ -392,16 +426,29 @@ def run_fiji_marbling_parallel(
                 fname, success, error = future.result()
                 if success:
                     successful += 1
-                    print(f"[{i}/{len(crop_files)}] ✓ {fname}")
+                    if not quiet:
+                        print(f"[{i}/{len(crop_files)}] ✓ {fname}")
                 else:
                     failed += 1
+                    failed_images.append((fname, error))
                     print(f"[{i}/{len(crop_files)}] ✗ {fname}: {error}")
             except Exception as e:
                 failed += 1
+                failed_images.append((filename, str(e)))
                 print(f"[{i}/{len(crop_files)}] ✗ {filename}: Unexpected error: {e}")
     
     elapsed = time.time() - start_time
     print(f"FIJI marbling parallel processing complete: {successful} successful, {failed} failed in {elapsed:.1f}s")
+    
+    # If many failures, suggest adjustments
+    if failed > len(crop_files) * 0.5:
+        print(f"\n⚠️  High failure rate ({failed}/{len(crop_files)})")
+        print("Suggestions:")
+        print(f"  - Reduce max_workers (currently {max_workers})")
+        print("  - Increase memory allocation in SLURM")
+        print("  - Check failed images:")
+        for fname, error in failed_images[:5]:  # Show first 5
+            print(f"    {fname}: {error}")
     
     return successful, failed
 
@@ -409,15 +456,19 @@ def run_fiji_marbling_parallel(
 def run_fiji_colour_parallel(
     colour_root: str,
     lean_dir: str,
-    max_workers: Optional[int] = None
+    max_workers: Optional[int] = None,
+    quiet: bool = True
 ) -> Tuple[int, int]:
     """
     Run FIJI colour analysis in parallel instead of batch mode.
+    
+    Memory-optimized for HPC/large batches.
     
     Args:
         colour_root: Root directory for colour processing
         lean_dir: Path to lean masks directory
         max_workers: Number of parallel workers
+        quiet: Suppress FIJI warnings
         
     Returns:
         Tuple of (successful_count, failed_count)
@@ -440,15 +491,16 @@ def run_fiji_colour_parallel(
     
     print(f"Processing {len(colour_files)} images for colour in parallel...")
     
+    # Conservative worker count
     if max_workers is None:
-        max_workers = max(1, os.cpu_count() // 2)
+        max_workers = min(4, max(1, os.cpu_count() // 4))
     
     successful = 0
     failed = 0
     
     start_time = time.time()
     
-    with ProcessPoolExecutor(max_workers=max_workers) as executor:
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
         futures = {
             executor.submit(
                 process_single_image_colour,
@@ -456,7 +508,8 @@ def run_fiji_colour_parallel(
                 regions_dir,
                 lean_dir,
                 results_dir,
-                str(macro_path)
+                str(macro_path),
+                quiet
             ): fn
             for fn in colour_files
         }
@@ -467,7 +520,8 @@ def run_fiji_colour_parallel(
                 fname, success, error = future.result()
                 if success:
                     successful += 1
-                    print(f"[{i}/{len(colour_files)}] ✓ {fname}")
+                    if not quiet:
+                        print(f"[{i}/{len(colour_files)}] ✓ {fname}")
                 else:
                     failed += 1
                     print(f"[{i}/{len(colour_files)}] ✗ {fname}: {error}")

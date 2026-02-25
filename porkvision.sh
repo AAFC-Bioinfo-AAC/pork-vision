@@ -6,7 +6,6 @@
 #SBATCH --ntasks=1
 
 #SBATCH --cpus-per-task=<number of CPUs> 
-#SBATCH --mem=<amount of memory>            # e.g., 16G for 16 GB   
 #SBATCH --time=<time limit>                 # e.g., 24:00:00 for 24 hours
 
 #SBATCH --cluster=<cluster name>
