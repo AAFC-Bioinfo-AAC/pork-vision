@@ -20,9 +20,10 @@
   - [Orientation Variables](#orientation-variables)
   - [Image Processing Variables](#image-processing-variables)
 - [Usage](#usage)
-  - [Pre-requisites](#pre-requisites)
   - [Installation](#installation)
-  - [Instructions](#instructions)
+  - [Pre-requisites](#pre-requisites)
+    - [Conda environment](#conda-environment)
+  - [Run Instructions](#run-instructions)
     - [Running locally](#running-locally)
     - [Running on HPC (SLURM)](#running-on-hpc-slurm)
   - [First-Run Notes \& Expected Warnings](#first-run-notes--expected-warnings)
@@ -180,6 +181,15 @@ Example filename: 103_LdLeanColor.JPG
 
 ## Usage
 
+### Installation
+
+ Clone the repository into the directory where you want to run the pipeline.
+
+```bash
+  cd /path/to/code/directory
+  git clone <repository-url>
+```
+
 ### Pre-requisites
 
 | **Category**                    | **Components**       |
@@ -188,7 +198,7 @@ Example filename: 103_LdLeanColor.JPG
 | Libraries                       | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything        |
 | Frameworks / Apps               | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv11       |
 
-### Installation
+#### Conda environment
 
 1. Ensure Conda is installed and you are in the root directory of the project repository.
 
@@ -200,7 +210,7 @@ Example filename: 103_LdLeanColor.JPG
   
     Also provided is a conda environment with all pinned versions of key packages used at the time of testing. Note that on certain systems (e.g., WSL), the environment creation process may appear to stall while setting up `openjdk`, `pyimagej`, or `fiji`. Please be patient; this is normal. Also, expect a delay of a few minutes during JAR unpacking and classpath setup, especially on first-time runs.
 
-### Instructions
+### Run Instructions
 
 See instructions below to run the pipeline locally or on an HPC. To specify a different path than the default for raw images, models or output, or to fine-tune any parameters, see [Parameters](#parameters) and adjust the run commands as required.
 
