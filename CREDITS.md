@@ -4,6 +4,7 @@ This project exists thanks to the work of many people. We gratefully acknowledge
 
 ## Student bioinformaticians
 
+- Alex Sun (Jan. - May. 2026): added parallelization to colouring and marbling, by adjusting the FIJI macros, and adding additional parallelization functions. Adjusted script to run more smoothly on HPC environments. Also added specific memory limits to each parallel thread: allows all parallel cpus to run without memory crashes, and all cpus to be used (limited resource waste). Depending on amount of resources, increased speed by up to 20x. 
 - Sean Hill (Jan. - Aug. 2025): designed the overall pipeline architecture, re-implemented the core codebase, managed version control using GitHub, and co-authored the project documentation. Trained models and developed modules for preprocessing, orientation, marbling, colouring, measurement, and post-processing. Integrated Fiji macro-based automation for color grading and marbling detection and implemented the Python-to-Fiji interface using pyimagej to handle headless macro execution.
 - Maaz Ali (Jan. - Apr. 2025): designed the overall pipeline architecture, re-implemented the core codebase, managed version control using GitHub, and co-authored the project documentation. Trained models and developed modules for preprocessing, orientation, marbling, colouring, measurement, and post-processing. Additionally, retrained the fat segmentation model and trained a new color detection model.
 - Tarek Ibrahim (Jan. - Apr. 2025): Assisted with initial code refactoring.
