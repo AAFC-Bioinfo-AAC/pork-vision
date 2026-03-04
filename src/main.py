@@ -79,7 +79,9 @@ def main():
     conversion_factor_list, area_px_list, area_mm_list = [], [], []
     outlier_list = []
 
-    max_workers = min(16, os.cpu_count() // 2)
+    # max_workers = min(32, os.cpu_count() // 2)
+    max_workers = os.cpu_count()
+    print(f"Workers: {max_workers}")
     os.makedirs(args.output_path, exist_ok=True)
     m, s = time_program(start_time)
     print(f"RUNTIME BEFORE IMAGE ANALYSIS STARTS: {m}:{s:02d}")
@@ -134,7 +136,8 @@ def main():
         os.makedirs(masks_dir, exist_ok=True)
 
         # Use parallel processing instead of batch mode
-        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count() // 2)
+        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count())
+        print("FIJI workers: {fiji_workers}")
         successful, failed = run_fiji_marbling_parallel(marbling_root, max_workers=fiji_workers)
         
         if failed > 0:
@@ -182,7 +185,8 @@ def main():
         os.makedirs(results_dir,  exist_ok=True)
 
         # Use parallel processing instead of batch mode
-        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count() // 2)
+        fiji_workers = getattr(args, 'fiji_workers', None) or max(1, os.cpu_count())
+        print("FIJI workers: {fiji_workers}")
         successful, failed = run_fiji_colour_parallel(colour_root, lean_dir, max_workers=fiji_workers)
         
         if failed > 0:
