@@ -143,43 +143,43 @@ Example filename: 103_LdLeanColor.JPG
 
 ### General Parameters
 
-| **Parameter**         | **Description**                                   | **Default Value**         |
-|-----------------------|---------------------------------------------------|---------------------------|
-| `--image_path`        | Path to input image(s) for processing.            | `"data/"`                 |
-| `--output_path`       | Directory where results are saved.                | `"output/"`               |
-| `--model_path`        | Path to the trained YOLOv11 segmentation model.| `"src/models/Yolo_MuscleFatSegment_98epoch.pt"`  |
-| `--color_model_path` | Path to the trained YOLOv11 detection model. | `"src/models/color_100_last.pt"`|
-| `--minimal` | Option to specify if you want to save non-outlier images    | False |
-| `--debug` | Option to specify if you want to see extra information/images | False |
-| `--outputs` | Option to specify which modules you would like to run (e.g. measurement, marbling, colour, all) | all |
+| **Parameter**         | **Description**                                               | **Default Value**                               |
+|-----------------------|---------------------------------------------------------------|-------------------------------------------------|
+| `--image_path`        | Path to input image(s) for processing.                        | `"data/"`                                       |
+| `--output_path`       | Directory where results are saved.                            | `"output/"`                                     |
+| `--model_path`        | Path to the trained YOLOv11 segmentation model.               | `"src/models/Yolo_MuscleFatSegment_98epoch.pt"` |
+| `--color_model_path`  | Path to the trained YOLOv11 detection model.                  | `"src/models/color_100_last.pt"`                |
+| `--minimal`           | Option to specify if you want to save non-outlier images      | False                                           |
+| `--debug`             | Option to specify if you want to see extra information/images | False                                           |
+| `--outputs`           | Option to specify which modules you would like to run (e.g. measurement, marbling, colour, all) | all           |
 
 ---
 
 ### Measurement Variables
 
 | **Variable**      | **Description**                                  | **Default Value**|
-|--------------------|--------------------------------------------------|------------------|
-| `cm_to_pixels`     | Conversion factor for cm to pixels.              | `140` px/cm      |
-| `step`             | Step size in pixels to sample along line         | `1.0` px         |
-| `max_iter`         | Maximum iterations to avoid infinite loops       |`10000` iterations|
+|-------------------|--------------------------------------------------|------------------|
+| `cm_to_pixels`    | Conversion factor for cm to pixels.              | `140` px/cm      |
+| `step`            | Step size in pixels to sample along line         | `1.0` px         |
+| `max_iter`        | Maximum iterations to avoid infinite loops       |`10000` iterations|
 
 ---
 
 ### Orientation Variables
 
-| **Variable** | **Description** | **Default Value**                     |
-| ------------- | --------------- | ------------------------------------- |
-| `min_area`    | Minimum area to be considered valid         | `500` px  |
-| `kernel_size` | Size of the dilation kernel                 | `15` px   |
-|`dilation_size`| Pixel size for dilation to define adjacency | `15` px   |
+| **Variable**  | **Description**                               | **Default Value** |
+| ------------- | --------------------------------------------- | ----------------- |
+| `min_area`    | Minimum area to be considered valid           | `500` px          |
+| `kernel_size` | Size of the dilation kernel                   | `15` px           |
+|`dilation_size`| Pixel size for dilation to define adjacency   | `15` px           |
 
 ---
 
 ### Image Processing Variables
 
-| **Variable**         | **Description**                                      | **Default Value** |
-|-----------------------|------------------------------------------------------|-------------------|
-| `confidence_threshold` | Minimum confidence score for valid detection | `0.4` |
+| **Variable**          | **Description**                                      | **Default Value** |
+|---------------------- |------------------------------------------------------|-------------------|
+| `confidence_threshold`| Minimum confidence score for valid detection         | `0.4`             |
 
 ---
 
@@ -193,8 +193,9 @@ This repository stores large model weights using **Git Large File Storage (Git L
 
 If Git LFS is **not installed**, cloning the repository will only download small **pointer files** instead of the real model weights, and the models will fail to load.
 
-First, install Git LFS from https://git-lfs.com/
-- see installation instructions by OS type: https://github.com/git-lfs/git-lfs?tab=readme-ov-file#installing)
+First, install Git LFS from <https://git-lfs.com/>
+
+- see installation instructions by OS type: <https://github.com/git-lfs/git-lfs?tab=readme-ov-file#installing>)
 
 Next, initialize it:
 
@@ -242,11 +243,11 @@ git lfs pull
 
 ### Pre-requisites
 
-| **Category**                    | **Components**       |
-|---------------------------------|----------------------|
-| Programming Languages           | Python, Java         |
-| Libraries                       | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything        |
-| Frameworks / Apps               | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv11       |
+| **Category**          | **Components**                                                                                                          |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------ |
+| Programming Languages | Python, Java                                                                                                            |
+| Libraries             | numpy, pandas, scipy, scikit-image, pytorch, opencv, roifile, jpype1, pyimagej, ultralytics, tabulate, segment-anything |
+| Frameworks / Apps     | Fiji, ImageJ, Segment Anything, PyTorch, YOLOv11                                                                        |
 
 #### Conda environment
 
