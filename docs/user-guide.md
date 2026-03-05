@@ -21,6 +21,10 @@
   - [Image Processing Variables](#image-processing-variables)
 - [Usage](#usage)
   - [Installation](#installation)
+    - [Install Git LFS](#install-git-lfs)
+    - [Clone the Repository](#clone-the-repository)
+    - [If You Already Cloned the Repository](#if-you-already-cloned-the-repository)
+    - [Sanity Check](#sanity-check)
   - [Pre-requisites](#pre-requisites)
     - [Conda environment](#conda-environment)
   - [Run Instructions](#run-instructions)
@@ -183,11 +187,57 @@ Example filename: 103_LdLeanColor.JPG
 
 ### Installation
 
- Clone the repository into the directory where you want to run the pipeline.
+#### Install Git LFS
+
+This repository stores large model weights using **Git Large File Storage (Git LFS)** (e.g., `.pt`, `.bin`, `.ckpt`, `.safetensors`). Git LFS is required to download the actual model files.
+
+If Git LFS is **not installed**, cloning the repository will only download small **pointer files** instead of the real model weights, and the models will fail to load.
+
+First, install Git LFS from https://git-lfs.com/
+- see installation instructions by OS type: https://github.com/git-lfs/git-lfs?tab=readme-ov-file#installing)
+
+Next, initialize it:
 
 ```bash
-  cd /path/to/code/directory
-  git clone <repository-url>
+git lfs install
+```
+
+#### Clone the Repository
+
+```bash
+git clone https://github.com/OWNER/REPO.git
+```
+
+When Git LFS is installed, the model files will be downloaded automatically during cloning.
+
+#### If You Already Cloned the Repository
+
+If the model files are very small (e.g., ~100 B), they are likely Git LFS pointer files. Run the following to download the real weights:
+
+```bash
+git lfs pull
+```
+
+#### Sanity Check
+
+Verify that the model files were downloaded correctly.
+
+List LFS-tracked files:
+
+```bash
+git lfs ls-files
+```
+
+Check the file size of a model weight (should be MB/GB, not ~100 B):
+
+```bash
+ls -lh path/to/model_file
+```
+
+If the file is still very small and contains text starting with `version https://git-lfs.github.com/spec/v1`, then the actual model file has not been downloaded. If so, run:
+
+```bash
+git lfs pull
 ```
 
 ### Pre-requisites
